@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "918703953452",
+    "firebase_url": "https://lab7-9293a-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "lab7-9293a",
+    "storage_bucket": "lab7-9293a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918703953452:android:1f7e4fa9c233813cc7a389",
+        "android_client_info": {
+          "package_name": "com.example.meoapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9vVa6l_L8qTVLdAHglSx9TXknhJOvSXk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

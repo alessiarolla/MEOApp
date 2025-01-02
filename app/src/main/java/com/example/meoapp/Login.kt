@@ -30,7 +30,7 @@ fun Login(navController: NavController){
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Benvenut",
+            text = "Benvenuto",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 24.dp)
         )

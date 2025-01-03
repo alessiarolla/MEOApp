@@ -31,7 +31,8 @@ data class orario (
 data class dispenser(
     val id: Int,
     val nome: String,
-    val livelloBatteria: Int,
+    //val livelloBatteria: Int,
     val livelloCibo: Int,
     val stato: Boolean,
+    //val gatti: List<gatto>
 )

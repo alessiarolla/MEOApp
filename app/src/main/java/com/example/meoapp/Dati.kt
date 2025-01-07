@@ -2,6 +2,11 @@ package com.example.meoapp
 
 import android.net.Uri
 
+object GlobalState {
+    var utente: Utente? = null
+}
+
+
 data class Utente (
     val nome: String,
     val email: String,

@@ -42,8 +42,9 @@ class MainActivity : ComponentActivity() {
                     ) {
                     composable("login") { Login(navController) }
                     composable("home") { Homepage(navController) }
-                        composable("settings") { Settings(navController) }
-                        composable("cats") { Cats(navController) }
+                    composable("settings") { Settings(navController) }
+                    composable("cats") { Cats(navController) }
+                    composable("addcats") { AddCats(navController) }
                 }
             }
         }

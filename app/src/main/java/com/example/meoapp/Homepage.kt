@@ -1,3 +1,5 @@
+package com.example.meoapp
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +14,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.database.*
 import androidx.compose.material3.Typography
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+
 
 @Composable
 fun Homepage(navController: NavController) {
@@ -20,10 +27,8 @@ fun Homepage(navController: NavController) {
     var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var currentDispenserIndex by remember { mutableStateOf(0) }
 
-    // Firebase Database reference
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
-    // Fetch data from Firebase
     LaunchedEffect(userEmail) {
         database.orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -45,8 +50,15 @@ fun Homepage(navController: NavController) {
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        // Top section: Cats and routines
-        Text(text = "Gatti e Routine", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(8.dp))
+        Text(text = "Prossimi pasti", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(8.dp))
+        val currentTime = remember {
+            val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+
+
+            sdf.format(Date())
+        }
+        Text(text = "Ora attuale: $currentTime")
+
         LazyColumn(modifier = Modifier.weight(1f)) {
             gatti.forEach { (gattoKey, gattoData) ->
                 val nome = gattoData["nome"] as? String ?: ""
@@ -66,9 +78,9 @@ fun Homepage(navController: NavController) {
             }
         }
 
-        // Bottom section: Dispenser info
+
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Dispensers", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(8.dp))
+        Text(text = "I tuoi dispenser", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(8.dp))
         if (dispensers.isNotEmpty()) {
             val dispenserKeys = dispensers.keys.toList()
             val currentDispenser = dispensers[dispenserKeys[currentDispenserIndex]] ?: emptyMap()

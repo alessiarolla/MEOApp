@@ -4,6 +4,7 @@ import android.net.Uri
 
 object GlobalState {
     var utente: Utente? = null
+    var gatto: gatto? = null
 }
 
 

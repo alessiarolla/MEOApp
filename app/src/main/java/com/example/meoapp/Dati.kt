@@ -12,7 +12,7 @@ data class Utente (
     val email: String,
     val password: String,
     val gatti: List<gatto>,
-    val dispenders: List<dispenser>,
+    val dispensers: List<dispenser>,
     val Tema: String,
     val Notifichepush: Boolean,
     val Lingua: String,
@@ -24,7 +24,7 @@ data class gatto (
     val peso: String,
     val foto: Uri,
     val dataNascita: String,
-    val dispenderId: Int,
+    val dispenserId: Int,
     val routine: List<orario>,
 )
 

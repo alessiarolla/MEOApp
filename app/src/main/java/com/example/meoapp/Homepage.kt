@@ -81,38 +81,31 @@ fun Homepage(navController: NavController) {
             val dispenserKeys = dispensers.keys.toList()
             val currentDispenser = dispensers[dispenserKeys[currentDispenserIndex]] ?: emptyMap()
             val nome = currentDispenser["nome"] as? String ?: ""
-            val livelloCibo = currentDispenser["livelloCibo"] as? Long ?: 0
+            val livelloCiboCiotola = currentDispenser["livelloCiboCiotola"] as? Long ?: 0
+            val livelloCiboDispenser = currentDispenser["livelloCiboDispenser"] as? Long ?: 0
             val stato = currentDispenser["stato"] as? Boolean ?: false
 
             Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(text = "Nome: $nome", style = MaterialTheme.typography.titleSmall)
-                    Text(text = "Livello Cibo: $livelloCibo")
+                    Text(text = "Livello Cibo Ciotola: $livelloCiboCiotola")
+                    Text(text = "Livello Cibo Dispenser: $livelloCiboDispenser")
                     Text(text = "Stato: ${if (stato) "Attivo" else "Inattivo"}")
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Dispenser precedente",
-                            modifier = Modifier.clickable {
-                                currentDispenserIndex = (currentDispenserIndex - 1 + dispenserKeys.size) % dispenserKeys.size
-                            }
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Dispenser successivo",
-                            modifier = Modifier.clickable {
-                                currentDispenserIndex = (currentDispenserIndex + 1) % dispenserKeys.size
-                            }
-                        )
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Indietro", modifier = Modifier.clickable {
+                            currentDispenserIndex = (currentDispenserIndex - 1 + dispensers.size) % dispensers.size
+                        })
+                        Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Avanti", modifier = Modifier.clickable {
+                            currentDispenserIndex = (currentDispenserIndex + 1) % dispensers.size
+                        })
                     }
                 }
             }
-        } else {
-            Text(text = "Nessun dispenser trovato.", modifier = Modifier.padding(8.dp))
         }
     }
 }
+
 
 fun getCurrentTime(): String {
     val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())

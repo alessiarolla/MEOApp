@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.database.*
@@ -58,7 +59,18 @@ fun Homepage(navController: NavController) {
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text(text = "Prossimi pasti", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "MEO",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Indietro", modifier = Modifier.clickable {
@@ -75,7 +87,8 @@ fun Homepage(navController: NavController) {
                     item {
                         Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text(text = "Nome: $nome", style = MaterialTheme.typography.titleSmall)
+                                Text(text = " $nome", style = MaterialTheme.typography.titleMedium,
+                                    textAlign = TextAlign.Center)
                                 Text(text = "Prossimo pasto tra: $prossimoPasto")
                             }
                         }
@@ -90,7 +103,6 @@ fun Homepage(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "I tuoi dispenser", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             // Filter dispensers for the current cat
             val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
@@ -107,16 +119,20 @@ fun Homepage(navController: NavController) {
                 // First Card: Cibo dispenser
                 Card(modifier = Modifier.weight(1f).padding(8.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Cibo Dispenser", style = MaterialTheme.typography.titleSmall)
-                        Text(text = "$livelloCiboDispenser %")
+                        Text(text = "Cibo Dispenser", style = MaterialTheme.typography.titleSmall,
+                            textAlign = TextAlign.Center)
+                        Text(text = "$livelloCiboDispenser %",
+                            textAlign = TextAlign.Center)
                     }
                 }
 
                 // Second Card: Cibo ciotola
                 Card(modifier = Modifier.weight(1f).padding(8.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Cibo Ciotola", style = MaterialTheme.typography.titleSmall)
-                        Text(text = "$livelloCiboCiotola %")
+                        Text(text = "Cibo Ciotola", style = MaterialTheme.typography.titleSmall,
+                            textAlign = TextAlign.Center)
+                        Text(text = "$livelloCiboCiotola %",
+                            textAlign = TextAlign.Center)
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.example.meoapp
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,40 +23,70 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.database.FirebaseDatabase
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Cats(navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "I tuoi gatti",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .padding(bottom = 16.dp)
-                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
-        ) {
-            // Content of the box
-        }
-        Card(
-            onClick = { navController.navigate("addcats") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Text(
-                text = "Aggiungi gatto",
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.bodyLarge
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("I TUOI GATTI") },
             )
+            Divider()
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(bottom = 16.dp)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+            ) {
+                LazyColumn {
+                    items(gattiList.size) { index ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            Image(
+                                //anche l'immagine dovrà cambiare con il gatto
+                                painter = painterResource(id = R.drawable.foto_profilo), // Replace with your drawable resource
+                                contentDescription = "Cat Image",
+                                modifier = Modifier.size(50.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = gattiList[index].nome as? String ?: "",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+            }
+            Card(
+                onClick = { navController.navigate("addcats") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    text = "Aggiungi gatto",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
         }
     }
 }

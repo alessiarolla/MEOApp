@@ -1,6 +1,11 @@
 package com.example.meoapp
 
 import android.net.Uri
+import android.util.Log
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 object GlobalState {
     var utente: Utente? = null
@@ -23,7 +28,7 @@ data class Utente (
 data class gatto (
     val nome: String,
     val peso: String,
-    val foto: Uri,
+    val foto: Any,
     val dataNascita: String,
     val dispenserId: Int,
     val routine: List<orario>,
@@ -42,3 +47,36 @@ data class dispenser(
     val stato: Boolean,
     //val gatti: List<gatto>
 )
+
+
+var gattiList = mutableListOf<gatto>()
+
+fun fetchGattiFromFirebase() {
+    val user = GlobalState.utente
+    if (user != null) {
+        val database = FirebaseDatabase.getInstance()
+        val gattiRef = database.getReference("utenti").child(user.email.replace(".", ",")).child("gatti")
+
+        gattiRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                gattiList.clear()
+                for (gattoSnapshot in snapshot.children) {
+                    try {
+                        // Recupera l'intero oggetto gatto
+                        val gatto = gattoSnapshot.getValue(gatto::class.java)
+                        // Aggiungi l'oggetto gatto alla lista
+                        gatto?.let {
+                            gattiList.add(it)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("Firebase", "Errore durante il parsing di un gatto: ${e.message}")
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle possible errors.
+            }
+        })
+    }
+}

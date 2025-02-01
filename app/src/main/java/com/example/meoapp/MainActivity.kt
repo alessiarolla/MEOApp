@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this) // Initialize Firebase
         enableEdgeToEdge()
+        fetchGattiFromFirebase()
         setContent {
             MEOAppTheme {
                 val navController = rememberNavController()

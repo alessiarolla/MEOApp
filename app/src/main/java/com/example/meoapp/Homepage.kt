@@ -27,6 +27,7 @@ fun Homepage(navController: NavController) {
     var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var currentDispenserIndex by remember { mutableStateOf(0) }
+    var currentGattoIndex by remember { mutableStateOf(0) }
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
 
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
@@ -59,53 +60,62 @@ fun Homepage(navController: NavController) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(text = "Prossimi pasti", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(8.dp))
 
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            gatti.forEach { (gattoKey, gattoData) ->
-                val nome = gattoData["nome"] as? String ?: ""
-                val routine = gattoData["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
-                val prossimoPasto = calcolaProssimoPasto(routine, currentTime)
-                item {
-                    Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = "Nome: $nome", style = MaterialTheme.typography.titleSmall)
-                            Text(text = "Prossimo pasto tra: $prossimoPasto")
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Indietro", modifier = Modifier.clickable {
+                currentGattoIndex = (currentGattoIndex - 1 + gatti.size) % gatti.size
+            })
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                gatti.keys.toList().getOrNull(currentGattoIndex)?.let { gattoKey ->
+                    val gattoData = gatti[gattoKey] ?: emptyMap()
+                    val nome = gattoData["nome"] as? String ?: ""
+                    val routine = gattoData["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
+                    val prossimoPasto = calcolaProssimoPasto(routine, currentTime)
+                    item {
+                        Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(text = "Nome: $nome", style = MaterialTheme.typography.titleSmall)
+                                Text(text = "Prossimo pasto tra: $prossimoPasto")
+                            }
                         }
                     }
                 }
             }
+            Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Avanti", modifier = Modifier.clickable {
+                currentGattoIndex = (currentGattoIndex + 1) % gatti.size
+            })
         }
 
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = "I tuoi dispenser", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(8.dp))
-        if (dispensers.isNotEmpty()) {
-            val dispenserKeys = dispensers.keys.toList()
-            val currentDispenser = dispensers[dispenserKeys[currentDispenserIndex]] ?: emptyMap()
-            val nome = currentDispenser["nome"] as? String ?: ""
-            val livelloCiboCiotola = currentDispenser["livelloCiboCiotola"] as? Long ?: 0
-            val livelloCiboDispenser = currentDispenser["livelloCiboDispenser"] as? Long ?: 0
-            val stato = currentDispenser["stato"] as? Boolean ?: false
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Indietro", modifier = Modifier.clickable {
+                currentDispenserIndex = (currentDispenserIndex - 1 + dispensers.size) % dispensers.size
+            })
+            Column(modifier = Modifier.weight(1f)) {
+                if (dispensers.isNotEmpty()) {
+                    val dispenserKeys = dispensers.keys.toList()
+                    val currentDispenser = dispensers[dispenserKeys[currentDispenserIndex]] ?: emptyMap()
+                    val nome = currentDispenser["nome"] as? String ?: ""
+                    val livelloCiboCiotola = currentDispenser["livelloCiboCiotola"] as? Long ?: 0
+                    val livelloCiboDispenser = currentDispenser["livelloCiboDispenser"] as? Long ?: 0
+                    val stato = currentDispenser["stato"] as? Boolean ?: false
 
-            Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "Nome: $nome", style = MaterialTheme.typography.titleSmall)
-                    Text(text = "Livello Cibo Ciotola: $livelloCiboCiotola")
-                    Text(text = "Livello Cibo Dispenser: $livelloCiboDispenser")
-                    Text(text = "Stato: ${if (stato) "Attivo" else "Inattivo"}")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Indietro", modifier = Modifier.clickable {
-                            currentDispenserIndex = (currentDispenserIndex - 1 + dispensers.size) % dispensers.size
-                        })
-                        Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Avanti", modifier = Modifier.clickable {
-                            currentDispenserIndex = (currentDispenserIndex + 1) % dispensers.size
-                        })
+                    Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = "Nome: $nome", style = MaterialTheme.typography.titleSmall)
+                            Text(text = "Livello Cibo Ciotola: $livelloCiboCiotola")
+                            Text(text = "Livello Cibo Dispenser: $livelloCiboDispenser")
+                            Text(text = "Stato: ${if (stato) "Attivo" else "Inattivo"}")
+                        }
                     }
                 }
             }
+            Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Avanti", modifier = Modifier.clickable {
+                currentDispenserIndex = (currentDispenserIndex + 1) % dispensers.size
+            })
         }
     }
 }
-
 
 fun getCurrentTime(): String {
     val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())

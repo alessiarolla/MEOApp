@@ -47,6 +47,13 @@ class MainActivity : ComponentActivity() {
                     composable("settings") { Settings(navController) }
                     composable("cats") { Cats(navController) }
                     composable("addcats") { AddCats(navController) }
+                    composable("catDetail/{catName}") { backStackEntry ->
+                        val catName = backStackEntry.arguments?.getString("catName")
+                        val gatto = gattiList.find { it.nome == catName }
+                        if (gatto != null) {
+                            CatDetail(navController, gatto)
+                        }
+                    }
                 }
             }
         }

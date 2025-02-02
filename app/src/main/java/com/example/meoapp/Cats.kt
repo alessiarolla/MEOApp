@@ -2,6 +2,7 @@ package com.example.meoapp
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,10 +25,14 @@ import androidx.navigation.NavController
 import com.google.firebase.database.FirebaseDatabase
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +52,7 @@ fun Cats(navController: NavController) {
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
+            Text("Seleziona un gatto")
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -56,10 +62,12 @@ fun Cats(navController: NavController) {
             ) {
                 LazyColumn {
                     items(gattiList.size) { index ->
+                        val gatto = gattiList[index]
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp)
+                                .clickable { navController.navigate("catDetail/${gatto.nome}") }
                         ) {
                             Image(
                                 //anche l'immagine dovrà cambiare con il gatto
@@ -93,6 +101,7 @@ fun Cats(navController: NavController) {
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCats (navController: NavController){
     var nome by remember { mutableStateOf("") }
@@ -100,62 +109,213 @@ fun AddCats (navController: NavController){
     var dataNascita by remember { mutableStateOf("") }
     var dispenser by remember { mutableStateOf("") }
     var sesso by remember { mutableStateOf("") }
+    val sessoOptions = listOf("Maschio", "Femmina")
+    var expanded by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedImage by remember { mutableIntStateOf(R.drawable.foto_profilo) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        OutlinedTextField(
-            value = nome,
-            onValueChange = { nome = it },
-            label = { Text("Nome gatto") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        )
-        OutlinedTextField(
-            value = peso,
-            onValueChange = { peso = it },
-            label = { Text("Peso") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        )
-        OutlinedTextField(
-            value = dataNascita,
-            onValueChange = { dataNascita = it },
-            label = { Text("Data di nascita") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        )
-        OutlinedTextField(
-            value = dispenser,
-            onValueChange = { dispenser = it },
-            label = { Text("Dispenser") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        )
-        OutlinedTextField(
-            value = sesso,
-            onValueChange = { sesso = it },
-            label = { Text("Sesso") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        )
-        Button(
-            onClick = {
-                val gatto = mapOf(
-                    "nome" to nome,
-                    "peso" to peso,
-                    "dataNascita" to dataNascita,
-                    "dispenser" to dispenser,
-                    "sesso" to sesso
-                )
-                val user = GlobalState.utente
-                if (user != null) {
-                    val database = FirebaseDatabase.getInstance().reference
-                    database.child("Utenti").child(user.email.replace(".", ",")).child("gatti").push().setValue(gatto)
+    val isFormValid = nome.isNotBlank() && peso.isNotBlank() && dataNascita.isNotBlank() && dispenser.isNotBlank() && sesso.isNotBlank()
+
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("AGGIUNGI GATTO") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
                 }
-                navController.navigate("cats")
-            },
-            modifier = Modifier.fillMaxWidth()
+            )
+            Divider()
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Conferma")
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = selectedImage),
+                    contentDescription = "Cat Image",
+                    modifier = Modifier.size(80.dp)
+                )
+                IconButton(
+                    onClick = { showDialog = true },
+                    modifier = Modifier.align(Alignment.BottomEnd)
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit Image")
+                }
+            }
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Seleziona un'immagine") },
+                    text = {
+                        LazyColumn {
+                            items(listOf(R.drawable.foto_profilo, R.drawable.foto_profilo, R.drawable.foto_profilo)) { image ->
+                                Image(
+                                    painter = painterResource(id = image),
+                                    contentDescription = "Selectable Image",
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .clickable {
+                                            selectedImage = image
+                                            showDialog = false
+                                        }
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text("Conferma")
+                        }
+                    }
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Nome gatto", modifier = Modifier.alignByBaseline())
+                OutlinedTextField(
+                    value = nome,
+                    onValueChange = { nome = it },
+                    modifier = Modifier.alignByBaseline().weight(1f)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Peso", modifier = Modifier.alignByBaseline())
+                OutlinedTextField(
+                    value = peso,
+                    onValueChange = { peso = it },
+                    modifier = Modifier.alignByBaseline().weight(1f)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Data di nascita", modifier = Modifier.alignByBaseline())
+                OutlinedTextField(
+                    value = dataNascita,
+                    onValueChange = { dataNascita = it },
+                    modifier = Modifier.alignByBaseline().weight(1f)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Dispenser", modifier = Modifier.alignByBaseline())
+                OutlinedTextField(
+                    value = dispenser,
+                    onValueChange = { dispenser = it },
+                    modifier = Modifier.alignByBaseline().weight(1f)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Sesso", modifier = Modifier.alignByBaseline())
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = sesso,
+                        onValueChange = { sesso = it },
+                        readOnly = true,
+                        modifier = Modifier
+                            .alignByBaseline()
+                            .weight(1f)
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        sessoOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    sesso = option
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            Button(
+                onClick = {
+//                    val gatto = mapOf(
+//                        "nome" to nome,
+//                        "peso" to peso,
+//                        "dataNascita" to dataNascita,
+//                        "dispenser" to dispenser,
+//                        "sesso" to sesso
+//                    )
+//                    val user = GlobalState.utente
+//                    if (user != null) {
+//                        val database = FirebaseDatabase.getInstance().reference
+//                        database.child("Utenti").child(user.email.replace(".", ",")).child("gatti").push().setValue(gatto)
+//                    }
+                    navController.navigate("cats")
+
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = isFormValid
+            ) {
+                Text("Conferma")
+            }
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CatDetail(navController: NavController, gatto: gatto) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(gatto.nome) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigate("cats") }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+            Divider()
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Nome: ${gatto.nome}")
+            Text("Peso: ${gatto.peso}")
+            Text("Data di nascita: ${gatto.dataNascita}")
+            // Aggiungi altre informazioni del gatto qui
+        }
+    }
+}
+

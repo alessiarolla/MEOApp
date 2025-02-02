@@ -1,5 +1,6 @@
 package com.example.meoapp
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,8 +15,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.database.*
 import kotlinx.coroutines.delay
@@ -89,7 +96,7 @@ fun Homepage(navController: NavController) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(text = " $nome", style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Center)
-                                Text(text = "Prossimo pasto tra: $prossimoPasto")
+                                Text(text = "Prossimo pasto tra... $prossimoPasto")
                             }
                         }
                     }
@@ -104,42 +111,69 @@ fun Homepage(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            // Filter dispensers for the current cat
             val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
             val dispenserId = currentGatto?.get("dispenserId") as? Long ?: 0
             val filteredDispensers = dispensers.values.filter { it["dispenserId"] == dispenserId }
 
             if (filteredDispensers.isNotEmpty()) {
                 val currentDispenser = filteredDispensers.getOrNull(currentDispenserIndex) ?: emptyMap()
-                val nome = currentDispenser["nome"] as? String ?: ""
-                val livelloCiboCiotola = currentDispenser["livelloCiboCiotola"] as? Long ?: 0
-                val livelloCiboDispenser = currentDispenser["livelloCiboDispenser"] as? Long ?: 0
-                val stato = currentDispenser["stato"] as? Boolean ?: false
+                val livelloCiboCiotola = (currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat()
+                val livelloCiboDispenser = (currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat()
 
-                // First Card: Cibo dispenser
-                Card(modifier = Modifier.weight(1f).padding(8.dp)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Cibo Dispenser", style = MaterialTheme.typography.titleSmall,
-                            textAlign = TextAlign.Center)
-                        Text(text = "$livelloCiboDispenser %",
-                            textAlign = TextAlign.Center)
-                    }
-                }
-
-                // Second Card: Cibo ciotola
-                Card(modifier = Modifier.weight(1f).padding(8.dp)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Cibo Ciotola", style = MaterialTheme.typography.titleSmall,
-                            textAlign = TextAlign.Center)
-                        Text(text = "$livelloCiboCiotola %",
-                            textAlign = TextAlign.Center)
-                    }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser")
+                    CircularProgressIndicator(livelloCiboCiotola, "Cibo Ciotola")
                 }
             }
         }
 
     }
 }
+
+@Composable
+fun CircularProgressIndicator(percentage: Float, label: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = label, textAlign = TextAlign.Center) // Label sopra il cerchio
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(100.dp)
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                // Cerchio di sfondo
+                drawArc(
+                    color = Color.Gray.copy(alpha = 0.2f),
+                    startAngle = -90f,
+                    sweepAngle = 360f,
+                    useCenter = true
+                )
+
+                // Arco di progresso
+                drawArc(
+                    color = Color.Gray,
+                    startAngle = -90f,
+                    sweepAngle = 360 * (percentage / 100),
+                    useCenter = true
+                )
+
+                // Cerchio interno per coprire la parte centrale
+                drawCircle(
+                    color = Color.White, // Cambia colore se serve
+                    radius = size.minDimension / 2.5f // Regola la dimensione del cerchio interno
+                )
+            }
+
+            // Percentuale al centro
+            Text(
+                text = "${percentage.toInt()}%",
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
 
 fun getCurrentTime(): String {
     val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())

@@ -1,15 +1,21 @@
 package com.example.meoapp
 
+import android.widget.ProgressBar
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -60,7 +66,7 @@ fun Homepage(navController: NavController) {
 
     LaunchedEffect(Unit) {
         while (true) {
-            delay(60000)
+            delay(1000) // Ogni secondo
             currentTime = getCurrentTime()
         }
     }
@@ -73,7 +79,7 @@ fun Homepage(navController: NavController) {
         ) {
             Text(
                 text = "MEO",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
                 modifier = Modifier.padding(8.dp),
                 textAlign = TextAlign.Center
             )
@@ -92,11 +98,73 @@ fun Homepage(navController: NavController) {
                     val routine = gattoData["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
                     val prossimoPasto = calcolaProssimoPasto(routine, currentTime)
                     item {
-                        Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1CC93))
+                        ) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text(text = " $nome", style = MaterialTheme.typography.titleMedium,
-                                    textAlign = TextAlign.Center)
-                                Text(text = "Prossimo pasto tra... $prossimoPasto")
+                                Text(
+                                    text = " $nome",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp)
+                                ) {
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(1.5.dp, Color.Black, shape = RoundedCornerShape(25.dp)),
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9E3C3)),
+                                        shape = RoundedCornerShape(25.dp)
+                                    ) {
+                                        Text(
+                                            text = "Prossimo pasto tra...",
+                                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
+                                            modifier = Modifier
+                                                .padding(16.dp)
+                                                .fillMaxWidth(),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+
+                                    Card(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .padding(top = 50.dp)
+                                            .width(200.dp)
+                                            .border(1.dp, Color.Black, shape = RoundedCornerShape(15.dp)),
+                                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                                        shape = RoundedCornerShape(15.dp)
+                                    ) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.DateRange,
+                                                    contentDescription = "Prossimo pasto",
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+
+
+                                                Spacer(modifier = Modifier.width(4.dp))
+
+                                                Text(
+                                                    text = " $prossimoPasto",
+                                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                                    modifier = Modifier.padding(top = 4.dp),
+                                                    textAlign = TextAlign.Center
+                                                )
+
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -130,63 +198,79 @@ fun Homepage(navController: NavController) {
     }
 }
 
+
+
 @Composable
 fun CircularProgressIndicator(percentage: Float, label: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = label, textAlign = TextAlign.Center) // Label sopra il cerchio
-
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(100.dp)
+    Card(
+        modifier = Modifier.padding(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1CC93))    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(14.dp)
         ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                // Cerchio di sfondo
-                drawArc(
-                    color = Color.Gray.copy(alpha = 0.2f),
-                    startAngle = -90f,
-                    sweepAngle = 360f,
-                    useCenter = true
-                )
+            Text(text = label, textAlign = TextAlign.Center) // Label sopra il cerchio
 
-                // Arco di progresso
-                drawArc(
-                    color = Color.Gray,
-                    startAngle = -90f,
-                    sweepAngle = 360 * (percentage / 100),
-                    useCenter = true
-                )
+            Spacer(modifier = Modifier.height(12.dp)) // Add space after the label
 
-                // Cerchio interno per coprire la parte centrale
-                drawCircle(
-                    color = Color.White, // Cambia colore se serve
-                    radius = size.minDimension / 2.5f // Regola la dimensione del cerchio interno
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(100.dp)
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+
+                    //cerchio esterno
+                    drawCircle(
+                        color = Color(0xFFF9E3C3),
+                        radius = size.minDimension * 0.55f // Regola la dimensione del cerchio esterno
+                    )
+
+                    // Cerchio di sfondo
+                    drawArc(
+                        color = Color(0xFFF9E3C3),
+                        startAngle = -90f,
+                        sweepAngle = 360f,
+                        useCenter = true
+                    )
+
+                    // Arco di progresso
+                    drawArc(
+                        color = Color(0xFFA06558),
+                        startAngle = -90f,
+                        sweepAngle = 360 * (percentage / 100),
+                        useCenter = true
+                    )
+
+                    // Cerchio interno per coprire la parte centrale
+                    drawCircle(
+                        color = Color(0xFFF9E3C3),
+                        radius = size.minDimension / 3f // Regola la dimensione del cerchio interno
+                    )
+                }
+
+                // Percentuale al centro
+                Text(
+                    text = "${percentage.toInt()}%",
+                    textAlign = TextAlign.Center
                 )
             }
-
-            // Percentuale al centro
-            Text(
-                text = "${percentage.toInt()}%",
-                textAlign = TextAlign.Center
-            )
         }
     }
 }
 
 
 fun getCurrentTime(): String {
-    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+    val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
     sdf.timeZone = TimeZone.getDefault()
     return sdf.format(Date())
 }
 
 
 fun calcolaProssimoPasto(routine: Map<String, Map<String, Any>>, currentTime: String): String {
-    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+    val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
     val now = sdf.parse(currentTime)
     val tempi = routine.values.mapNotNull { it["ora"] as? String }
-        .mapNotNull { sdf.parse(it) }
+        .mapNotNull { sdf.parse("$it:00") } // Aggiunge ":00" per includere i secondi
         .sorted()
 
     for (tempo in tempi) {
@@ -194,7 +278,8 @@ fun calcolaProssimoPasto(routine: Map<String, Map<String, Any>>, currentTime: St
             val diff = tempo.time - now.time
             val ore = (diff / (1000 * 60 * 60)) % 24
             val minuti = (diff / (1000 * 60)) % 60
-            return String.format("%02d:%02d", ore, minuti)
+            val secondi = (diff / 1000) % 60
+            return String.format("%02d:%02d:%02d", ore, minuti, secondi)
         }
     }
 
@@ -203,7 +288,8 @@ fun calcolaProssimoPasto(routine: Map<String, Map<String, Any>>, currentTime: St
         val diff = (primoPastoDomani.time + 24 * 60 * 60 * 1000) - now.time
         val ore = (diff / (1000 * 60 * 60)) % 24
         val minuti = (diff / (1000 * 60)) % 60
-        "$ore ore e $minuti minuti"
+        val secondi = (diff / 1000) % 60
+        String.format("%02d:%02d:%02d", ore, minuti, secondi)
     } else {
         "Nessun pasto programmato"
     }

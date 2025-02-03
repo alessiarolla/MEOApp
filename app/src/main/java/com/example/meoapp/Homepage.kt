@@ -45,6 +45,7 @@ fun Homepage(navController: NavController) {
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
     var lastMealTime by remember { mutableStateOf("") }
     var timeSinceLastMeal by remember { mutableStateOf("") }
+    var timeBetweenMeals by remember { mutableStateOf("") }
 
 
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
@@ -75,18 +76,21 @@ fun Homepage(navController: NavController) {
         }
     }
 
-    //trova l'orario dell'ultimo pasto dalla cronologia e calcola il tempo trascorso
-    LaunchedEffect(currentGattoIndex, gatti) {
-        while (true) {
-            delay(1000) // Ogni secondo
-            val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
-            lastMealTime = currentGatto?.let { calcolaUltimoPasto(it) } ?: ""
+    // Calculate last meal time and time since last meal
+    LaunchedEffect(currentGattoIndex, gatti, currentTime) {
+        val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
+        if (currentGatto != null) {
+            lastMealTime = calcolaUltimoPasto(currentGatto)
+            timeSinceLastMeal = calcolaTempoTrascorsoUltimoPasto(currentGatto, currentTime)
+            timeBetweenMeals = calcolaTempoTraPasti(currentGatto, currentTime)
         }
     }
 
 
     Column {
         Text("Ultimo pasto: $lastMealTime")
+        Text("Tempo trascorso dall'ultimo pasto: $timeSinceLastMeal")
+        Text("Tempo tra l'ultimo pasto e il prossimo pasto: $timeBetweenMeals")
     }
 
 
@@ -341,3 +345,50 @@ fun calcolaUltimoPasto(gatto: Map<String, Any>): String {
     return orari.maxOrNull() ?: "00:00"
 }
 
+fun calcolaTempoTrascorsoUltimoPasto(gatto: Map<String, Any>, currentTime: String): String {
+    val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    val now = sdf.parse(currentTime)
+    val cronologia = gatto["cronologia"] as? Map<String, Map<String, Any>> ?: return "Nessun pasto registrato"
+    val orari = cronologia.values.mapNotNull { it["ora"] as? String }
+    val ultimoPasto = orari.maxOrNull()?.let { sdf.parse("$it:00") } ?: return "Nessun pasto registrato"
+
+    // Adjust the last meal time if it is after the current time
+    if (ultimoPasto.after(now)) {
+        ultimoPasto.time -= 24 * 60 * 60 * 1000 // Subtract one day in milliseconds
+    }
+
+    val diff = now.time - ultimoPasto.time
+    val ore = (diff / (1000 * 60 * 60)) % 24
+    val minuti = (diff / (1000 * 60)) % 60
+    val secondi = (diff / 1000) % 60
+    return String.format("%02d:%02d:%02d", ore, minuti, secondi)
+}
+
+fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String): String {
+    val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    val now = sdf.parse(currentTime)
+
+    // Calculate the time of the last meal
+    val cronologia = gatto["cronologia"] as? Map<String, Map<String, Any>> ?: return "Nessun pasto registrato"
+    val orariCronologia = cronologia.values.mapNotNull { it["ora"] as? String }
+    val ultimoPasto = orariCronologia.maxOrNull()?.let { sdf.parse("$it:00") } ?: return "Nessun pasto registrato"
+
+    // Adjust the last meal time if it is after the current time
+    if (ultimoPasto.after(now)) {
+        ultimoPasto.time -= 24 * 60 * 60 * 1000 // Subtract one day in milliseconds
+    }
+
+    // Calculate the time of the next meal
+    val routine = gatto["routine"] as? Map<String, Map<String, Any>> ?: return "Nessun pasto programmato"
+    val orariRoutine = routine.values.mapNotNull { it["ora"] as? String }
+    val prossimoPasto = orariRoutine.mapNotNull { sdf.parse("$it:00") }
+        .sorted()
+        .firstOrNull { it.after(now) } ?: return "Nessun pasto programmato"
+
+    // Calculate the difference between the next meal and the last meal
+    val diff = prossimoPasto.time - ultimoPasto.time
+    val ore = (diff / (1000 * 60 * 60)) % 24
+    val minuti = (diff / (1000 * 60)) % 60
+    val secondi = (diff / 1000) % 60
+    return String.format("%02d:%02d:%02d", ore, minuti, secondi)
+}

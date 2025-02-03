@@ -338,6 +338,6 @@ fun calcolaProssimoPasto(routine: Map<String, Map<String, Any>>, currentTime: St
 fun calcolaUltimoPasto(gatto: Map<String, Any>): String {
     val cronologia = gatto["cronologia"] as? Map<String, Map<String, Any>> ?: return ""
     val orari = cronologia.values.mapNotNull { it["ora"] as? String }
-    return orari.maxOrNull() ?: ""
+    return orari.maxOrNull() ?: "00:00"
 }
 

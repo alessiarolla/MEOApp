@@ -87,10 +87,12 @@ fun Homepage(navController: NavController) {
     }
 
 
+
     Column {
         Text("Ultimo pasto: $lastMealTime")
         Text("Tempo trascorso dall'ultimo pasto: $timeSinceLastMeal")
         Text("Tempo tra l'ultimo pasto e il prossimo pasto: $timeBetweenMeals")
+
     }
 
 
@@ -392,3 +394,5 @@ fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String): String {
     val secondi = (diff / 1000) % 60
     return String.format("%02d:%02d:%02d", ore, minuti, secondi)
 }
+
+

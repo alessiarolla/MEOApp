@@ -32,6 +32,7 @@ data class gatto (
     val dataNascita: String,
     val dispenserId: Int,
     val routine: List<orario>,
+    val icona: String,
 )
 
 data class orario (

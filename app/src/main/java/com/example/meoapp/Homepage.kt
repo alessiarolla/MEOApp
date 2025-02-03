@@ -43,6 +43,9 @@ fun Homepage(navController: NavController) {
     var currentDispenserIndex by remember { mutableStateOf(0) }
     var currentGattoIndex by remember { mutableStateOf(0) }
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
+    var lastMealTime by remember { mutableStateOf("") }
+    var timeSinceLastMeal by remember { mutableStateOf("") }
+
 
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
@@ -64,12 +67,29 @@ fun Homepage(navController: NavController) {
         })
     }
 
+    //aggiorna l'orario corrente
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000) // Ogni secondo
             currentTime = getCurrentTime()
         }
     }
+
+    //trova l'orario dell'ultimo pasto dalla cronologia e calcola il tempo trascorso
+    LaunchedEffect(currentGattoIndex, gatti) {
+        while (true) {
+            delay(1000) // Ogni secondo
+            val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
+            lastMealTime = currentGatto?.let { calcolaUltimoPasto(it) } ?: ""
+        }
+    }
+
+
+    Column {
+        Text("Ultimo pasto: $lastMealTime")
+    }
+
+
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(
@@ -97,6 +117,7 @@ fun Homepage(navController: NavController) {
                     val nome = gattoData["nome"] as? String ?: ""
                     val routine = gattoData["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
                     val prossimoPasto = calcolaProssimoPasto(routine, currentTime)
+
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -123,7 +144,7 @@ fun Homepage(navController: NavController) {
                                     ) {
                                         Text(
                                             text = "Prossimo pasto tra...",
-                                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
+                                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
                                             modifier = Modifier
                                                 .padding(16.dp)
                                                 .fillMaxWidth(),
@@ -140,9 +161,10 @@ fun Homepage(navController: NavController) {
                                         colors = CardDefaults.cardColors(containerColor = Color.White),
                                         shape = RoundedCornerShape(15.dp)
                                     ) {
-                                        Column(modifier = Modifier.padding(8.dp)) {
+                                        Column(modifier = Modifier.padding(2.dp)) {
                                             Row(
-                                                verticalAlignment = Alignment.CenterVertically
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(8.dp)
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.DateRange,
@@ -151,6 +173,24 @@ fun Homepage(navController: NavController) {
                                                 )
                                                 Spacer(modifier = Modifier.width(4.dp))
 
+                                                // Horizontal progress bar
+                                                Box(
+                                                    modifier = Modifier
+                                                        .height(8.dp)
+                                                        .weight(1f)
+                                                        .border(1.dp, Color.Black)
+                                                ) {
+                                                    Canvas(modifier = Modifier.fillMaxSize()) {
+                                                        //crea funzione per calcolare questo valore da mettere al posto di questo:
+                                                        val progress = 50 / 100f
+                                                        //val progress = timeSinceLastMeal.toFloat() / (timeSinceLastMeal.toFloat() + prossimoPasto.toFloat())
+
+                                                        drawRect(
+                                                            color = Color(0xFFEFC37F),
+                                                            size = Size(size.width * progress, size.height)
+                                                        )
+                                                    }
+                                                }
 
                                                 Spacer(modifier = Modifier.width(4.dp))
 
@@ -160,8 +200,8 @@ fun Homepage(navController: NavController) {
                                                     modifier = Modifier.padding(top = 4.dp),
                                                     textAlign = TextAlign.Center
                                                 )
-
                                             }
+
                                         }
                                     }
                                 }
@@ -294,3 +334,10 @@ fun calcolaProssimoPasto(routine: Map<String, Map<String, Any>>, currentTime: St
         "Nessun pasto programmato"
     }
 }
+
+fun calcolaUltimoPasto(gatto: Map<String, Any>): String {
+    val cronologia = gatto["cronologia"] as? Map<String, Map<String, Any>> ?: return ""
+    val orari = cronologia.values.mapNotNull { it["ora"] as? String }
+    return orari.maxOrNull() ?: ""
+}
+

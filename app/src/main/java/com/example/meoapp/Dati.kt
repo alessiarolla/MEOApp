@@ -32,6 +32,7 @@ data class gatto (
     val dataNascita: String,
     val dispenserId: Int,
     val routine: List<orario>,
+    val cronologia: List<orario>,
     val icona: String,
 )
 
@@ -44,7 +45,8 @@ data class dispenser(
     val id: Int,
     val nome: String,
     //val livelloBatteria: Int,
-    val livelloCibo: Int,
+    val livelloCiboCiotola: Int,
+    val livelloCiboDispenser: Int,
     val stato: Boolean,
     //val gatti: List<gatto>
 )

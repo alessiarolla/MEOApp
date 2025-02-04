@@ -1,5 +1,6 @@
 package com.example.meoapp
 
+import android.util.Half.toFloat
 import android.widget.ProgressBar
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
@@ -236,12 +237,14 @@ fun Homepage(navController: NavController) {
 
             if (filteredDispensers.isNotEmpty()) {
                 val currentDispenser = filteredDispensers.getOrNull(currentDispenserIndex) ?: emptyMap()
-                val livelloCiboCiotola = (currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat()
+                val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
+                val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / lastMealQuantityFloat) * 100
                 val livelloCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat() / capacitàDispenser * 100)
-
+                val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
+                val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser")
-                    CircularProgressIndicator(livelloCiboCiotola, "Cibo Ciotola")
+                    CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g")
+                    CircularProgressIndicator(livelloCiboCiotola, "   Cibo Ciotola: $labelCiboCiotola g  ")
                 }
             }
         }
@@ -260,9 +263,13 @@ fun CircularProgressIndicator(percentage: Float, label: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(14.dp)
         ) {
-            Text(text = label, textAlign = TextAlign.Center) // Label sopra il cerchio
+            Text(
+                text = label,
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp
+            )
 
-            Spacer(modifier = Modifier.height(12.dp)) // Add space after the label
+            Spacer(modifier = Modifier.height(12.dp))
 
             Box(
                 contentAlignment = Alignment.Center,

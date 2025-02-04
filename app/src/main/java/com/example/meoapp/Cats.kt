@@ -35,13 +35,19 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 import java.util.Calendar
+import android.app.DatePickerDialog
+//import android.content.Context
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Cats(navController: NavController) {
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -81,7 +87,7 @@ fun Cats(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = gattiList[index].nome as? String ?: "",
+                                text = gattiList[index].nome,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -121,6 +127,23 @@ fun AddCats (navController: NavController){
 
 
     val isFormValid = nome.isNotBlank() && peso.isNotBlank() && dataNascita.isNotBlank() && dispenser.isNotBlank() && sesso.isNotBlank()
+
+    if (showDatePicker) {
+        val context = LocalContext.current
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        DatePickerDialog(
+            context,
+            { _, selectedYear, selectedMonth, selectedDay ->
+                dataNascita = "$selectedDay/${selectedMonth + 1}/$selectedYear"
+                showDatePicker = false
+            },
+            year, month, day
+        ).show()
+    }
 
 
     Scaffold(
@@ -227,22 +250,6 @@ fun AddCats (navController: NavController){
                         .clickable { showDatePicker = true }
                 )
             }
-            if (showDatePicker) {
-                val context = LocalContext.current
-                val calendar = Calendar.getInstance()
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH)
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-                android.app.DatePickerDialog(
-                    context,
-                    { _, selectedYear, selectedMonth, selectedDay ->
-                        dataNascita = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-                        showDatePicker = false
-                    },
-                    year, month, day
-                ).show()
-            }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -307,11 +314,82 @@ fun AddCats (navController: NavController){
 
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = isFormValid
+                //enabled = isFormValid
             ) {
                 Text("Conferma")
             }
         }
+    }
+}
+
+@Composable
+fun Carousel() {
+    val pages = listOf(FirstPage(), SecondPage(), ThirdPage())
+    val pagerState = rememberPagerState(pageCount = { pages.size })
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        HorizontalPager(state = pagerState) { page ->
+            pages[page]
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            pages.forEachIndexed { index, _ ->
+                val color = if (pagerState.currentPage == index) Color.Black else Color.Gray
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .background(color, shape = CircleShape)
+                        .padding(4.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun FirstPage() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(Color.Red, shape = RoundedCornerShape(16.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "First Page", style = TextStyle(fontSize = 20.sp, color = Color.White))
+    }
+}
+
+@Composable
+fun SecondPage() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(Color.Green, shape = RoundedCornerShape(16.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Second Page", style = TextStyle(fontSize = 20.sp, color = Color.White))
+    }
+}
+
+@Composable
+fun ThirdPage() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(Color.Blue, shape = RoundedCornerShape(16.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Third Page", style = TextStyle(fontSize = 20.sp, color = Color.White))
     }
 }
 
@@ -371,6 +449,7 @@ fun CatDetail(navController: NavController, gatto: gatto) {
                     }
                 }
             }
+            Carousel()
 
             if (showDialog) {
                 AlertDialog(
@@ -417,4 +496,6 @@ fun calculateAge(birthDate: String): Int {
     }
     return age
 }
+
+
 

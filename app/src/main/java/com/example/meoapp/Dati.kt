@@ -33,12 +33,13 @@ data class gatto (
     val dispenserId: Int,
     val routine: List<orario>,
     val cronologia: List<orario>,
+    val ultimoPasto: orario,
     val icona: String,
 )
 
 data class orario (
     val ora: String,
-    val quantita: Int,
+    val quantita: String,
 )
 
 data class dispenser(

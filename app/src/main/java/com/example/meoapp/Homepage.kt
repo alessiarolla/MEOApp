@@ -44,6 +44,8 @@ fun Homepage(navController: NavController) {
     var currentGattoIndex by remember { mutableStateOf(0) }
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
     var lastMealTime by remember { mutableStateOf("") }
+    var lastMealQuantity by remember { mutableStateOf("") }
+
     var timeSinceLastMeal by remember { mutableStateOf("") }
     var timeBetweenMeals by remember { mutableStateOf("") }
 
@@ -82,6 +84,7 @@ fun Homepage(navController: NavController) {
         val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
         if (currentGatto != null) {
             lastMealTime = calcolaUltimoPasto(currentGatto)
+            lastMealQuantity = calcolaUltimoPastoQuantità(currentGatto)
             timeSinceLastMeal = calcolaTempoTrascorsoUltimoPasto(currentGatto, currentTime)
             timeBetweenMeals = calcolaTempoTraPasti(currentGatto, currentTime)
 
@@ -91,7 +94,7 @@ fun Homepage(navController: NavController) {
 
 
     Column {
-        Text("Ultimo pasto: $lastMealTime " )
+        Text("Ultimo pasto:  $lastMealTime quantità: $lastMealQuantity" )
         Text("Tempo trascorso dall'ultimo pasto: $timeSinceLastMeal")
         Text("Tempo tra l'ultimo pasto e il prossimo pasto: $timeBetweenMeals")
 
@@ -344,9 +347,11 @@ fun calcolaProssimoPasto(routine: Map<String, Map<String, Any>>, currentTime: St
 }
 
 fun calcolaUltimoPasto(gatto: Map<String, Any>): String {
-    val cronologia = gatto["cronologia"] as? Map<String, Map<String, Any>> ?: return ""
-    val orari = cronologia.values.mapNotNull { it["ora"] as? String }
-    return orari.maxOrNull() ?: "00:00"
+    return (gatto["ultimoPasto"] as? Map<String, Any>)?.get("ora") as? String ?: "00:00"
+}
+
+fun calcolaUltimoPastoQuantità(gatto: Map<String, Any>): String {
+    return (gatto["ultimoPasto"] as? Map<String, Any>)?.get("quantità") as? String ?: "100"
 }
 
 

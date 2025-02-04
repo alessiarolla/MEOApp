@@ -44,7 +44,6 @@ fun Homepage(navController: NavController) {
     var currentGattoIndex by remember { mutableStateOf(0) }
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
     var lastMealTime by remember { mutableStateOf("") }
-    var lastMealQuantity by remember { mutableStateOf("") }
     var timeSinceLastMeal by remember { mutableStateOf("") }
     var timeBetweenMeals by remember { mutableStateOf("") }
 
@@ -83,7 +82,6 @@ fun Homepage(navController: NavController) {
         val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
         if (currentGatto != null) {
             lastMealTime = calcolaUltimoPasto(currentGatto)
-            //lastMealQuantity = calcolaUltimaQuantità(currentGatto)
             timeSinceLastMeal = calcolaTempoTrascorsoUltimoPasto(currentGatto, currentTime)
             timeBetweenMeals = calcolaTempoTraPasti(currentGatto, currentTime)
 

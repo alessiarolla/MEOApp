@@ -35,6 +35,7 @@ import com.google.firebase.database.*
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun Homepage(navController: NavController) {
@@ -86,7 +87,7 @@ fun Homepage(navController: NavController) {
         if (currentGatto != null) {
             lastMealTime = calcolaUltimoPasto(currentGatto)
             lastMealQuantity = calcolaUltimoPastoQuantità(currentGatto)
-            timeSinceLastMeal = calcolaTempoTrascorsoUltimoPasto(currentGatto, currentTime)
+            timeSinceLastMeal = calcolaTempoTrascorsoUltimoPasto(lastMealTime, currentTime)
             timeBetweenMeals = calcolaTempoTraPasti(currentGatto, currentTime)
 
         }
@@ -362,59 +363,47 @@ fun calcolaUltimoPastoQuantità(gatto: Map<String, Any>): String {
 }
 
 
+fun calcolaTempoTrascorsoUltimoPasto(lastMealTime: String, currentTime: String): String {
+    val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return try {
+        val lastMealDate = format.parse(lastMealTime)
+        val currentDate = format.parse(currentTime)
 
-fun calcolaTempoTrascorsoUltimoPasto(gatto: Map<String, Any>, currentTime: String): String {
-    val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-    val now = sdf.parse(currentTime) ?: return "00:00"
-    val cronologia = gatto["cronologia"] as? Map<String, Map<String, Any>> ?: return "00:00"
-    val orari = cronologia.values.mapNotNull { it["ora"] as? String }
-    val ultimoPasto = orari.maxOrNull()?.let { sdf.parse("$it:00") } ?: return "00:00"
-
-    // Adjust the last meal time if it is after the current time
-    if (ultimoPasto.after(now)) {
-        ultimoPasto.time -= 24 * 60 * 60 * 1000 // Subtract one day in milliseconds
+        if (lastMealDate != null && currentDate != null) {
+            val diff = currentDate.time - lastMealDate.time
+            val ore = TimeUnit.MILLISECONDS.toHours(diff)
+            val minuti = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
+            "$ore ore e $minuti minuti"
+        } else {
+            "Errore nel calcolo"
+        }
+    } catch (e: Exception) {
+        "Formato ora non valido"
     }
-
-    val diff = now.time - ultimoPasto.time
-    val ore = (diff / (1000 * 60 * 60)) % 24
-    val minuti = (diff / (1000 * 60)) % 60
-    val secondi = (diff / 1000) % 60
-    return String.format("%02d:%02d:%02d", ore, minuti, secondi)
 }
-
 
 fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String): String {
-    val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-    val now = sdf.parse(currentTime) ?: return "00:00"
+    val lastMealTime = calcolaUltimoPasto(gatto)
+    val routine = gatto["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
+    val nextMealTime = calcolaProssimoPasto(routine, currentTime)
 
-    // Calculate the time of the last meal
-    val cronologia = gatto["cronologia"] as? Map<String, Map<String, Any>> ?: return "00:00"
-    val orariCronologia = cronologia.values.mapNotNull { it["ora"] as? String }
-    val ultimoPasto = orariCronologia.maxOrNull()?.let { sdf.parse("$it:00") } ?: return "00:00"
+    val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return try {
+        val lastMealDate = format.parse(lastMealTime)
+        val nextMealDate = format.parse(nextMealTime)
 
-    // Adjust the last meal time if it is after the current time
-    if (ultimoPasto.after(now)) {
-        ultimoPasto.time -= 24 * 60 * 60 * 1000 // Subtract one day in milliseconds
+        if (lastMealDate != null && nextMealDate != null) {
+            val diff = nextMealDate.time - lastMealDate.time
+            val ore = TimeUnit.MILLISECONDS.toHours(diff)
+            val minuti = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
+            "$ore ore e $minuti minuti"
+        } else {
+            "Errore nel calcolo"
+        }
+    } catch (e: Exception) {
+        "Formato ora non valido"
     }
-
-    // Calculate the time of the next meal
-    val routine = gatto["routine"] as? Map<String, Map<String, Any>> ?: return "00:00"
-    val orariRoutine = routine.values.mapNotNull { it["ora"] as? String }
-    val prossimoPasto = orariRoutine.mapNotNull { sdf.parse("$it:00") }
-        .sorted()
-        .firstOrNull {
-            if (it.before(now)) {
-                it.time += 24 * 60 * 60 * 1000 // Add one day in milliseconds
-            }
-            it.after(now)
-        } ?: return "00:00"
-
-    // Calculate the difference between the next meal and the last meal
-    val diff = prossimoPasto.time - ultimoPasto.time
-    val ore = (diff / (1000 * 60 * 60))
-    val minuti = (diff / (1000 * 60)) % 60
-    val secondi = (diff / 1000) % 60
-    return String.format("%02d:%02d:%02d", ore, minuti, secondi)
 }
+
 
 

@@ -88,7 +88,7 @@ fun Homepage(navController: NavController) {
             lastMealTime = calcolaUltimoPasto(currentGatto)
             lastMealQuantity = calcolaUltimoPastoQuantità(currentGatto)
             timeSinceLastMeal = calcolaTempoTrascorsoUltimoPasto(lastMealTime, currentTime)
-            timeBetweenMeals = calcolaTempoTraPasti(currentGatto, currentTime)
+            timeBetweenMeals = calcolaTempoTraPasti(currentGatto, currentTime, timeSinceLastMeal)
 
         }
     }
@@ -364,7 +364,6 @@ fun calcolaUltimoPastoQuantità(gatto: Map<String, Any>): String {
 
 
 
-
 fun calcolaTempoTrascorsoUltimoPasto(lastMealTime: String, currentTime: String): String {
     val format = SimpleDateFormat("HH:mm", Locale.getDefault())
     return try {
@@ -383,16 +382,17 @@ fun calcolaTempoTrascorsoUltimoPasto(lastMealTime: String, currentTime: String):
             val diff = currentDate.time - lastMealDate.time
             val ore = TimeUnit.MILLISECONDS.toHours(diff)
             val minuti = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
-            "$ore ore e $minuti minuti"
+            val secondi = TimeUnit.MILLISECONDS.toSeconds(diff) % 60
+            String.format("%02d:%02d:%02d", ore, minuti, secondi)
         } else {
-            "00:00"
+            "00:00:00"
         }
     } catch (e: Exception) {
-        "00:00"
+        "00:00:00"
     }
 }
 
-fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String): String {
+fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String, timeSinceLastMeal:String): String {
     val lastMealTime = calcolaUltimoPasto(gatto)
     val routine = gatto["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
     val nextMealTime = calcolaProssimoPasto(routine, currentTime)
@@ -404,23 +404,8 @@ fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String): String {
         val currentDate = format.parse(currentTime)
 
         if (lastMealDate != null && nextMealDate != null && currentDate != null) {
-            // Se l'ultimo pasto è dopo l'attuale, o dopo il prossimo pasto, consideriamolo relativo al giorno precedente
-            if (lastMealDate.after(currentDate) ) {
-                val calendar = Calendar.getInstance()
-                calendar.time = lastMealDate
-                calendar.add(Calendar.DAY_OF_MONTH, -1) // Aggiungi un giorno indietro
-                lastMealDate.time = calendar.timeInMillis
-            }
 
-            // Se il prossimo pasto è prima dell'orario attuale, consideriamolo come domani
-            if (nextMealDate.before(currentDate)) {
-                val calendar = Calendar.getInstance()
-                calendar.time = nextMealDate
-                calendar.add(Calendar.DAY_OF_MONTH, 1) // Aggiungi un giorno avanti
-                nextMealDate.time = calendar.timeInMillis
-            }
-
-            val diff = nextMealDate.time - lastMealDate.time
+            val diff = nextMealDate.time + lastMealDate.time
             val ore = TimeUnit.MILLISECONDS.toHours(diff)
             val minuti = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
             "$ore ore e $minuti minuti"

@@ -38,7 +38,7 @@ data class gatto (
 )
 
 data class orario (
-    val ora: String,
+    val ora: String,   // formato HH:mm
     val quantita: String,
 )
 

@@ -3,6 +3,7 @@ package com.example.meoapp
 import android.util.Half.toFloat
 import android.widget.ProgressBar
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
@@ -26,6 +27,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -133,13 +135,29 @@ fun Homepage(navController: NavController) {
                     val nome = gattoData["nome"] as? String ?: ""
                     val routine = gattoData["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
                     val prossimoPasto = calcolaProssimoPasto(routine, currentTime)
+                    val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
+                    val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
+                    val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
 
+                    val imageRes = when {
+                        perc <= 0.25 -> R.drawable.percprossimopastobassa
+                        perc <= 0.5 -> R.drawable.percprossimopastomedia
+                        else -> R.drawable.percprossimopastoalta
+                    }
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
                             colors = CardDefaults.cardColors(containerColor = Color(0xFFF1CC93))
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
+                                Image(
+                                    painter = painterResource(id = imageRes),
+                                    contentDescription = "Indicatore prossimità pasto",
+                                    modifier = Modifier.size(250.dp).align(Alignment.CenterHorizontally)
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
                                 Text(
                                     text = " $nome",
                                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),

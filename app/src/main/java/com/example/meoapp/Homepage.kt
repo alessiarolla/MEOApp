@@ -392,30 +392,35 @@ fun calcolaTempoTrascorsoUltimoPasto(lastMealTime: String, currentTime: String):
     }
 }
 
-fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String, timeSinceLastMeal:String): String {
-    val lastMealTime = calcolaUltimoPasto(gatto)
+fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String, timeSinceLastMeal: String): String {
     val routine = gatto["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
     val nextMealTime = calcolaProssimoPasto(routine, currentTime)
 
-    val format = SimpleDateFormat("HH:mm", Locale.getDefault())
-    return try {
-        val lastMealDate = format.parse(lastMealTime)
-        val nextMealDate = format.parse(nextMealTime)
-        val currentDate = format.parse(currentTime)
-
-        if (lastMealDate != null && nextMealDate != null && currentDate != null) {
-
-            val diff = nextMealDate.time + lastMealDate.time
-            val ore = TimeUnit.MILLISECONDS.toHours(diff)
-            val minuti = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
-            "$ore ore e $minuti minuti"
-        } else {
-            "00:00"
-        }
-    } catch (e: Exception) {
-        "00:00"
+    // Funzione per convertire una durata "hh:mm:ss" in millisecondi
+    fun convertToMillis(duration: String): Long {
+        val parts = duration.split(":").map { it.toInt() }
+        val hours = parts.getOrElse(0) { 0 }
+        val minutes = parts.getOrElse(1) { 0 }
+        val seconds = parts.getOrElse(2) { 0 }
+        return TimeUnit.HOURS.toMillis(hours.toLong()) + TimeUnit.MINUTES.toMillis(minutes.toLong()) + TimeUnit.SECONDS.toMillis(seconds.toLong())
     }
+
+    // Convertiamo entrambe le durate in millisecondi
+    val lastMealMillis = convertToMillis(timeSinceLastMeal)
+    val nextMealMillis = convertToMillis(nextMealTime)
+
+    // Sommiamo i tempi
+    val totalMillis = nextMealMillis + lastMealMillis
+
+    // Calcoliamo le ore, minuti e secondi
+    val ore = TimeUnit.MILLISECONDS.toHours(totalMillis)
+    val minuti = TimeUnit.MILLISECONDS.toMinutes(totalMillis) % 60
+    val secondi = TimeUnit.MILLISECONDS.toSeconds(totalMillis) % 60
+
+    // Formattiamo la risposta
+    return String.format("%02d:%02d:%02d", ore, minuti, secondi)
 }
+
 
 
 

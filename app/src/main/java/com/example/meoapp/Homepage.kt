@@ -97,9 +97,12 @@ fun Homepage(navController: NavController) {
 
     Column {
         Text("Ultimo pasto:  $lastMealTime quantità: $lastMealQuantity" )
-        Text("Tempo trascorso dall'ultimo pasto: $timeSinceLastMeal")
-        Text("Tempo tra l'ultimo pasto e il prossimo pasto: $timeBetweenMeals")
-
+        val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
+        val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
+        Text("T dall'ultimo pasto: $timeSinceLastMeal  $timeSinceLastMealMillis")
+        Text("T tra l'ultimo e prossimo: $timeBetweenMeals $timeBetweenMealsMillis")
+        val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
+        Text("%: $perc")
     }
 
 
@@ -194,8 +197,12 @@ fun Homepage(navController: NavController) {
                                                         .border(1.dp, Color.Black)
                                                 ) {
                                                     Canvas(modifier = Modifier.fillMaxSize()) {
+                                                        val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
+                                                        val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
+                                                        val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
+
                                                         //crea funzione per calcolare questo valore da mettere al posto di questo:
-                                                        val progress = 50 / 100f
+                                                        val progress = perc
                                                         //val progress = timeSinceLastMeal.toFloat() / (timeSinceLastMeal.toFloat() + prossimoPasto.toFloat())
 
                                                         drawRect(
@@ -421,7 +428,17 @@ fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String, timeSince
     return String.format("%02d:%02d:%02d", ore, minuti, secondi)
 }
 
-
+fun convertToMillis(time: String): Long {
+    return try {
+        val parts = time.split(":").map { it.toIntOrNull() ?: 0 }
+        val hours = parts.getOrElse(0) { 0 }
+        val minutes = parts.getOrElse(1) { 0 }
+        val seconds = parts.getOrElse(2) { 0 }
+        TimeUnit.HOURS.toMillis(hours.toLong()) + TimeUnit.MINUTES.toMillis(minutes.toLong()) + TimeUnit.SECONDS.toMillis(seconds.toLong())
+    } catch (e: Exception) {
+        0L
+    }
+}
 
 
 

@@ -42,6 +42,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import java.util.Calendar
 import android.app.DatePickerDialog
+import androidx.compose.material.icons.filled.Delete
+
 //import android.content.Context
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -363,7 +365,56 @@ fun FirstPage() {
             .background(Color.Red, shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "First Page", style = TextStyle(fontSize = 20.sp, color = Color.White))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Routine", style = MaterialTheme.typography.titleSmall)
+                Button(onClick = { /* Handle add routine */ }) {
+                    Text("+ aggiungi Routine")
+                }
+            }
+            GlobalState.gatto?.routine?.forEachIndexed { index, routine ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "Routine ${index + 1}", style = MaterialTheme.typography.bodySmall)
+                            Row {
+                                IconButton(onClick = { /* Handle edit routine */ }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Edit Routine")
+                                }
+                                IconButton(onClick = { /* Handle delete routine */ }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete Routine")
+                                }
+                            }
+                        }
+                        Text(text = "Orario: ${routine.ora}", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Quantità: ${routine.quantita} grammi", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
     }
 }
 

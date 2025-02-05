@@ -2,6 +2,10 @@ package com.example.meoapp
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -14,36 +18,36 @@ object GlobalState {
 
 
 data class Utente (
-    val nome: String,
-    val email: String,
-    val password: String,
-    val gatti: List<gatto>,
-    val dispensers: List<dispenser>,
-    val Tema: String,
-    val Notifichepush: Boolean,
-    val Lingua: String,
-    val DimensioneTesto: Int,
+    val nome: String = "",
+    val password: String = "",
+    val email: String? = null,
+    val gatti: List<gatto> = emptyList(),
+    val dispensers: List<dispenser>? = null,
+    //val Tema: String,
+    val Notifichepush: Boolean? = null,
+    //val Lingua: String,
+    //val DimensioneTesto: Int,
 )
 
 data class gatto (
-    val nome: String,
-    val peso: String,
-    val foto: Any,
-    val dataNascita: String,
-    val dispenserId: Int,
-    val routine: List<orario>,
-    val cronologia: List<orario>,
-    val ultimoPasto: orario,
-    val icona: String,
+    val nome: String = "",
+    val peso: String = "",
+    //val foto: Any,
+    val dataNascita: String = "",
+    val dispenserId: Int = 0,
+    val routine: List<orario> = emptyList(),
+    val cronologia: List<orario> = emptyList(),
+    val ultimoPasto: orario = orario("00:00", "0"),
+    val icona: String = "",
 )
 
 data class orario (
-    val ora: String,   // formato HH:mm
-    val quantita: String,
+    val ora: String = "",   // formato HH:mm
+    val quantita: String = "", // formato "0" o "1" (mezzo o pieno)
 )
 
 data class dispenser(
-    val id: Int,
+    val id: Int = 0,
     val nome: String,
     //val livelloBatteria: Int,
     val livelloCiboCiotola: Int,
@@ -56,10 +60,11 @@ data class dispenser(
 var gattiList = mutableListOf<gatto>()
 
 fun fetchGattiFromFirebase() {
-    val user = GlobalState.utente
+    val user = Utente("annalisa", "ciao1")
     if (user != null) {
         val database = FirebaseDatabase.getInstance()
-        val gattiRef = database.getReference("utenti").child(user.email.replace(".", ",")).child("gatti")
+        val gattiRef = database.getReference("Utenti")
+        var gatti: Map<String, Map<String, Any>> = emptyMap()
 
         gattiRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -82,5 +87,19 @@ fun fetchGattiFromFirebase() {
                 // Handle possible errors.
             }
         })
+//        gattiRef.orderByChild("nome").equalTo(user.nome).addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                val userSnapshot = snapshot.children.firstOrNull()
+//                if (userSnapshot != null) {
+//                    userSnapshot.child("gatti").let {
+//                        for (gattoSnapshot in it.children) {
+//                            gatti = it.children.associate { it.key!! to it.value as Map<String, Any> }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {}
+//        })
     }
 }

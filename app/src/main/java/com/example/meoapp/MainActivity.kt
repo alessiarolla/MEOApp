@@ -2,6 +2,7 @@ package com.example.meoapp
 
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -49,9 +50,14 @@ class MainActivity : ComponentActivity() {
                     composable("addcats") { AddCats(navController) }
                     composable("catDetail/{catName}") { backStackEntry ->
                         val catName = backStackEntry.arguments?.getString("catName")
+                        Log.d("MainActivity", "Navigating to catDetail with catName: $catName")
                         val gatto = gattiList.find { it.nome == catName }
                         if (gatto != null) {
+                            Log.d("MainActivity", "Found cat: ${gatto.nome}")
+                            Log.d("MainActivity", "Cat object: $gatto")
                             CatDetail(navController, gatto)
+                        } else {
+                            Log.e("MainActivity", "Cat not found: $catName")
                         }
                     }
                 }

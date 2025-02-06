@@ -73,13 +73,14 @@ fun Cats(navController: NavController) {
                     .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
             ) {
                 LazyColumn {
-                    items(gattiList.size) { index ->
-                        val gatto = gattiList[index]
+                    items(gattiList) { cat ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp)
-                                .clickable { navController.navigate("catDetail/${gatto.nome}") }
+                                .clickable {
+                                    GlobalState.gatto = cat.nome
+                                    navController.navigate("catDetail/${cat.nome}") }
                         ) {
                             Image(
                                 //anche l'immagine dovrà cambiare con il gatto
@@ -89,7 +90,7 @@ fun Cats(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = gattiList[index].nome,
+                                text = cat.nome,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -325,50 +326,76 @@ fun AddCats (navController: NavController){
 }
 
 @Composable
-fun Carousel() {
-    val pages = listOf(FirstPage(), SecondPage(), ThirdPage())
-    val pagerState = rememberPagerState(pageCount = { pages.size })
+fun AddRoutineDialog(onDismiss: () -> Unit) {
+    var orario by remember { mutableStateOf("") }
+    var quantita by remember { mutableStateOf("") }
+    val isFormValid = orario.isNotBlank() && quantita.isNotBlank()
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        HorizontalPager(state = pagerState) { page ->
-            pages[page]
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            pages.forEachIndexed { index, _ ->
-                val color = if (pagerState.currentPage == index) Color.Black else Color.Gray
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .background(color, shape = CircleShape)
-                        .padding(4.dp)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Aggiungi pasto") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = orario,
+                    onValueChange = { orario = it },
+                    //label = { Text("Orario") }
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                OutlinedTextField(
+                    value = quantita,
+                    onValueChange = { quantita = it },
+                    //label = { Text("Quantità") }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (isFormValid) {
+                        val user = GlobalState.utente
+                        if (user != null) {
+                            val database = FirebaseDatabase.getInstance().reference
+                            val gattoName = GlobalState.gatto
+                            val gattiRef = database.child("Utenti").child(user.nome).child("gatti").child(gattoName).child("routine")
+                            val newRoutine = orario(orario, quantita)
+                            gattiRef.push().setValue(newRoutine)
+                        }
+                    }
+                },
+                enabled = isFormValid
+            ) {
+                Text("Aggiungi")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Annulla")
             }
         }
-    }
+    )
 }
+
 
 @Composable
 fun FirstPage() {
+    var showAddRoutineDialog by remember { mutableStateOf(false) }
+
+    if (showAddRoutineDialog) {
+        AddRoutineDialog(onDismiss = { showAddRoutineDialog = false })
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
-            .background(Color.Red, shape = RoundedCornerShape(16.dp)),
+            .height(400.dp)
+            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
+                .align(Alignment.TopStart)
         ) {
             Row(
                 modifier = Modifier
@@ -377,12 +404,9 @@ fun FirstPage() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Routine", style = MaterialTheme.typography.titleSmall)
-                Button(onClick = { /* Handle add routine */ }) {
-                    Text("+ aggiungi Routine")
-                }
+                Text(text = "Routine", style = MaterialTheme.typography.titleMedium)
             }
-            GlobalState.gatto?.routine?.forEachIndexed { index, routine ->
+            gattiList.find { it.nome == GlobalState.gatto }?.routine?.forEachIndexed { index, routine ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -414,6 +438,13 @@ fun FirstPage() {
                     }
                 }
             }
+
+        }
+        Button(onClick = {
+            showAddRoutineDialog = true },
+            modifier = Modifier.align(Alignment.BottomCenter)
+            ){
+            Text("+ aggiungi routine")
         }
     }
 }
@@ -423,11 +454,51 @@ fun SecondPage() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
-            .background(Color.Green, shape = RoundedCornerShape(16.dp)),
+            .height(400.dp)
+            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Second Page", style = TextStyle(fontSize = 20.sp, color = Color.White))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .align(Alignment.TopStart)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Cronologia pasti", style = MaterialTheme.typography.titleMedium)
+            }
+            gattiList.find { it.nome == GlobalState.gatto }?.cronologia?.forEachIndexed { index, routine ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "${routine.giorno}, h ${routine.ora}", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Divider()
+                        Text(text = "Quantità totale: ${routine.quantita} gr", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Quantità mangiata: ${routine.mangiato} gr", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -436,11 +507,46 @@ fun ThirdPage() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(400.dp)
             .background(Color.Blue, shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
         Text(text = "Third Page", style = TextStyle(fontSize = 20.sp, color = Color.White))
+    }
+}
+
+@Composable
+fun Carousel() {
+    val pages = listOf<@Composable () -> Unit>({ FirstPage() }, { SecondPage() }, { ThirdPage() })
+    val pagerState = rememberPagerState(pageCount = { pages.size })
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth().height(200.dp)
+        ) { page ->
+            pages[page]()
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            pages.forEachIndexed { index, _ ->
+                val color = if (pagerState.currentPage == index) Color.Black else Color.Gray
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .background(color, shape = CircleShape)
+                        .padding(4.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+        }
     }
 }
 
@@ -453,7 +559,7 @@ fun CatDetail(navController: NavController, gatto: gatto) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(gatto.nome) },
+                title = { Text("DETTAGLI") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("cats") }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -483,11 +589,11 @@ fun CatDetail(navController: NavController, gatto: gatto) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(gatto.icona.toInt()), // Replace with your drawable resource
-                        contentDescription = "Cat Image",
-                        modifier = Modifier.size(80.dp)
-                    )
+//                    Image(
+//                        painter = painterResource(gatto.icona.toInt()), // Replace with your drawable resource
+//                        contentDescription = "Cat Image",
+//                        modifier = Modifier.size(80.dp)
+//                    )
                     Column(
                         modifier = Modifier.weight(1f).padding(start = 16.dp)
                     ) {
@@ -534,7 +640,7 @@ fun CatDetail(navController: NavController, gatto: gatto) {
 }
 
 fun calculateAge(birthDate: String): Int {
-    val parts = birthDate.split("/")
+    val parts = birthDate.split("-")
     val day = parts[0].toInt()
     val month = parts[1].toInt()
     val year = parts[2].toInt()

@@ -13,7 +13,7 @@ import com.google.firebase.database.ValueEventListener
 
 object GlobalState {
     var utente: Utente? = null
-    var gatto: gatto? = null
+    var gatto: String = ""
 }
 
 
@@ -21,7 +21,7 @@ data class Utente (
     val nome: String = "",
     val password: String = "",
     val email: String? = null,
-    val gatti: List<gatto> = emptyList(),
+    val gatti: Any = emptyMap<String, gatto>(),
     val dispensers: List<dispenser>? = null,
     //val Tema: String,
     val Notifichepush: Boolean? = null,
@@ -44,6 +44,8 @@ data class gatto (
 data class orario (
     val ora: String = "",   // formato HH:mm
     val quantita: String = "", // formato "0" o "1" (mezzo o pieno)
+    val giorno: String? = "", // formato "dd/MM/yyyy"
+    val mangiato: String? = "", // formato "true" o "false"
 )
 
 data class dispenser(
@@ -63,7 +65,7 @@ fun fetchGattiFromFirebase() {
     val user = Utente("annalisa", "ciao1")
     if (user != null) {
         val database = FirebaseDatabase.getInstance()
-        val gattiRef = database.getReference("Utenti")
+        val gattiRef = database.getReference("Utenti").child(user.nome).child("gatti")
         var gatti: Map<String, Map<String, Any>> = emptyMap()
 
         gattiRef.addValueEventListener(object : ValueEventListener {
@@ -71,11 +73,41 @@ fun fetchGattiFromFirebase() {
                 gattiList.clear()
                 for (gattoSnapshot in snapshot.children) {
                     try {
-                        // Recupera l'intero oggetto gatto
-                        val gatto = gattoSnapshot.getValue(gatto::class.java)
-                        // Aggiungi l'oggetto gatto alla lista
-                        gatto?.let {
-                            gattiList.add(it)
+//                        // Recupera l'intero oggetto gatto
+//                        val gatto = gattoSnapshot.getValue(gatto::class.java)
+//                        // Aggiungi l'oggetto gatto alla lista
+//                        gatto?.let {
+//                            gattiList.add(it)
+//                        }
+                        val gattoMap = gattoSnapshot.value as? Map<String, Any>
+                        gattoMap?.let {
+                            val gatto = gatto(
+                                nome = it["nome"] as? String ?: "",
+                                peso = it["peso"] as? String ?: "",
+                                dataNascita = it["dataNascita"] as? String ?: "",
+                                dispenserId = (it["dispenserId"] as? Long)?.toInt() ?: 0,
+                                routine = (it["routine"] as? List<Map<String, String>>)?.map { orarioMap ->
+                                    orario(
+                                        ora = orarioMap["ora"] ?: "",
+                                        quantita = orarioMap["quantita"] ?: ""
+                                    )
+                                } ?: emptyList(),
+                                cronologia = (it["cronologia"] as? List<Map<String, String>>)?.map { orarioMap ->
+                                    orario(
+                                        ora = orarioMap["ora"] ?: "",
+                                        quantita = orarioMap["quantita"] ?: ""
+                                    )
+                                } ?: emptyList(),
+                                ultimoPasto = it["ultimoPasto"]?.let { ultimoPastoMap ->
+                                    val map = ultimoPastoMap as Map<String, String>
+                                    orario(
+                                        ora = map["ora"] ?: "",
+                                        quantita = map["quantita"] ?: ""
+                                    )
+                                } ?: orario("00:00", "0"),
+                                icona = it["icona"] as? String ?: ""
+                            )
+                            gattiList.add(gatto)
                         }
                     } catch (e: Exception) {
                         Log.e("Firebase", "Errore durante il parsing di un gatto: ${e.message}")

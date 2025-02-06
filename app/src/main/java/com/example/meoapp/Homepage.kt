@@ -124,11 +124,19 @@ fun Homepage(navController: NavController) {
         }
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Indietro", modifier = Modifier.clickable {
-                currentGattoIndex = (currentGattoIndex - 1 + gatti.size) % gatti.size
-                // Reset dispenserIndex when switching to a new cat
-                currentDispenserIndex = 0
-            })
+
+            //freccia scorrimento gatti a <--
+            if (gatti.size > 1) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Indietro",
+                    modifier = Modifier.clickable {
+                        currentGattoIndex = (currentGattoIndex - 1 + gatti.size) % gatti.size
+                        // Reset dispenserIndex when switching to a new cat
+                        currentDispenserIndex = 0
+                    })
+            }
+
             LazyColumn(modifier = Modifier.weight(1f)) {
                 gatti.keys.toList().getOrNull(currentGattoIndex)?.let { gattoKey ->
                     val gattoData = gatti[gattoKey] ?: emptyMap()
@@ -153,7 +161,7 @@ fun Homepage(navController: NavController) {
                                 Image(
                                     painter = painterResource(id = imageRes),
                                     contentDescription = "Indicatore prossimità pasto",
-                                    modifier = Modifier.size(250.dp).align(Alignment.CenterHorizontally)
+                                    modifier = Modifier.size(230.dp).align(Alignment.CenterHorizontally)
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -248,11 +256,19 @@ fun Homepage(navController: NavController) {
                     }
                 }
             }
-            Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Avanti", modifier = Modifier.clickable {
-                currentGattoIndex = (currentGattoIndex + 1) % gatti.size
-                // Reset dispenserIndex when switching to a new cat
-                currentDispenserIndex = 0
-            })
+
+            //freccia scorrimento gatti a -->
+            if (gatti.size > 1) {
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Avanti",
+                    modifier = Modifier.clickable {
+                        currentGattoIndex = (currentGattoIndex + 1) % gatti.size
+                        // Reset dispenserIndex when switching to a new cat
+                        currentDispenserIndex = 0
+                    })
+            }
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))

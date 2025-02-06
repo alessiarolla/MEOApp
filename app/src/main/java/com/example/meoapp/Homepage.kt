@@ -148,8 +148,8 @@ fun Homepage(navController: NavController) {
                     val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
 
                     val imageRes = when {
-                        perc <= 0.25 -> R.drawable.percprossimopastobassa
-                        perc <= 0.5 -> R.drawable.percprossimopastomedia
+                        perc <= 0.33 -> R.drawable.percprossimopastobassa
+                        perc <= 0.66 -> R.drawable.percprossimopastomedia
                         else -> R.drawable.percprossimopastoalta
                     }
                     item {

@@ -42,10 +42,10 @@ import java.util.concurrent.TimeUnit
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.fontResource
+import kotlin.math.cos
+import kotlin.math.sin
 
-val customFontFamily = FontFamily(
-    Font(R.font.autouroneregular, FontWeight.Normal)
-)
+
 
 @Composable
 fun Homepage(navController: NavController) {
@@ -127,12 +127,12 @@ fun Homepage(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "MEO",
-                fontFamily = customFontFamily,
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
-                modifier = Modifier.padding(8.dp),
-                textAlign = TextAlign.Center
+            Image(
+                painter = painterResource(id = R.drawable.logo_app),
+                contentDescription = "App Logo",
+                modifier = Modifier
+                    .padding(4.dp)
+                    .size(80.dp) // Adjust the size as needed
             )
         }
 
@@ -179,7 +179,7 @@ fun Homepage(navController: NavController) {
                                 Image(
                                     painter = painterResource(id = imageRes),
                                     contentDescription = "Indicatore prossimità pasto",
-                                    modifier = Modifier.size(230.dp).align(Alignment.CenterHorizontally)
+                                    modifier = Modifier.size(190.dp).align(Alignment.CenterHorizontally)
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -187,7 +187,7 @@ fun Homepage(navController: NavController) {
                                 Text(
                                     text = " $nome",
                                     fontFamily = customFontFamily,
-                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Center
                                 )
@@ -206,7 +206,8 @@ fun Homepage(navController: NavController) {
                                         Text(
                                             text = "Prossimo pasto tra...",
                                             fontFamily = customFontFamily,
-                                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                                            style = MaterialTheme.typography.titleLarge.
+                                            copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
                                             modifier = Modifier
                                                 .padding(16.dp)
                                                 .fillMaxWidth(),
@@ -228,13 +229,11 @@ fun Homepage(navController: NavController) {
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 modifier = Modifier.padding(8.dp)
                                             ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.DateRange,
-                                                    contentDescription = "Prossimo pasto",
-                                                    modifier = Modifier.size(24.dp)
-                                                )
 
-                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Clock(currentTime = currentTime)
+
+
+                                                Spacer(modifier = Modifier.width(10.dp))
 
 
                                                 // Horizontal progress bar
@@ -324,7 +323,62 @@ fun Homepage(navController: NavController) {
     }
 }
 
+@Composable
+fun Clock(currentTime: String) {
+    val timeParts = currentTime.split(":").map { it.toInt() }
+    val hours = timeParts[0]
+    val minutes = timeParts[1]
+    val seconds = timeParts[2]
 
+    Canvas(modifier = Modifier.size(20.dp)) {
+        val center = Offset(size.width / 2, size.height / 2)
+        val radius = size.minDimension / 2
+
+        // Draw clock face
+        drawCircle(
+            color = Color.Black,
+            center = center,
+            radius = radius,
+            style = Stroke(width = 1.dp.toPx())
+        )
+
+        // Draw hour hand
+        val hourAngle = (hours % 12 + minutes / 60f) * 30f - 90f
+        drawLine(
+            color = Color.Black,
+            start = center,
+            end = Offset(
+                x = center.x + cos(Math.toRadians(hourAngle.toDouble())).toFloat() * radius * 0.5f,
+                y = center.y + sin(Math.toRadians(hourAngle.toDouble())).toFloat() * radius * 0.5f
+            ),
+            strokeWidth = 1.dp.toPx()
+        )
+
+        // Draw minute hand
+        val minuteAngle = minutes * 6f - 90f
+        drawLine(
+            color = Color.Black,
+            start = center,
+            end = Offset(
+                x = center.x + cos(Math.toRadians(minuteAngle.toDouble())).toFloat() * radius * 0.7f,
+                y = center.y + sin(Math.toRadians(minuteAngle.toDouble())).toFloat() * radius * 0.7f
+            ),
+            strokeWidth = 0.5.dp.toPx()
+        )
+
+        // Draw second hand
+        val secondAngle = seconds * 6f - 90f
+        drawLine(
+            color = Color.Red,
+            start = center,
+            end = Offset(
+                x = center.x + cos(Math.toRadians(secondAngle.toDouble())).toFloat() * radius * 0.9f,
+                y = center.y + sin(Math.toRadians(secondAngle.toDouble())).toFloat() * radius * 0.9f
+            ),
+            strokeWidth = 0.3.dp.toPx()
+        )
+    }
+}
 
 @Composable
 fun CircularProgressIndicator(percentage: Float, label: String) {
@@ -339,7 +393,8 @@ fun CircularProgressIndicator(percentage: Float, label: String) {
                 text = label,
                 fontFamily = customFontFamily,
                 textAlign = TextAlign.Center,
-                fontSize = 10.sp
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -383,7 +438,8 @@ fun CircularProgressIndicator(percentage: Float, label: String) {
                 Text(
                     text = "${percentage.toInt()}%",
                     fontFamily = customFontFamily,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }

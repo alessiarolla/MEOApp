@@ -15,11 +15,20 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -33,6 +42,10 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
+
+val customFontFamily = FontFamily(
+    Font(R.font.autouroneregular, FontWeight.Normal)
+)
 
 class MainActivity : ComponentActivity() {
 
@@ -192,16 +205,25 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun BottomBar(navController: NavController) {
         val items = listOf(
-            BottomNavItem("settings", "Settings"),
-            BottomNavItem("home", "Homepage"),
-            BottomNavItem("cats", "Cats")
+            BottomNavItem("settings", R.drawable.menu_account),
+            BottomNavItem("home", R.drawable.menu_home),
+            BottomNavItem("cats", R.drawable.menu_gatto)
         )
 
-        NavigationBar {
+        NavigationBar(
+            containerColor = Color(0xFFA37F6F),
+            modifier = Modifier.height(80.dp) // Imposta l'altezza desiderata
+        )  {
             items.forEach { item ->
                 NavigationBarItem(
-                    label = { Text(item.label) },
-                    icon = {},
+                    label = {},
+                    icon = {
+                        Image(
+                            painter = painterResource(id = item.iconRes),
+                            contentDescription = null,
+                            modifier = Modifier.size(70.dp) // Set the desired size
+                        )
+                    },
                     selected = navController.currentDestination?.route == item.route,
                     onClick = {
                         navController.navigate(item.route) {
@@ -215,8 +237,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    data class BottomNavItem(val route: String, val label: String)
-
+    data class BottomNavItem(val route: String, val iconRes: Int)
     @Preview(showBackground = true)
     @Composable
     fun GreetingPreview() {

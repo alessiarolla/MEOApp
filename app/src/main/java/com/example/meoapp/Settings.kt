@@ -1,10 +1,97 @@
 package com.example.meoapp
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+
+
+
 
 @Composable
 fun Settings(navController: NavController) {
-    Text("Settings")
+    Column(modifier = Modifier.
+    fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
+    ){
+        Text(
+            text = "Account",
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontFamily = customFontFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp
+        )
+
+        Text(
+            text = "Contattaci per ricevere assistenza o per segnalare un problema:",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 26.dp, end = 26.dp),
+            textAlign = TextAlign.Center,
+            fontFamily = customFontFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
+
+
+
+        Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
+            Text(
+                text = "Mail:",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Start,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Text(
+                text = "_____________",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.End,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+
+        Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+            Text(
+                text = "Telefono:",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Start,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Text(
+                text = "_____________",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.End,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+
+
+
+
+    }
+
 }

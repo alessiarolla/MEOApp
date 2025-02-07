@@ -20,11 +20,11 @@ object GlobalState {
 data class Utente (
     val nome: String = "",
     val password: String = "",
-    val email: String? = null,
+    val nomeUtente: String? = null,
     val gatti: Any = emptyMap<String, gatto>(),
     val dispensers: List<dispenser>? = null,
     //val Tema: String,
-    val Notifichepush: Boolean? = null,
+    val notifichepush: Boolean? = null,
     //val Lingua: String,
     //val DimensioneTesto: Int,
 )

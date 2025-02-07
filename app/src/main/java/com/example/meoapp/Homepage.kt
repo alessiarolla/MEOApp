@@ -4,6 +4,7 @@ import android.util.Half.toFloat
 import android.widget.ProgressBar
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
@@ -96,8 +97,10 @@ fun Homepage(navController: NavController) {
     }
 
 
-
-    Column {
+    /*
+    Column(modifier = Modifier.
+    fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
+    ) {
         Text("Ultimo pasto:  $lastMealTime quantità: $lastMealQuantity" )
         val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
         val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
@@ -106,10 +109,12 @@ fun Homepage(navController: NavController) {
         val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
         Text("%: $perc")
     }
+    */
 
 
-
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier.
+        fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -154,8 +159,13 @@ fun Homepage(navController: NavController) {
                     }
                     item {
                         Card(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1CC93))
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                                .border(2.dp, Color.Black, shape = RoundedCornerShape(25.dp)),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF7E2C3)),
+                            shape = RoundedCornerShape(25.dp)
+
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Image(
@@ -181,7 +191,7 @@ fun Homepage(navController: NavController) {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .border(1.5.dp, Color.Black, shape = RoundedCornerShape(25.dp)),
-                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9E3C3)),
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFCA9E8B)),
                                         shape = RoundedCornerShape(25.dp)
                                     ) {
                                         Text(
@@ -213,7 +223,9 @@ fun Homepage(navController: NavController) {
                                                     contentDescription = "Prossimo pasto",
                                                     modifier = Modifier.size(24.dp)
                                                 )
+
                                                 Spacer(modifier = Modifier.width(4.dp))
+
 
                                                 // Horizontal progress bar
                                                 Box(
@@ -222,6 +234,7 @@ fun Homepage(navController: NavController) {
                                                         .weight(1f)
                                                         .border(1.dp, Color.Black)
                                                 ) {
+
                                                     Canvas(modifier = Modifier.fillMaxSize()) {
                                                         val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
                                                         val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
@@ -240,12 +253,17 @@ fun Homepage(navController: NavController) {
 
                                                 Spacer(modifier = Modifier.width(4.dp))
 
-                                                Text(
-                                                    text = " $prossimoPasto",
-                                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
-                                                    modifier = Modifier.padding(top = 4.dp),
-                                                    textAlign = TextAlign.Center
-                                                )
+                                                Column(
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
+                                                    
+
+                                                    Text(
+                                                        text = " $prossimoPasto",
+                                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                                        textAlign = TextAlign.Center
+                                                    )
+                                                }
                                             }
 
                                         }

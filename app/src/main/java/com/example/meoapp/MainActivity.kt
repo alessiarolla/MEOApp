@@ -41,12 +41,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         database = FirebaseDatabase.getInstance().reference
-
         createNotificationChannel()
         requestNotificationPermission()
-
         fetchAndCheckData()
-
+        fetchGattiFromFirebase()
         setContent {
             MEOAppTheme {
                 val navController = rememberNavController()

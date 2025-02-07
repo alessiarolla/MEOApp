@@ -42,7 +42,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import java.util.Calendar
 import android.app.DatePickerDialog
+import android.util.Log
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 //import android.content.Context
 
@@ -64,7 +71,9 @@ fun Cats(navController: NavController) {
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            Text("Seleziona un gatto")
+            Text("Seleziona un gatto",
+                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                style = MaterialTheme.typography.titleMedium)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -113,7 +122,6 @@ fun Cats(navController: NavController) {
 }
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCats (navController: NavController){
@@ -128,24 +136,32 @@ fun AddCats (navController: NavController){
     var selectedImage by remember { mutableIntStateOf(R.drawable.foto_profilo) }
     var showDatePicker by remember { mutableStateOf(false) }
 
-
     val isFormValid = nome.isNotBlank() && peso.isNotBlank() && dataNascita.isNotBlank() && dispenser.isNotBlank() && sesso.isNotBlank()
 
-    if (showDatePicker) {
-        val context = LocalContext.current
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
+    val context = LocalContext.current
+    val datePickerState = rememberDatePickerState()
 
+    if (showDatePicker) {
         DatePickerDialog(
-            context,
-            { _, selectedYear, selectedMonth, selectedDay ->
-                dataNascita = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-                showDatePicker = false
-            },
-            year, month, day
-        ).show()
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedDate = datePickerState.selectedDateMillis
+                    if (selectedDate != null) {
+                        val calendar = Calendar.getInstance().apply { timeInMillis = selectedDate }
+                        val day = calendar.get(Calendar.DAY_OF_MONTH)
+                        val month = calendar.get(Calendar.MONTH) + 1 // Mesi partono da 0
+                        val year = calendar.get(Calendar.YEAR)
+                        dataNascita = "$day-$month-$year"
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 
 
@@ -243,15 +259,19 @@ fun AddCats (navController: NavController){
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("Data di nascita", modifier = Modifier.alignByBaseline())
-                OutlinedTextField(
-                    value = dataNascita,
-                    onValueChange = { dataNascita = it },
-                    readOnly = true,
+                Card(
                     modifier = Modifier
                         .alignByBaseline()
-                        .weight(1f)
-                        .clickable { showDatePicker = true }
-                )
+                        .clickable { showDatePicker = true } // Clicca per aprire il DatePicker
+                        .padding(16.dp),
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer)
+                ) {
+                    Text(
+                        text = if (dataNascita.isNotBlank()) dataNascita else "Seleziona una data",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
@@ -300,19 +320,20 @@ fun AddCats (navController: NavController){
             }
             Button(
                 onClick = {
-//                    val gatto = mapOf(
-//                        "nome" to nome,
-//                        "peso" to peso,
-//                        "dataNascita" to dataNascita,
-//                        "dispenser" to dispenser,
-//                        "sesso" to sesso,
-//                        "icona" to selectedImage
-//                    )
-//                    val user = GlobalState.utente
-//                    if (user != null) {
-//                        val database = FirebaseDatabase.getInstance().reference
-//                        database.child("Utenti").child(user.email.replace(".", ",")).child("gatti").push().setValue(gatto)
-//                    }
+                    val gatto = mapOf(
+                        "nome" to nome,
+                        "peso" to peso,
+                        "dataNascita" to dataNascita,
+                        "dispenserId" to dispenser,
+                        "sesso" to sesso,
+                        "icona" to selectedImage,
+                        "routine" to emptyList<orario>(),
+                    )
+                    val user = Utente("annalisa", "ciao1")
+                    if (user != null) {
+                        val database = FirebaseDatabase.getInstance().reference
+                        database.child("Utenti").child(user.nome).child("gatti").push().setValue(gatto)
+                    }
                     navController.navigate("cats")
 
                 },
@@ -352,13 +373,31 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
             TextButton(
                 onClick = {
                     if (isFormValid) {
-                        val user = GlobalState.utente
+                        val user = Utente("annalisa", "ciao1")
                         if (user != null) {
                             val database = FirebaseDatabase.getInstance().reference
                             val gattoName = GlobalState.gatto
-                            val gattiRef = database.child("Utenti").child(user.nome).child("gatti").child(gattoName).child("routine")
-                            val newRoutine = orario(orario, quantita)
-                            gattiRef.push().setValue(newRoutine)
+                            val gattiRef = database.child("Utenti").child(user.nome).child("gatti").orderByChild("nome").equalTo(gattoName)
+                            gattiRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    for (gattoSnapshot in snapshot.children) {
+                                        val catKey = gattoSnapshot.key
+                                        if (catKey != null) {
+                                            val routineRef = database.child("Utenti").child(user.nome).child("gatti").child(catKey).child("routine")
+                                            val routineCount = gattoSnapshot.child("routine").childrenCount.toInt()
+                                            val newRoutineKey = "orario" + (routineCount + 1)
+
+                                            val newRoutine = orario(ora = orario, quantita = quantita)
+                                            routineRef.child(newRoutineKey).setValue(newRoutine)
+                                        }
+                                    }
+                                }
+                                override fun onCancelled(error: DatabaseError) {
+                                    Log.e("Firebase", "Errore nel leggere la routine: ${error.message}")
+                                }
+
+                            })
+                            onDismiss() // Chiude la finestra
                         }
                     }
                 },
@@ -387,7 +426,7 @@ fun FirstPage() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(500.dp)
             .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
@@ -406,42 +445,78 @@ fun FirstPage() {
             ) {
                 Text(text = "Routine", style = MaterialTheme.typography.titleMedium)
             }
-            gattiList.find { it.nome == GlobalState.gatto }?.routine?.forEachIndexed { index, routine ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Column(
+            LazyColumn {
+                itemsIndexed(gattiList.find { it.nome == GlobalState.gatto }?.routine?: emptyList()) { index, routine ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
                         ) {
-                            Text(text = "Routine ${index + 1}", style = MaterialTheme.typography.bodySmall)
-                            Row {
-                                IconButton(onClick = { /* Handle edit routine */ }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Edit Routine")
-                                }
-                                IconButton(onClick = { /* Handle delete routine */ }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Delete Routine")
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Routine ${index + 1}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Row {
+                                    IconButton(onClick = { /* Handle edit routine */ }) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = "Edit Routine"
+                                        )
+                                    }
+                                    IconButton(onClick = { /* Handle delete routine */ }) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Delete Routine"
+                                        )
+                                    }
                                 }
                             }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.orario), // Replace with your drawable resource
+                                    contentDescription = "Icona",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Text(
+                                    text = "${routine.ora}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.quantita), // Replace with your drawable resource
+                                    contentDescription = "Icona",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Text(
+                                    text = "${routine.quantita} grammi",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
-                        Text(text = "Orario: ${routine.ora}", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Quantità: ${routine.quantita} grammi", style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
 
         }
-        Button(onClick = {
-            showAddRoutineDialog = true },
+        Button(onClick = { showAddRoutineDialog = true },
             modifier = Modifier.align(Alignment.BottomCenter)
             ){
             Text("+ aggiungi routine")
@@ -454,7 +529,7 @@ fun SecondPage() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(500.dp)
             .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
@@ -507,7 +582,7 @@ fun ThirdPage() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(500.dp)
             .background(Color.Blue, shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
@@ -522,30 +597,35 @@ fun Carousel() {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
+            .fillMaxSize()
     ) {
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxWidth().height(200.dp)
+            modifier = Modifier.fillMaxWidth().height(500.dp)
         ) { page ->
             pages[page]()
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            pages.forEachIndexed { index, _ ->
-                val color = if (pagerState.currentPage == index) Color.Black else Color.Gray
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .background(color, shape = CircleShape)
-                        .padding(4.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-            }
+
+
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        pages.forEachIndexed { index, _ ->
+            val color = if (pagerState.currentPage == index) Color.Black else Color.Gray
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(color, shape = CircleShape)
+                    .padding(4.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
         }
     }
 }

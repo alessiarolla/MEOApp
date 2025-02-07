@@ -37,7 +37,7 @@ data class gatto (
     val dispenserId: Int = 0,
     val routine: List<orario> = emptyList(),
     val cronologia: List<orario> = emptyList(),
-    val ultimoPasto: orario = orario("00:00", "0"),
+    val ultimoPasto: orario? = orario("00:00", "0"),
     val icona: String = "",
 )
 
@@ -86,13 +86,13 @@ fun fetchGattiFromFirebase() {
                                 peso = it["peso"] as? String ?: "",
                                 dataNascita = it["dataNascita"] as? String ?: "",
                                 dispenserId = (it["dispenserId"] as? Long)?.toInt() ?: 0,
-                                routine = (it["routine"] as? List<Map<String, String>>)?.map { orarioMap ->
+                                routine = (it["routine"] as?  Map<String, Map<String, String>>)?.values?.map { orarioMap ->
                                     orario(
                                         ora = orarioMap["ora"] ?: "",
                                         quantita = orarioMap["quantita"] ?: ""
                                     )
                                 } ?: emptyList(),
-                                cronologia = (it["cronologia"] as? List<Map<String, String>>)?.map { orarioMap ->
+                                cronologia = (it["cronologia"] as? Map<String, Map<String, String>>)?.values?.map { orarioMap ->
                                     orario(
                                         ora = orarioMap["ora"] ?: "",
                                         quantita = orarioMap["quantita"] ?: ""
@@ -107,6 +107,7 @@ fun fetchGattiFromFirebase() {
                                 } ?: orario("00:00", "0"),
                                 icona = it["icona"] as? String ?: ""
                             )
+                            Log.d("Firebase", "Gatto aggiunto: $gatto")
                             gattiList.add(gatto)
                         }
                     } catch (e: Exception) {

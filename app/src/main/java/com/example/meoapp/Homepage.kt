@@ -39,6 +39,13 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.res.fontResource
+
+val customFontFamily = FontFamily(
+    Font(R.font.autouroneregular, FontWeight.Normal)
+)
 
 @Composable
 fun Homepage(navController: NavController) {
@@ -122,6 +129,7 @@ fun Homepage(navController: NavController) {
         ) {
             Text(
                 text = "MEO",
+                fontFamily = customFontFamily,
                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
                 modifier = Modifier.padding(8.dp),
                 textAlign = TextAlign.Center
@@ -256,7 +264,7 @@ fun Homepage(navController: NavController) {
                                                 Column(
                                                     horizontalAlignment = Alignment.CenterHorizontally
                                                 ) {
-                                                    
+
 
                                                     Text(
                                                         text = " $prossimoPasto",

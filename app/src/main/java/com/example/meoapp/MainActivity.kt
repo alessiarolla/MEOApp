@@ -9,6 +9,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,6 +38,8 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var database: DatabaseReference
     private val CHANNEL_ID = "dispenser_notifications"
+    private val handler = Handler(Looper.getMainLooper())
+    private lateinit var routineCheckerRunnable: Runnable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +49,7 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermission()
         fetchAndCheckData()
         fetchGattiFromFirebase()
+        startRoutineChecker()  // Avvio del controllo periodico
         setContent {
             MEOAppTheme {
                 val navController = rememberNavController()
@@ -74,6 +79,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun startRoutineChecker() {
+        routineCheckerRunnable = object : Runnable {
+            override fun run() {
+                fetchAndCheckData()  // Controlla i dati ogni secondo
+                handler.postDelayed(this, 60000)  // Ripeti ogni minuto
+            }
+        }
+        handler.post(routineCheckerRunnable)
     }
 
     private fun requestNotificationPermission() {
@@ -125,6 +140,9 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val gatti = snapshot.child("gatti").children
+                val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                val currentTime = dateFormat.format(Date())
+
                 for (gatto in gatti) {
                     val nomeGatto = gatto.child("nome").getValue(String::class.java) ?: "Gatto"
                     val routine = gatto.child("routine").children
@@ -160,7 +178,7 @@ class MainActivity : ComponentActivity() {
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("MEO Dispenser Alert")
+            .setContentTitle("MEOApp")
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)

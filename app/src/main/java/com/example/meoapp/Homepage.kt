@@ -186,6 +186,7 @@ fun Homepage(navController: NavController) {
 
                                 Text(
                                     text = " $nome",
+                                    fontFamily = customFontFamily,
                                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Center
@@ -204,6 +205,7 @@ fun Homepage(navController: NavController) {
                                     ) {
                                         Text(
                                             text = "Prossimo pasto tra...",
+                                            fontFamily = customFontFamily,
                                             style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
                                             modifier = Modifier
                                                 .padding(16.dp)
@@ -262,13 +264,15 @@ fun Homepage(navController: NavController) {
                                                 Spacer(modifier = Modifier.width(4.dp))
 
                                                 Column(
-                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                            modifier = Modifier.width(60.dp)
                                                 ) {
 
 
                                                     Text(
                                                         text = " $prossimoPasto",
-                                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                                        fontFamily = customFontFamily,
+                                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 10.sp),
                                                         textAlign = TextAlign.Center
                                                     )
                                                 }
@@ -333,8 +337,9 @@ fun CircularProgressIndicator(percentage: Float, label: String) {
         ) {
             Text(
                 text = label,
+                fontFamily = customFontFamily,
                 textAlign = TextAlign.Center,
-                fontSize = 14.sp
+                fontSize = 10.sp
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -377,6 +382,7 @@ fun CircularProgressIndicator(percentage: Float, label: String) {
                 // Percentuale al centro
                 Text(
                     text = "${percentage.toInt()}%",
+                    fontFamily = customFontFamily,
                     textAlign = TextAlign.Center
                 )
             }

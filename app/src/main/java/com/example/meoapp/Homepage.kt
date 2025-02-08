@@ -150,14 +150,17 @@ fun Homepage(navController: NavController) {
 
             //freccia scorrimento gatti a <--
             if (gatti.size > 1) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                Image(
+                    painter = painterResource(id = R.drawable.arrow_sx),
                     contentDescription = "Indietro",
-                    modifier = Modifier.clickable {
-                        currentGattoIndex = (currentGattoIndex - 1 + gatti.size) % gatti.size
-                        // Reset dispenserIndex when switching to a new cat
-                        currentDispenserIndex = 0
-                    })
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clickable {
+                            currentGattoIndex = (currentGattoIndex - 1 + gatti.size) % gatti.size
+                            // Reset dispenserIndex when switching to a new cat
+                            currentDispenserIndex = 0
+                        }
+                )
             }
 
             LazyColumn(modifier = Modifier.weight(1f)) {
@@ -331,14 +334,17 @@ fun Homepage(navController: NavController) {
 
             //freccia scorrimento gatti a -->
             if (gatti.size > 1) {
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                Image(
+                    painter = painterResource(id = R.drawable.arrow_dx),
                     contentDescription = "Avanti",
-                    modifier = Modifier.clickable {
-                        currentGattoIndex = (currentGattoIndex + 1) % gatti.size
-                        // Reset dispenserIndex when switching to a new cat
-                        currentDispenserIndex = 0
-                    })
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clickable {
+                            currentGattoIndex = (currentGattoIndex + 1) % gatti.size
+                            // Reset dispenserIndex when switching to a new cat
+                            currentDispenserIndex = 0
+                        }
+                )
             }
 
         }

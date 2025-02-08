@@ -39,7 +39,6 @@ fun Settings(navController: NavController) {
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var notifichePush by remember { mutableStateOf("") }
 
 
     LaunchedEffect(userEmail) {
@@ -49,6 +48,7 @@ fun Settings(navController: NavController) {
                 userSnapshot?.let {
                     nome = it.child("nome").getValue(String::class.java) ?: ""
                     email = it.child("email").getValue(String::class.java) ?: ""
+                    password = it.child("password").getValue(String::class.java) ?: ""
 
                 }
             }
@@ -109,7 +109,25 @@ fun Settings(navController: NavController) {
             )
         }
 
-
+//email
+        Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+            Text(
+                text = "La tua password:",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Start,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Text(
+                text = password,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.End,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
 
 
 

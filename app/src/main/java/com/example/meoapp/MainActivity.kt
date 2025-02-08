@@ -134,41 +134,43 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
+
     private fun fetchAndCheckData() {
         val userId = "annalisa"
         database.child("Utenti").child(userId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val dispensers = snapshot.child("dispensers").children
-                for (dispenser in dispensers) {
-                    val nomeDispenser = dispenser.child("nome").getValue(String::class.java) ?: "Dispenser"
-                    val livelloCiboCiotola = dispenser.child("livelloCiboCiotola").getValue(Int::class.java) ?: 0
-                    val livelloCiboDispenser = dispenser.child("livelloCiboDispenser").getValue(Int::class.java) ?: 0
+                val notifichePush = snapshot.child("notifichePush").getValue(Boolean::class.java) ?: false
+                if (notifichePush) {
+                    val dispensers = snapshot.child("dispensers").children
+                    for (dispenser in dispensers) {
+                        val nomeDispenser = dispenser.child("nome").getValue(String::class.java) ?: "Dispenser"
+                        val livelloCiboCiotola = dispenser.child("livelloCiboCiotola").getValue(Int::class.java) ?: 0
+                        val livelloCiboDispenser = dispenser.child("livelloCiboDispenser").getValue(Int::class.java) ?: 0
 
-                    if (livelloCiboCiotola == 0) {
-                        sendNotification("La ciotola del dispenser \"$nomeDispenser\" è vuota!")
-                    }
-                    if (livelloCiboDispenser == 0) {
-                        sendNotification("Il dispenser \"$nomeDispenser\" è vuoto!")
-                    }
-                }
-
-                val gatti = snapshot.child("gatti").children
-                val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-                val currentTime = dateFormat.format(Date())
-
-                for (gatto in gatti) {
-                    val nomeGatto = gatto.child("nome").getValue(String::class.java) ?: "Gatto"
-                    val routine = gatto.child("routine").children
-                    val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-                    val currentTime = dateFormat.format(Date())
-
-                    for (orario in routine) {
-                        val oraRoutine = orario.child("ora").getValue(String::class.java)
-                        if (oraRoutine != null && oraRoutine == currentTime) {
-                            sendNotification("È ora del pasto per $nomeGatto!")
+                        if (livelloCiboCiotola == 0) {
+                            sendNotification("La ciotola del dispenser \"$nomeDispenser\" è vuota!")
+                        }
+                        if (livelloCiboDispenser == 0) {
+                            sendNotification("Il dispenser \"$nomeDispenser\" è vuoto!")
                         }
                     }
 
+                    val gatti = snapshot.child("gatti").children
+                    val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    val currentTime = dateFormat.format(Date())
+
+                    for (gatto in gatti) {
+                        val nomeGatto = gatto.child("nome").getValue(String::class.java) ?: "Gatto"
+                        val routine = gatto.child("routine").children
+
+                        for (orario in routine) {
+                            val oraRoutine = orario.child("ora").getValue(String::class.java)
+                            if (oraRoutine != null && oraRoutine == currentTime) {
+                                sendNotification("È ora del pasto per $nomeGatto!")
+                            }
+                        }
+                    }
                 }
             }
 

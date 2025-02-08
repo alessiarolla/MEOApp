@@ -49,7 +49,7 @@ import kotlin.math.sin
 
 @Composable
 fun Homepage(navController: NavController) {
-    var userEmail = "annalisa"
+    var user = "Nali"
     var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var currentDispenserIndex by remember { mutableStateOf(0) }
@@ -65,8 +65,8 @@ fun Homepage(navController: NavController) {
 
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
-    LaunchedEffect(userEmail) {
-        database.orderByChild("email").equalTo(userEmail).addValueEventListener(object : ValueEventListener {
+    LaunchedEffect(user) {
+        database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val userSnapshot = snapshot.children.firstOrNull()
                 if (userSnapshot != null) {

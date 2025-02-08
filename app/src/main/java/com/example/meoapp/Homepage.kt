@@ -49,7 +49,7 @@ import kotlin.math.sin
 
 @Composable
 fun Homepage(navController: NavController) {
-    var userEmail = "alessia"
+    var userEmail = "annalisa"
     var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var currentDispenserIndex by remember { mutableStateOf(0) }
@@ -165,7 +165,6 @@ fun Homepage(navController: NavController) {
                     val gattoData = gatti[gattoKey] ?: emptyMap()
                     val nome = gattoData["nome"] as? String ?: ""
                     val routine = gattoData["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
-                    val prossimoPasto = calcolaProssimoPasto(routine, currentTime)
                     val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
                     val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
                     val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
@@ -201,11 +200,16 @@ fun Homepage(navController: NavController) {
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Center
                                 )
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 8.dp)
-                                ) {
+
+                                val prossimoPasto = calcolaProssimoPasto(routine, currentTime)
+                                val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
+                                val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
+                                val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
+
+                                val routine = gattoData["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
+
+                                if (routine.isEmpty()) {
+                                    Spacer(modifier = Modifier.height(16.dp))
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -214,7 +218,7 @@ fun Homepage(navController: NavController) {
                                         shape = RoundedCornerShape(25.dp)
                                     ) {
                                         Text(
-                                            text = "Prossimo pasto tra...",
+                                            text = "Nessuna routine programmata",
                                             fontFamily = customFontFamily,
                                             style = MaterialTheme.typography.titleLarge.
                                             copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
@@ -224,71 +228,100 @@ fun Homepage(navController: NavController) {
                                             textAlign = TextAlign.Center
                                         )
                                     }
-
-                                    Card(
+                                    } else {
+                                    Box(
                                         modifier = Modifier
-                                            .align(Alignment.BottomCenter)
-                                            .padding(top = 50.dp)
-                                            .width(200.dp)
-                                            .border(1.dp, Color.Black, shape = RoundedCornerShape(15.dp)),
-                                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                                        shape = RoundedCornerShape(15.dp)
+                                            .fillMaxWidth()
+                                            .padding(top = 8.dp)
                                     ) {
-                                        Column(modifier = Modifier.padding(2.dp)) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                modifier = Modifier.padding(8.dp)
-                                            ) {
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .border(1.5.dp, Color.Black, shape = RoundedCornerShape(25.dp)),
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFCA9E8B)),
+                                            shape = RoundedCornerShape(25.dp)
+                                        ) {
+                                            Text(
+                                                text = "Prossimo pasto tra...",
+                                                fontFamily = customFontFamily,
+                                                style = MaterialTheme.typography.titleLarge.
+                                                copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                                                modifier = Modifier
+                                                    .padding(16.dp)
+                                                    .fillMaxWidth(),
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
 
-                                                Clock(currentTime = currentTime)
-
-
-                                                Spacer(modifier = Modifier.width(10.dp))
-
-
-                                                // Horizontal progress bar
-                                                Box(
-                                                    modifier = Modifier
-                                                        .height(8.dp)
-                                                        .weight(1f)
-                                                        .border(1.dp, Color.Black)
+                                        Card(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomCenter)
+                                                .padding(top = 50.dp)
+                                                .width(200.dp)
+                                                .border(1.dp, Color.Black, shape = RoundedCornerShape(15.dp)),
+                                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                                            shape = RoundedCornerShape(15.dp)
+                                        ) {
+                                            Column(modifier = Modifier.padding(2.dp)) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier.padding(8.dp)
                                                 ) {
 
-                                                    Canvas(modifier = Modifier.fillMaxSize()) {
-                                                        val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
-                                                        val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
-                                                        val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
+                                                    Clock(currentTime = currentTime)
 
-                                                        //crea funzione per calcolare questo valore da mettere al posto di questo:
-                                                        val progress = perc
-                                                        //val progress = timeSinceLastMeal.toFloat() / (timeSinceLastMeal.toFloat() + prossimoPasto.toFloat())
 
-                                                        drawRect(
-                                                            color = Color(0xFFEFC37F),
-                                                            size = Size(size.width * progress, size.height)
+                                                    Spacer(modifier = Modifier.width(10.dp))
+
+
+                                                    // Horizontal progress bar
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .height(8.dp)
+                                                            .weight(1f)
+                                                            .border(1.dp, Color.Black)
+                                                    ) {
+
+                                                        Canvas(modifier = Modifier.fillMaxSize()) {
+                                                            val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
+                                                            val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
+                                                            val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
+
+                                                            //crea funzione per calcolare questo valore da mettere al posto di questo:
+                                                            val progress = perc
+                                                            //val progress = timeSinceLastMeal.toFloat() / (timeSinceLastMeal.toFloat() + prossimoPasto.toFloat())
+
+                                                            drawRect(
+                                                                color = Color(0xFFEFC37F),
+                                                                size = Size(size.width * progress, size.height)
+                                                            )
+                                                        }
+                                                    }
+
+                                                    Spacer(modifier = Modifier.width(4.dp))
+
+                                                    Column(
+                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                        modifier = Modifier.width(60.dp)
+                                                    ) {
+
+
+                                                        Text(
+                                                            text = " $prossimoPasto",
+                                                            fontFamily = customFontFamily,
+                                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 10.sp),
+                                                            textAlign = TextAlign.Center
                                                         )
                                                     }
                                                 }
 
-                                                Spacer(modifier = Modifier.width(4.dp))
-
-                                                Column(
-                                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                                            modifier = Modifier.width(60.dp)
-                                                ) {
-
-
-                                                    Text(
-                                                        text = " $prossimoPasto",
-                                                        fontFamily = customFontFamily,
-                                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 10.sp),
-                                                        textAlign = TextAlign.Center
-                                                    )
-                                                }
                                             }
-
                                         }
-                                    }
+
+                                }
+
+
+
                                 }
                             }
                         }
@@ -467,6 +500,9 @@ fun getCurrentTime(): String {
 fun calcolaProssimoPasto(routine: Map<String, Map<String, Any>>, currentTime: String): String {
     val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
     val now = sdf.parse(currentTime)
+    if (routine.isEmpty()) {
+        return "00:00:00"
+    }
     val tempi = routine.values.mapNotNull { it["ora"] as? String }
         .mapNotNull { sdf.parse("$it:00") } // Aggiunge ":00" per includere i secondi
         .sorted()
@@ -533,6 +569,9 @@ fun calcolaTempoTrascorsoUltimoPasto(lastMealTime: String, currentTime: String):
 
 fun calcolaTempoTraPasti(gatto: Map<String, Any>, currentTime: String, timeSinceLastMeal: String): String {
     val routine = gatto["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
+    if (routine.isEmpty()) {
+        return "00:00:00"
+    }
     val nextMealTime = calcolaProssimoPasto(routine, currentTime)
 
     // Funzione per convertire una durata "hh:mm:ss" in millisecondi

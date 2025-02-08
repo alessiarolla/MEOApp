@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import java.util.Calendar
 import android.app.DatePickerDialog
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.text.font.Font
@@ -384,11 +385,16 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                                         val catKey = gattoSnapshot.key
                                         if (catKey != null) {
                                             val routineRef = database.child("Utenti").child(user.nome).child("gatti").child(catKey).child("routine")
-                                            val routineCount = gattoSnapshot.child("routine").childrenCount.toInt()
-                                            val newRoutineKey = "orario" + (routineCount + 1)
+                                            val existingRoutine = gattoSnapshot.child("routine").children.find { it.child("ora").value == orario }
+                                            if (existingRoutine != null) {
+                                                existingRoutine.ref.child("quantita").setValue(quantita)
+                                            } else {
+                                                val routineCount = gattoSnapshot.child("routine").childrenCount.toInt()
+                                                val newRoutineKey = "orario" + (routineCount + 1)
 
-                                            val newRoutine = orario(ora = orario, quantita = quantita)
-                                            routineRef.child(newRoutineKey).setValue(newRoutine)
+                                                val newRoutine = orario(ora = orario, quantita = quantita)
+                                                routineRef.child(newRoutineKey).setValue(newRoutine)
+                                            }
                                         }
                                     }
                                 }
@@ -414,13 +420,80 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
     )
 }
 
+@Composable
+fun DeleteRoutineDialog(onDismiss: () -> Unit, orario: orario) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Conferma eliminazione") },
+        text = { Text("Sei sicuro di voler eliminare questa routine?") },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val user = Utente("annalisa", "ciao1")
+                    if (user != null) {
+                        val database = FirebaseDatabase.getInstance().reference
+                        val gattoName = GlobalState.gatto
+                        val gattiRef = database.child("Utenti").child(user.nome).child("gatti").orderByChild("nome").equalTo(gattoName)
+                        gattiRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                for (gattoSnapshot in snapshot.children) {
+                                    val catKey = gattoSnapshot.key
+                                    if (catKey != null) {
+                                        val routineRef =
+                                            database.child("Utenti").child(user.nome).child("gatti")
+                                                .child(catKey).child("routine")
+                                        routineRef.addListenerForSingleValueEvent(object :
+                                            ValueEventListener {
+                                            override fun onDataChange(snapshot: DataSnapshot) {
+                                                Log.d("Firebase", "Routine data: ${snapshot.value}")
+                                                Log.d("Firebase", "orario: $orario")
+                                                val routineToDelete =
+                                                    snapshot.children.find { it.child("ora").value == orario.ora }
+                                                Log.d("Firebase", "Routine to delete: $routineToDelete")
+                                                routineToDelete?.ref?.removeValue()
+                                            }
+
+                                            override fun onCancelled(error: DatabaseError) {
+                                                Log.e(
+                                                    "Firebase",
+                                                    "Errore nel leggere la routine: ${error.message}"
+                                                )
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+                            override fun onCancelled(error: DatabaseError) {
+                                Log.e("Firebase", "Errore nel leggere la routine: ${error.message}")
+                            }
+                        })
+                        onDismiss() // Chiude la finestra
+                    }
+                }
+            ) {
+                Text("Elimina")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Annulla")
+            }
+        }
+    )
+}
+
 
 @Composable
 fun FirstPage() {
     var showAddRoutineDialog by remember { mutableStateOf(false) }
+    var showDeleteRoutineDialog by remember { mutableStateOf(false) }
+    var orariodelete by remember { mutableStateOf(orario("","")) }
 
     if (showAddRoutineDialog) {
         AddRoutineDialog(onDismiss = { showAddRoutineDialog = false })
+    }
+    if (showDeleteRoutineDialog) {
+        DeleteRoutineDialog(onDismiss = { showDeleteRoutineDialog = false }, orariodelete)
     }
 
     Box(
@@ -468,13 +541,16 @@ fun FirstPage() {
                                     style = MaterialTheme.typography.bodySmall
                                 )
                                 Row {
-                                    IconButton(onClick = { /* Handle edit routine */ }) {
+                                    IconButton(onClick = { showAddRoutineDialog = true }) {
                                         Icon(
                                             Icons.Default.Edit,
                                             contentDescription = "Edit Routine"
                                         )
                                     }
-                                    IconButton(onClick = { /* Handle delete routine */ }) {
+                                    IconButton(onClick = {
+                                        showDeleteRoutineDialog = true
+                                        orariodelete = routine
+                                    }) {
                                         Icon(
                                             Icons.Default.Delete,
                                             contentDescription = "Delete Routine"
@@ -492,7 +568,7 @@ fun FirstPage() {
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Text(
-                                    text = "${routine.ora}",
+                                    text = routine.ora,
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -577,17 +653,100 @@ fun SecondPage() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThirdPage() {
+    var selectedPeriod by remember { mutableStateOf("Settimanali") }
+    val periodOptions = listOf("Settimanali", "Mensili")
+    var expanded by remember { mutableStateOf(false) }
+    val cronologia = gattiList.find { it.nome == GlobalState.gatto }?.cronologia ?: emptyList()
+
+    val (averageGrams, averagePercentage) = calculateStatistics(cronologia, selectedPeriod)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(500.dp)
-            .background(Color.Blue, shape = RoundedCornerShape(16.dp)),
+            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Third Page", style = TextStyle(fontSize = 20.sp, color = Color.White))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(text = "Statistiche", style = MaterialTheme.typography.titleMedium)
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedPeriod,
+                    onValueChange = { selectedPeriod = it },
+                    readOnly = true,
+                    modifier = Modifier
+                        //.fillMaxWidth()
+                        .menuAnchor()
+                        .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                        .height(48.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    periodOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                selectedPeriod = option
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = "Media grammi mangiati: $averageGrams gr", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Media percentuale cibo mangiato: $averagePercentage%", style = MaterialTheme.typography.bodyLarge)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Placeholder for the chart
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .border(1.dp, Color.Black)
+                    //.background(Color.LightGray)
+            ) {
+                // Implement the chart here
+            }
+        }
     }
+}
+
+fun calculateStatistics(cronologia: List<orario>, period: String): Pair<Double, Double> {
+    val filteredCronologia = when (period) {
+        "Settimanali" -> cronologia.filter {
+            (it.giorno?.toLongOrNull() ?: 0L) >= Calendar.getInstance()
+                .apply { add(Calendar.DAY_OF_YEAR, -7) }.timeInMillis
+        }
+        "Mensili" -> cronologia.filter {
+            (it.giorno?.toLongOrNull() ?: 0L) >= Calendar.getInstance()
+                .apply { add(Calendar.MONTH, -1) }.timeInMillis
+        }
+        else -> cronologia
+    }
+
+    val totalGrams = filteredCronologia.sumOf { it.mangiato?.toDoubleOrNull() ?: 0.0 }
+    val totalExpectedGrams = filteredCronologia.sumOf { it.quantita.toDoubleOrNull() ?: 0.0 }
+    val averageGrams = if (filteredCronologia.isNotEmpty()) totalGrams / filteredCronologia.size else 0.0
+    val averagePercentage = if (totalExpectedGrams > 0) (totalGrams / totalExpectedGrams) * 100 else 0.0
+
+    return Pair(averageGrams, averagePercentage)
 }
 
 @Composable

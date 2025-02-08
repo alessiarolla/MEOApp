@@ -24,7 +24,7 @@ data class Utente (
     val gatti: Any = emptyMap<String, gatto>(),
     val dispensers: List<dispenser>? = null,
     //val Tema: String,
-    val notifichepush: Boolean? = null,
+    val notifichePush: Boolean? = null,
     //val Lingua: String,
     //val DimensioneTesto: Int,
 )

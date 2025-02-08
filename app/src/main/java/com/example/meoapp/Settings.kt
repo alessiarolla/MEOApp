@@ -38,6 +38,9 @@ fun Settings(navController: NavController) {
 
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var notifichePush by remember { mutableStateOf("") }
+
 
     LaunchedEffect(userEmail) {
         database.orderByChild("email").equalTo(userEmail).addValueEventListener(object : ValueEventListener {
@@ -89,7 +92,7 @@ fun Settings(navController: NavController) {
         //email
         Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
             Text(
-                text = "Il tuo email:",
+                text = "Il tuo nome utente:",
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Start,
                 fontFamily = customFontFamily,

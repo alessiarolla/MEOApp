@@ -49,7 +49,7 @@ import kotlin.math.sin
 
 @Composable
 fun Homepage(navController: NavController) {
-    var userEmail = "annalisa"
+    var userEmail = "alessia"
     var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var currentDispenserIndex by remember { mutableStateOf(0) }
@@ -137,6 +137,16 @@ fun Homepage(navController: NavController) {
         }
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+
+            if (gatti.size == 0){
+                Text(
+                    text = "Nessun gatto inserito",
+                    fontFamily = customFontFamily,
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
 
             //freccia scorrimento gatti a <--
             if (gatti.size > 1) {

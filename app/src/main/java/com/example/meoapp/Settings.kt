@@ -37,6 +37,7 @@ fun Settings(navController: NavController) {
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
     var nome by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
 
     LaunchedEffect(userEmail) {
         database.orderByChild("email").equalTo(userEmail).addValueEventListener(object : ValueEventListener {
@@ -44,6 +45,8 @@ fun Settings(navController: NavController) {
                 val userSnapshot = snapshot.children.firstOrNull()
                 userSnapshot?.let {
                     nome = it.child("nome").getValue(String::class.java) ?: ""
+                    email = it.child("email").getValue(String::class.java) ?: ""
+
                 }
             }
 
@@ -63,6 +66,7 @@ fun Settings(navController: NavController) {
             fontSize = 24.sp
         )
 
+        //nome
         Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
             Text(
                 text = "Il tuo nome:",
@@ -81,6 +85,30 @@ fun Settings(navController: NavController) {
                 fontSize = 16.sp
             )
         }
+
+        //email
+        Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+            Text(
+                text = "Il tuo email:",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Start,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Text(
+                text = email,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.End,
+                fontFamily = customFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+
+
+
+
 
 
 

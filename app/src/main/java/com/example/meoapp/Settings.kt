@@ -1,6 +1,8 @@
 package com.example.meoapp
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,14 +10,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
@@ -30,7 +49,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Settings(navController: NavController) {
     var userEmail = "annalisa"
@@ -39,7 +58,9 @@ fun Settings(navController: NavController) {
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    var notifichePush by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var showDialogPass by remember { mutableStateOf(false) }
 
     LaunchedEffect(userEmail) {
         database.orderByChild("email").equalTo(userEmail).addValueEventListener(object : ValueEventListener {
@@ -49,7 +70,7 @@ fun Settings(navController: NavController) {
                     nome = it.child("nome").getValue(String::class.java) ?: ""
                     email = it.child("email").getValue(String::class.java) ?: ""
                     password = it.child("password").getValue(String::class.java) ?: ""
-
+                    notifichePush = it.child("notifichePush").getValue(Boolean::class.java) ?: true
                 }
             }
 
@@ -57,136 +78,299 @@ fun Settings(navController: NavController) {
         })
     }
 
-    Column(modifier = Modifier.
-    fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
-    ){
-        Text(
-            text = "Account",
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            fontFamily = customFontFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 24.sp
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Modifica nome") },
+            text = {
+                Column {
+                    Text("Inserisci il nuovo nome:")
+                    TextField(
+                        value = nome,
+                        onValueChange = { nome = it }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        database.child(userEmail).child("nome").setValue(nome)
+                        showDialog = false
+                    }
+                ) {
+                    Text("Conferma")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Annulla")
+                }
+            }
         )
-
-        //nome
-        Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
-            Text(
-                text = "Il tuo nome:",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Start,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Text(
-                text = nome,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.End,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-        }
-
-        //email
-        Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
-            Text(
-                text = "Il tuo nome utente:",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Start,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Text(
-                text = email,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.End,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-        }
-
-//email
-        Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
-            Text(
-                text = "La tua password:",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Start,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Text(
-                text = password,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.End,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-        }
-
-
-
-
-
-        Text(
-            text = "Contattaci per ricevere assistenza o per segnalare un problema:",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 26.dp, end = 26.dp),
-            textAlign = TextAlign.Center,
-            fontFamily = customFontFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
-        )
-
-
-
-        Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
-            Text(
-                text = "Mail:",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Start,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Text(
-                text = "_____________",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.End,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-        }
-
-        Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
-            Text(
-                text = "Telefono:",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Start,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Text(
-                text = "_____________",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.End,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-        }
-
-
-
-
     }
+
+    if (showDialogPass) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Modifica password") },
+            text = {
+                Column {
+                    Text("Inserisci la nuova password:")
+                    TextField(
+                        value = password,
+                        onValueChange = { password = it }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        database.child(userEmail).child("password").setValue(password)
+                        showDialogPass = false
+                    }
+                ) {
+                    Text("Conferma")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialogPass = false }) {
+                    Text("Annulla")
+                }
+            }
+        )
+    }
+
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("ACCOUNT", style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF7F5855),
+                    fontSize = 26.sp
+                ), modifier = Modifier.padding(top = 25.dp)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF3D6A9) // Sostituisci con il colore desiderato
+                )
+            )
+
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier.fillMaxSize()
+                .background(Color(0xFFF3D6A9))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp)
+                //.background(Color(0xFFF3D6A9))
+            ) {
+                Divider(
+                    modifier = Modifier.padding(bottom = 10.dp),
+                    color = Color(0xFF7F5855),
+                    thickness = 2.dp
+                )
+
+                Column(modifier = Modifier.
+                fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
+                ){
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    //nome
+                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                        Text(
+                            text = "Il tuo nome:",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+
+
+                        Text(
+                            text = nome,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp)) // Aggiunto uno spazio qui
+
+
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Icon",
+                            modifier = Modifier
+                                .size(20.dp) // Adjust the size as needed
+                                .padding(2.dp) // Reduced padding
+                                .clickable { showDialog = true }
+                        )
+                    }
+
+
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+
+                    //nome utente
+                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                        Text(
+                            text = "Il tuo nome utente:",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = email,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+
+                    //password
+                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                        Text(
+                            text = "La tua password:",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = password,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp)) // Aggiunto uno spazio qui
+
+
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Icon",
+                            modifier = Modifier
+                                .size(20.dp) // Adjust the size as needed
+                                .padding(2.dp) // Reduced padding
+                                .clickable { showDialogPass = true }
+                        )
+                    }
+
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+
+                    //notifichePush
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){      Text(
+                        text = "Attiva/disattiva \n notifiche push:",
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Start,
+                        fontFamily = customFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                        Checkbox(
+                            checked = notifichePush,
+                            onCheckedChange = { isChecked ->
+                                notifichePush = isChecked
+                                database.child(userEmail).child("notifichePush").setValue(isChecked)
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = Color(0xFFA06558),
+                                uncheckedColor = Color(0xFFA06558),
+                                checkmarkColor = Color.White
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+
+                    Text(
+                        text = "Contattaci per ricevere assistenza o per segnalare un problema:",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 26.dp, end = 26.dp),
+                        textAlign = TextAlign.Center,
+                        fontFamily = customFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+
+
+
+                    Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
+                        Text(
+                            text = "Mail:",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "_____________",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                        Text(
+                            text = "Telefono:",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "_____________",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+
+
+
+
+                }
+
+
+            }
+        }
+    }
+
+
+
+
+
+
 
 }

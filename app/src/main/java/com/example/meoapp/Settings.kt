@@ -55,12 +55,16 @@ fun Settings(navController: NavController) {
     var userEmail = "annalisa"
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
+
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var notifichePush by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var showDialogPass by remember { mutableStateOf(false) }
+
+
+
 
     LaunchedEffect(userEmail) {
         database.orderByChild("email").equalTo(userEmail).addValueEventListener(object : ValueEventListener {
@@ -108,6 +112,9 @@ fun Settings(navController: NavController) {
             }
         )
     }
+
+
+
 
     if (showDialogPass) {
         AlertDialog(

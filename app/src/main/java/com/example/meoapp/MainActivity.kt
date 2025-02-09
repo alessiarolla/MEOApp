@@ -135,7 +135,6 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     private fun fetchAndCheckData() {
         val userId = "annalisa"
         database.child("Utenti").child(userId).addValueEventListener(object : ValueEventListener {
@@ -179,6 +178,9 @@ class MainActivity : ComponentActivity() {
             }
         })
     }
+
+
+
 
     private fun sendNotification(message: String) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {

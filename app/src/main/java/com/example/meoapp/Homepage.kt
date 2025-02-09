@@ -45,8 +45,6 @@ import androidx.compose.ui.res.fontResource
 import kotlin.math.cos
 import kotlin.math.sin
 
-
-
 @Composable
 fun Homepage(navController: NavController) {
     var user = "annalisa"
@@ -65,6 +63,7 @@ fun Homepage(navController: NavController) {
 
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
+    
     LaunchedEffect(user) {
         database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -117,7 +116,6 @@ fun Homepage(navController: NavController) {
         Text("%: $perc")
     }
     */
-
 
     Column(modifier = Modifier.
         fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)

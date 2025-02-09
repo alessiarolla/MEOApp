@@ -57,48 +57,88 @@ import com.google.firebase.database.ValueEventListener
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Cats(navController: NavController) {
-
+    val pagerState = rememberPagerState(pageCount = { gattiList.size })
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("I TUOI GATTI") },
+                title = { Text("I TUOI GATTI", style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF7F5855),
+                    fontSize = 26.sp
+                ), modifier = Modifier.padding(top = 25.dp)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF3D6A9) // Sostituisci con il colore desiderato
+                )
             )
-            Divider()
+
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
+        Column (
+            modifier = Modifier.fillMaxSize()
+                .background(Color(0xFFF3D6A9))
         ) {
-            Text("Seleziona un gatto",
-                fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                style = MaterialTheme.typography.titleMedium)
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(bottom = 16.dp)
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp)
+                //.background(Color(0xFFF3D6A9))
             ) {
-                LazyColumn {
-                    items(gattiList) { cat ->
-                        Row(
+                Divider(
+                    modifier = Modifier.padding(bottom = 10.dp),
+                    color = Color(0xFF7F5855),
+                    thickness = 2.dp
+                )
+                Card(
+                    onClick = { navController.navigate("addcats") },
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .border(1.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
+                        .background(Color(0XFF7F5855), RoundedCornerShape(25.dp)),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
+                ) {
+                    Text(
+                        text = "Aggiungi gatto",
+                        modifier = Modifier.padding(16.dp),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 13.sp,
+                        color = Color(0xFFFFFFFF)
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(500.dp)
+                        .padding(bottom = 16.dp)
+                        .background(Color(0XFFFBF1E3), RoundedCornerShape(16.dp))
+                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(16.dp)),
+                ) {
+
+                    HorizontalPager(
+                        state = pagerState,
+                        //pageCount = gattiList.size,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        val cat = gattiList[page]
+                        Column(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
+                                .fillMaxSize()
                                 .clickable {
                                     GlobalState.gatto = cat.nome
-                                    navController.navigate("catDetail/${cat.nome}") }
+                                    navController.navigate("catDetail/${cat.nome}")
+                                },
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
                             Image(
-                                //anche l'immagine dovrà cambiare con il gatto
                                 painter = painterResource(id = R.drawable.foto_profilo), // Replace with your drawable resource
                                 contentDescription = "Cat Image",
-                                modifier = Modifier.size(50.dp)
+                                modifier = Modifier.size(100.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = cat.nome,
                                 style = MaterialTheme.typography.bodyLarge
@@ -106,17 +146,22 @@ fun Cats(navController: NavController) {
                         }
                     }
                 }
-            }
-            Card(
-                onClick = { navController.navigate("addcats") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    text = "Aggiungi gatto",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    repeat(gattiList.size) { index ->
+                        val color = if (pagerState.currentPage == index) Color.Black else Color.Gray
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .background(color, shape = CircleShape)
+                                .padding(4.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                }
             }
         }
     }
@@ -169,179 +214,210 @@ fun AddCats (navController: NavController){
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("AGGIUNGI GATTO") },
+                title = { Text("AGGIUNGI GATTO", style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF7F5855),
+                    fontSize = 26.sp
+                ), modifier = Modifier.padding(top = 25.dp)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF3D6A9) // Sostituisci con il colore desiderato
+                ),
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(top = 25.dp)) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
-            Divider()
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
+        Column (
+            modifier = Modifier.fillMaxSize()
+                .background(Color(0xFFF3D6A9))
         ) {
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(100.dp)
-                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(5.dp),
+                //verticalArrangement = Arrangement.Center
             ) {
-                Image(
-                    painter = painterResource(id = selectedImage),
-                    contentDescription = "Cat Image",
-                    modifier = Modifier.size(80.dp)
+                Divider(
+                    modifier = Modifier.padding(bottom = 10.dp),
+                    color = Color(0xFF7F5855),
+                    thickness = 2.dp
                 )
-                IconButton(
-                    onClick = { showDialog = true },
-                    modifier = Modifier.align(Alignment.BottomEnd)
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .background(Color.Transparent, shape = CircleShape)
+                        .align(Alignment.CenterHorizontally),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit Image")
+                    Image(
+                        painter = painterResource(id = selectedImage),
+                        contentDescription = "Cat Image",
+                        modifier = Modifier.size(120.dp)
+                    )
+                    IconButton(
+                        onClick = { showDialog = true },
+                        modifier = Modifier.align(Alignment.BottomEnd)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Image")
+                    }
                 }
-            }
 
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Seleziona un'immagine") },
-                    text = {
-                        LazyColumn {
-                            items(listOf(R.drawable.foto_profilo, R.drawable.foto_profilo, R.drawable.foto_profilo)) { image ->
-                                Image(
-                                    painter = painterResource(id = image),
-                                    contentDescription = "Selectable Image",
-                                    modifier = Modifier
-                                        .size(80.dp)
-                                        .clickable {
-                                            selectedImage = image
-                                            showDialog = false
-                                        }
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Seleziona un'immagine") },
+                        text = {
+                            LazyColumn {
+                                items(
+                                    listOf(
+                                        R.drawable.foto_profilo,
+                                        R.drawable.foto_profilo,
+                                        R.drawable.foto_profilo
+                                    )
+                                ) { image ->
+                                    Image(
+                                        painter = painterResource(id = image),
+                                        contentDescription = "Selectable Image",
+                                        modifier = Modifier
+                                            .size(80.dp)
+                                            .clickable {
+                                                selectedImage = image
+                                                showDialog = false
+                                            }
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Conferma")
+                            }
+                        }
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Nome gatto", modifier = Modifier.alignByBaseline(),
+                        style = (MaterialTheme.typography.bodyMedium),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)))
+                    OutlinedTextField(
+                        value = nome,
+                        onValueChange = { nome = it },
+                        modifier = Modifier.alignByBaseline().weight(1f)
+                            .padding(start = 10.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                            .height(45.dp),
+                        shape = RoundedCornerShape(20.dp),
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Peso", modifier = Modifier.alignByBaseline())
+                    OutlinedTextField(
+                        value = peso,
+                        onValueChange = { peso = it },
+                        modifier = Modifier.alignByBaseline().weight(1f)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Data di nascita", modifier = Modifier.alignByBaseline())
+                    Card(
+                        modifier = Modifier
+                            .alignByBaseline()
+                            .clickable { showDatePicker = true } // Clicca per aprire il DatePicker
+                            .padding(16.dp),
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer)
+                    ) {
+                        Text(
+                            text = if (dataNascita.isNotBlank()) dataNascita else "Seleziona una data",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Dispenser", modifier = Modifier.alignByBaseline())
+                    OutlinedTextField(
+                        value = dispenser,
+                        onValueChange = { dispenser = it },
+                        modifier = Modifier.alignByBaseline().weight(1f)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Sesso", modifier = Modifier.alignByBaseline())
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+                        OutlinedTextField(
+                            value = sesso,
+                            onValueChange = { sesso = it },
+                            readOnly = true,
+                            modifier = Modifier
+                                .alignByBaseline()
+                                .weight(1f)
+                                .menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            sessoOptions.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        sesso = option
+                                        expanded = false
+                                    }
                                 )
                             }
                         }
+                    }
+                }
+                Button(
+                    onClick = {
+                        val gatto = mapOf(
+                            "nome" to nome,
+                            "peso" to peso,
+                            "dataNascita" to dataNascita,
+                            "dispenserId" to dispenser,
+                            "sesso" to sesso,
+                            "icona" to selectedImage,
+                            "routine" to emptyList<orario>(),
+                        )
+                        val user = Utente("annalisa", "ciao1")
+                        if (user != null) {
+                            val database = FirebaseDatabase.getInstance().reference
+                            database.child("Utenti").child(user.nome).child("gatti").push()
+                                .setValue(gatto)
+                        }
+                        navController.navigate("cats")
+
                     },
-                    confirmButton = {
-                        TextButton(onClick = { showDialog = false }) {
-                            Text("Conferma")
-                        }
-                    }
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Nome gatto", modifier = Modifier.alignByBaseline())
-                OutlinedTextField(
-                    value = nome,
-                    onValueChange = { nome = it },
-                    modifier = Modifier.alignByBaseline().weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Peso", modifier = Modifier.alignByBaseline())
-                OutlinedTextField(
-                    value = peso,
-                    onValueChange = { peso = it },
-                    modifier = Modifier.alignByBaseline().weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Data di nascita", modifier = Modifier.alignByBaseline())
-                Card(
-                    modifier = Modifier
-                        .alignByBaseline()
-                        .clickable { showDatePicker = true } // Clicca per aprire il DatePicker
-                        .padding(16.dp),
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer)
+                    modifier = Modifier.fillMaxWidth(),
+                    //enabled = isFormValid
                 ) {
-                    Text(
-                        text = if (dataNascita.isNotBlank()) dataNascita else "Seleziona una data",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(16.dp)
-                    )
+                    Text("Conferma")
                 }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Dispenser", modifier = Modifier.alignByBaseline())
-                OutlinedTextField(
-                    value = dispenser,
-                    onValueChange = { dispenser = it },
-                    modifier = Modifier.alignByBaseline().weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Sesso", modifier = Modifier.alignByBaseline())
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
-                ) {
-                    OutlinedTextField(
-                        value = sesso,
-                        onValueChange = { sesso = it },
-                        readOnly = true,
-                        modifier = Modifier
-                            .alignByBaseline()
-                            .weight(1f)
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        sessoOptions.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    sesso = option
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-            Button(
-                onClick = {
-                    val gatto = mapOf(
-                        "nome" to nome,
-                        "peso" to peso,
-                        "dataNascita" to dataNascita,
-                        "dispenserId" to dispenser,
-                        "sesso" to sesso,
-                        "icona" to selectedImage,
-                        "routine" to emptyList<orario>(),
-                    )
-                    val user = Utente("annalisa", "ciao1")
-                    if (user != null) {
-                        val database = FirebaseDatabase.getInstance().reference
-                        database.child("Utenti").child(user.nome).child("gatti").push().setValue(gatto)
-                    }
-                    navController.navigate("cats")
-
-                },
-                modifier = Modifier.fillMaxWidth(),
-                //enabled = isFormValid
-            ) {
-                Text("Conferma")
             }
         }
     }
@@ -767,9 +843,6 @@ fun Carousel() {
         ) { page ->
             pages[page]()
         }
-
-
-
     }
     Spacer(modifier = Modifier.height(16.dp))
     Row(

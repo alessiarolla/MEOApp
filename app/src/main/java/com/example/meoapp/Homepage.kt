@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -678,6 +679,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
             var currentGatto by remember { mutableStateOf<Map<String, Any>?>(null) }
             var lastMealQuantity by remember { mutableStateOf("") }
+            var dispenserName by remember { mutableStateOf("") }
 
             val capacitàDispenser = 100
 
@@ -695,6 +697,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                 dispensers = it.children.associate { it.key!! to it.value as Map<String, Any> }
                             }
                             currentGatto = gatti.values.firstOrNull { it["dispenserId"] == dispenserId }
+                            dispenserName = dispensers.values.firstOrNull { it["dispenserId"] == dispenserId }?.get("nome") as? String ?: ""
                         }
                     }
 
@@ -709,6 +712,84 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             }
 
             Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)) {
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+
+                Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                    Text(
+                        text = "Nome dispenser:",
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Start,
+                        fontFamily = customFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+
+                    Text(
+                        text =  "$dispenserName",
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.End,
+                        fontFamily = customFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+
+                }
+
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+
+                currentGatto?.let { gatto ->
+                    currentGatto?.let { gatto ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Gatto associato:",
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Start,
+                                fontFamily = customFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+
+                            Column(
+                                modifier = Modifier.height(120.dp), // Imposta un'altezza specifica
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            )
+                            { val iconResource = when (gatto["icona"]) {
+                                "foto-profilo1" -> R.drawable.foto_profilo
+                                "foto-profilo2" -> R.drawable.foto_profilo2
+                                "foto-profilo3" -> R.drawable.foto_profilo3
+                                // Aggiungi altri casi per le altre icone
+                                else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
+                            }
+                                Image(
+                                    painter = painterResource(id = iconResource), // Replace with your drawable resource
+                                    contentDescription = "Cat Image",
+                                    modifier = Modifier.size(80.dp).padding(end = 8.dp)
+                                )
+                                Text(
+                                    text = "${gatto["nome"]}",
+                                    modifier = Modifier.weight(1f),
+                                    textAlign = TextAlign.Start,
+                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+
+
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     val filteredDispensers = dispensers.values.filter { it["dispenserId"] == dispenserId }
 
@@ -725,6 +806,33 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+
+                Card(
+                    onClick = { },
+                    modifier = Modifier
+                        .width(180.dp) // Set the desired width
+                        .align(Alignment.CenterHorizontally)
+                        .border(2.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
+                        .background(Color(0XFF7F5855), RoundedCornerShape(25.dp)),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
+                ) {
+                    Text(
+                        text = "Aggiungi\ndispenser",
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 18.sp,
+                        color = Color(0xFFFFFFFF),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
             }
         }
     }

@@ -17,10 +17,15 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -361,8 +366,12 @@ fun Homepage(navController: NavController) {
                 val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
                 val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g")
-                    CircularProgressIndicator(livelloCiboCiotola, "   Cibo Ciotola: $labelCiboCiotola g  ")
+                    CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g",
+                        onClick = { navController.navigate("dispenserDetail/$dispenserId") }
+                    )
+                    CircularProgressIndicator(livelloCiboCiotola, "   Cibo Ciotola: $labelCiboCiotola g  ",
+                        onClick = { navController.navigate("dispenserDetail/$dispenserId") }
+                    )
                 }
             }
         }
@@ -428,10 +437,13 @@ fun Clock(currentTime: String) {
 }
 
 @Composable
-fun CircularProgressIndicator(percentage: Float, label: String) {
+fun CircularProgressIndicator(percentage: Float, label: String, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.padding(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1CC93))    ) {
+        modifier = Modifier
+            .padding(12.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1CC93))
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(14.dp)
@@ -451,7 +463,6 @@ fun CircularProgressIndicator(percentage: Float, label: String) {
                 modifier = Modifier.size(100.dp)
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-
                     //cerchio esterno
                     drawCircle(
                         color = Color(0xFFF9E3C3),
@@ -615,6 +626,126 @@ fun convertToMillis(time: String): Long {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DispenserDetail(navController: NavController, dispenserId: Long) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "DISPENSER",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                            color = Color(0xFF7F5855),
+                            fontSize = 26.sp
+                        ),
+                        modifier = Modifier.padding(top = 25.dp)
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF3D6A9) // Sostituisci con il colore desiderato
+                ),
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(top = 25.dp)
+                    ) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF7F5855))
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF3D6A9))
+                .padding(innerPadding)
+                .padding(5.dp)
+        ) {
+            var user = "annalisa"
+            var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
+            var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
+            var currentDispenserIndex by remember { mutableStateOf(0) }
+            var currentGattoIndex by remember { mutableStateOf(0) }
+            var lastMealQuantity by remember { mutableStateOf("") }
+
+            val capacitàDispenser = 100
+
+            val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
 
+            LaunchedEffect(user) {
+                database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val userSnapshot = snapshot.children.firstOrNull()
+                        if (userSnapshot != null) {
+                            userSnapshot.child("gatti").let {
+                                gatti = it.children.associate { it.key!! to it.value as Map<String, Any> }
+                            }
+                            userSnapshot.child("dispensers").let {
+                                dispensers = it.children.associate { it.key!! to it.value as Map<String, Any> }
+                            }
+                        }
+                    }
 
+                    override fun onCancelled(error: DatabaseError) {}
+                })
+            }
+
+
+            // Calculate last meal time and time since last meal
+            LaunchedEffect(currentGattoIndex, gatti) {
+                val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
+                if (currentGatto != null) {
+                    lastMealQuantity = calcolaUltimoPastoQuantità(currentGatto)
+
+                }
+            }
+
+
+            /*
+            Column(modifier = Modifier.
+            fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
+            ) {
+                Text("Ultimo pasto:  $lastMealTime quantità: $lastMealQuantity" )
+                val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
+                val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
+                Text("T dall'ultimo pasto: $timeSinceLastMeal  $timeSinceLastMealMillis")
+                Text("T tra l'ultimo e prossimo: $timeBetweenMeals $timeBetweenMealsMillis")
+                val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
+                Text("%: $perc")
+            }
+            */
+
+            Column(modifier = Modifier.
+            fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
+                    val dispenserId = currentGatto?.get("dispenserId") as? Long ?: 0
+                    val filteredDispensers = dispensers.values.filter { it["dispenserId"] == dispenserId }
+
+                    if (filteredDispensers.isNotEmpty()) {
+                        val currentDispenser = filteredDispensers.getOrNull(currentDispenserIndex) ?: emptyMap()
+                        val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
+                        val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / lastMealQuantityFloat) * 100
+                        val livelloCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat() / capacitàDispenser * 100)
+                        val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
+                        val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                            CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g",
+                                onClick = { }
+                            )
+                            CircularProgressIndicator(livelloCiboCiotola, "   Cibo Ciotola: $labelCiboCiotola g  ",
+                                onClick = { }
+                            )
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+}

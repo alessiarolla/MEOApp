@@ -88,6 +88,14 @@ class MainActivity : ComponentActivity() {
                                 Log.e("MainActivity", "Cat not found: $catName")
                             }
                         }
+                        composable("dispenserDetail/{dispenserId}") { backStackEntry ->
+                            val dispenserId = backStackEntry.arguments?.getString("dispenserId")?.toLongOrNull()
+                            if (dispenserId != null) {
+                                DispenserDetail(navController, dispenserId)
+                            } else {
+                                Log.e("MainActivity", "Dispenser ID not found or invalid")
+                            }
+                        }
                     }
                 }
             }

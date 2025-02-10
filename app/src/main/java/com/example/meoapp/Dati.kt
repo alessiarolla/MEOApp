@@ -44,8 +44,8 @@ data class gatto (
 data class orario (
     val ora: String = "",   // formato HH:mm
     val quantita: String = "", // formato "0" o "1" (mezzo o pieno)
-    val giorno: String? = "", // formato "dd/MM/yyyy"
-    val mangiato: String? = "", // formato "true" o "false"
+    val giorno: String? = null, // formato "dd/MM/yyyy"
+    val mangiato: String? = null
 )
 
 data class dispenser(

@@ -51,6 +51,7 @@ import androidx.compose.ui.text.font.FontFamily
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import kotlin.time.Duration.Companion.seconds
 
 //import android.content.Context
 
@@ -58,6 +59,7 @@ import com.google.firebase.database.ValueEventListener
 @Composable
 fun Cats(navController: NavController) {
     val pagerState = rememberPagerState(pageCount = { gattiList.size })
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -133,8 +135,15 @@ fun Cats(navController: NavController) {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
+                            val iconResource = when (cat.icona) {
+                                "foto-profilo1" -> R.drawable.foto_profilo
+                                "foto-profilo2" -> R.drawable.foto_profilo2
+                                "foto-profilo3" -> R.drawable.foto_profilo3
+                                // Aggiungi altri casi per le altre icone
+                                else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
+                            }
                             Image(
-                                painter = painterResource(id = R.drawable.foto_profilo), // Replace with your drawable resource
+                                painter = painterResource(id = iconResource), // Replace with your drawable resource
                                 contentDescription = "Cat Image",
                                 modifier = Modifier.size(100.dp)
                             )
@@ -179,8 +188,19 @@ fun AddCats (navController: NavController){
     val sessoOptions = listOf("Maschio", "Femmina")
     var expanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
-    var selectedImage by remember { mutableIntStateOf(R.drawable.foto_profilo) }
+    var selectedImage by remember { mutableStateOf("foto-profilo1") }
     var showDatePicker by remember { mutableStateOf(false) }
+    var listaicone = listOf(
+        Pair(R.drawable.foto_profilo, "foto_profilo1"),
+        Pair(R.drawable.foto_profilo2, "foto_profilo2"),
+        Pair(R.drawable.foto_profilo3, "foto_profilo3")
+    )
+    val imageResource = when (selectedImage) {
+        "foto_profilo1" -> R.drawable.foto_profilo
+        "foto_profilo2" -> R.drawable.foto_profilo2
+        "foto_profilo3" -> R.drawable.foto_profilo3
+        else -> R.drawable.foto_profilo // Default image
+    }
 
     val isFormValid = nome.isNotBlank() && peso.isNotBlank() && dataNascita.isNotBlank() && dispenser.isNotBlank() && sesso.isNotBlank()
 
@@ -225,7 +245,7 @@ fun AddCats (navController: NavController){
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() },
                         modifier = Modifier.padding(top = 25.dp)) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF7F5855))
                     }
                 }
             )
@@ -251,11 +271,12 @@ fun AddCats (navController: NavController){
                     modifier = Modifier
                         .size(120.dp)
                         .background(Color.Transparent, shape = CircleShape)
-                        .align(Alignment.CenterHorizontally),
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter = painterResource(id = selectedImage),
+                        painter = painterResource(id = imageResource),
                         contentDescription = "Cat Image",
                         modifier = Modifier.size(120.dp)
                     )
@@ -273,20 +294,14 @@ fun AddCats (navController: NavController){
                         title = { Text("Seleziona un'immagine") },
                         text = {
                             LazyColumn {
-                                items(
-                                    listOf(
-                                        R.drawable.foto_profilo,
-                                        R.drawable.foto_profilo,
-                                        R.drawable.foto_profilo
-                                    )
-                                ) { image ->
+                                items(listaicone) { image ->
                                     Image(
-                                        painter = painterResource(id = image),
+                                        painter = painterResource(id = image.first),
                                         contentDescription = "Selectable Image",
                                         modifier = Modifier
                                             .size(80.dp)
                                             .clickable {
-                                                selectedImage = image
+                                                selectedImage = image.second
                                                 showDialog = false
                                             }
                                     )
@@ -307,63 +322,104 @@ fun AddCats (navController: NavController){
                 ) {
                     Text("Nome gatto", modifier = Modifier.alignByBaseline(),
                         style = (MaterialTheme.typography.bodyMedium),
-                        fontFamily = FontFamily(Font(R.font.autouroneregular)))
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        fontSize = 16.sp)
                     OutlinedTextField(
                         value = nome,
+                        singleLine = true,
                         onValueChange = { nome = it },
                         modifier = Modifier.alignByBaseline().weight(1f)
-                            .padding(start = 10.dp)
+                            .padding(start = 15.dp)
                             .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
-                            .height(45.dp),
+                            .height(50.dp)
+                            .width(150.dp),
                         shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
                     )
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Peso", modifier = Modifier.alignByBaseline())
+                    Text("Peso", modifier = Modifier.alignByBaseline(),
+                        style = (MaterialTheme.typography.bodyMedium),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 16.sp)
                     OutlinedTextField(
                         value = peso,
                         onValueChange = { peso = it },
+                        singleLine = true,
                         modifier = Modifier.alignByBaseline().weight(1f)
+                            .padding(start = 85.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                            .height(50.dp)
+                            .width(100.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                        trailingIcon = {
+                            Box(
+                                modifier = Modifier
+                                    //.fillMaxHeight()
+                                    .padding(end = 8.dp),
+                                contentAlignment = Alignment.BottomEnd
+                            ) {
+                                Text("kg", style = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))))
+                            }
+                        }
                     )
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Data di nascita", modifier = Modifier.alignByBaseline())
+                    Text("Data di \nnascita", modifier = Modifier.alignByBaseline(),
+                        style = (MaterialTheme.typography.bodyMedium),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 16.sp)
                     Card(
                         modifier = Modifier
                             .alignByBaseline()
                             .clickable { showDatePicker = true } // Clicca per aprire il DatePicker
-                            .padding(16.dp),
-                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer)
+                            .padding(start = 16.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                            .height(50.dp)
+                            .width(240.dp),
+                        colors = CardDefaults.cardColors(Color.Transparent)
                     ) {
                         Text(
                             text = if (dataNascita.isNotBlank()) dataNascita else "Seleziona una data",
                             style = MaterialTheme.typography.bodyLarge,
+                            fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                            fontSize = 12.sp,
+                            color = if (dataNascita.isNotBlank()) Color.Black else Color(0XFF635A4E),
                             modifier = Modifier.padding(16.dp)
                         )
                     }
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Dispenser", modifier = Modifier.alignByBaseline())
+                    Text("Dispenser", modifier = Modifier.alignByBaseline(),
+                        style = (MaterialTheme.typography.bodyMedium),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 16.sp)
                     OutlinedTextField(
                         value = dispenser,
+                        singleLine = true,
                         onValueChange = { dispenser = it },
                         modifier = Modifier.alignByBaseline().weight(1f)
+                            .padding(start = 30.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                            .height(50.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
                     )
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Sesso", modifier = Modifier.alignByBaseline())
+                    Text("Sesso", modifier = Modifier.alignByBaseline().align(Alignment.CenterVertically).padding(top = 10.dp),
+                        style = (MaterialTheme.typography.bodyMedium),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 16.sp)
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = !expanded }
@@ -376,6 +432,11 @@ fun AddCats (navController: NavController){
                                 .alignByBaseline()
                                 .weight(1f)
                                 .menuAnchor()
+                                .padding(start = 75.dp)
+                                .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                                .height(50.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
                         )
                         ExposedDropdownMenu(
                             expanded = expanded,
@@ -383,11 +444,18 @@ fun AddCats (navController: NavController){
                         ) {
                             sessoOptions.forEach { option ->
                                 DropdownMenuItem(
-                                    text = { Text(option) },
+                                    text = { Text(
+                                        option,
+                                        style = (MaterialTheme.typography.bodySmall),
+                                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                        fontSize = 14.sp) },
                                     onClick = {
                                         sesso = option
                                         expanded = false
-                                    }
+                                    },
+                                    modifier = Modifier
+                                        .background(Color(0xFFA37F6F))
+                                        .fillMaxHeight()
                                 )
                             }
                         }
@@ -413,10 +481,18 @@ fun AddCats (navController: NavController){
                         navController.navigate("cats")
 
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855), contentColor = Color.White),
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .height(50.dp)
+                        .width(200.dp)
+                        .border(1.dp, Color(0xFF000000), RoundedCornerShape(30.dp))
+                        .align(Alignment.CenterHorizontally)
                     //enabled = isFormValid
                 ) {
-                    Text("Conferma")
+                    Text("Conferma", style = (MaterialTheme.typography.titleSmall),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        fontSize = 18.sp)
                 }
             }
         }
@@ -717,11 +793,12 @@ fun SecondPage() {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "${routine.giorno}, h ${routine.ora}", style = MaterialTheme.typography.bodySmall)
+                            Text(text = "${routine.giorno ?: "N/A"}, h ${routine.ora}", style = MaterialTheme.typography.bodySmall)
                         }
                         Divider()
                         Text(text = "Quantità totale: ${routine.quantita} gr", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Quantità mangiata: ${routine.mangiato} gr", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Quantità mangiata: ${routine.mangiato ?: "N/A"} gr", style = MaterialTheme.typography.bodySmall)
+                        Log.d("Routine", "Giorno: ${routine.giorno}, Mangiato: ${routine.mangiato}")
                     }
                 }
             }
@@ -765,7 +842,7 @@ fun ThirdPage() {
                         //.fillMaxWidth()
                         .menuAnchor()
                         .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
-                        .height(48.dp)
+                        .height(50.dp)
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
@@ -867,6 +944,13 @@ fun Carousel() {
 fun CatDetail(navController: NavController, gatto: gatto) {
     var showDialog by remember { mutableStateOf(false) }
     //val pagerState = rememberPagerState()
+    val iconResource = when (gatto.icona) {
+        "foto-profilo1" -> R.drawable.foto_profilo
+        "foto-profilo2" -> R.drawable.foto_profilo2
+        "foto-profilo3" -> R.drawable.foto_profilo3
+        // Aggiungi altri casi per le altre icone
+        else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
+    }
 
     Scaffold(
         topBar = {
@@ -901,11 +985,11 @@ fun CatDetail(navController: NavController, gatto: gatto) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-//                    Image(
-//                        painter = painterResource(gatto.icona.toInt()), // Replace with your drawable resource
-//                        contentDescription = "Cat Image",
-//                        modifier = Modifier.size(80.dp)
-//                    )
+                    Image(
+                        painter = painterResource(id = iconResource), // Replace with your drawable resource
+                        contentDescription = "Cat Image",
+                        modifier = Modifier.size(80.dp)
+                    )
                     Column(
                         modifier = Modifier.weight(1f).padding(start = 16.dp)
                     ) {

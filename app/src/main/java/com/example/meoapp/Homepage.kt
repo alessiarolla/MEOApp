@@ -813,17 +813,17 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 Card(
                     onClick = { },
                     modifier = Modifier
-                        .width(180.dp) // Set the desired width
+                        .width(170.dp) // Set the desired width
                         .align(Alignment.CenterHorizontally)
                         .border(2.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
-                        .background(Color(0XFF7F5855), RoundedCornerShape(25.dp)),
+                        .background(Color(0xFFA37F6F), RoundedCornerShape(25.dp)),
                     shape = RoundedCornerShape(25.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFA37F6F))
                 ) {
                     Text(
-                        text = "Aggiungi\ndispenser",
+                        text = "Aggiungi\n\ndispenser",
                         modifier = Modifier
-                            .padding(8.dp)
+                            .padding(12.dp)
                             .fillMaxWidth(),
                         fontFamily = FontFamily(Font(R.font.autouroneregular)),
                         style = MaterialTheme.typography.bodySmall,

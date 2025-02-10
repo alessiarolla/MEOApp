@@ -646,7 +646,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFF3D6A9) // Sostituisci con il colore desiderato
+                    containerColor = Color(0xFFF3D6A9)
                 ),
                 navigationIcon = {
                     IconButton(
@@ -673,18 +673,15 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 thickness = 2.dp
             )
 
-
             var user = "annalisa"
             var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
             var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
-            var currentDispenserIndex by remember { mutableStateOf(0) }
-            var currentGattoIndex by remember { mutableStateOf(0) }
+            var currentGatto by remember { mutableStateOf<Map<String, Any>?>(null) }
             var lastMealQuantity by remember { mutableStateOf("") }
 
             val capacitàDispenser = 100
 
             val database = FirebaseDatabase.getInstance().reference.child("Utenti")
-
 
             LaunchedEffect(user) {
                 database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
@@ -697,6 +694,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             userSnapshot.child("dispensers").let {
                                 dispensers = it.children.associate { it.key!! to it.value as Map<String, Any> }
                             }
+                            currentGatto = gatti.values.firstOrNull { it["dispenserId"] == dispenserId }
                         }
                     }
 
@@ -704,57 +702,30 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 })
             }
 
-
-            // Calculate last meal time and time since last meal
-            LaunchedEffect(currentGattoIndex, gatti) {
-                val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
-                if (currentGatto != null) {
-                    lastMealQuantity = calcolaUltimoPastoQuantità(currentGatto)
-
+            LaunchedEffect(currentGatto) {
+                currentGatto?.let {
+                    lastMealQuantity = calcolaUltimoPastoQuantità(it)
                 }
             }
 
-
-            /*
-            Column(modifier = Modifier.
-            fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
-            ) {
-                Text("Ultimo pasto:  $lastMealTime quantità: $lastMealQuantity" )
-                val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
-                val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
-                Text("T dall'ultimo pasto: $timeSinceLastMeal  $timeSinceLastMealMillis")
-                Text("T tra l'ultimo e prossimo: $timeBetweenMeals $timeBetweenMealsMillis")
-                val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
-                Text("%: $perc")
-            }
-            */
-
-            Column(modifier = Modifier.
-            fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
-                    val dispenserId = currentGatto?.get("dispenserId") as? Long ?: 0
                     val filteredDispensers = dispensers.values.filter { it["dispenserId"] == dispenserId }
 
                     if (filteredDispensers.isNotEmpty()) {
-                        val currentDispenser = filteredDispensers.getOrNull(currentDispenserIndex) ?: emptyMap()
+                        val currentDispenser = filteredDispensers.firstOrNull() ?: emptyMap()
                         val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
                         val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / lastMealQuantityFloat) * 100
                         val livelloCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat() / capacitàDispenser * 100)
                         val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
                         val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
-                        Row(modifier = Modifier
-                            .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly) {
-                            CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g",
-                            )
-                            CircularProgressIndicator(livelloCiboCiotola, "  Cibo Ciotola: $labelCiboCiotola g ",
-                            )
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                            CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g")
+                            CircularProgressIndicator(livelloCiboCiotola, "  Cibo Ciotola: $labelCiboCiotola g ")
                         }
+                    }
                 }
-
             }
         }
     }
-}}
+}

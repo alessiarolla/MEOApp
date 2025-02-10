@@ -1,6 +1,7 @@
 package com.example.meoapp
 
 import android.util.Half.toFloat
+import android.util.Log
 import android.widget.ProgressBar
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -19,6 +20,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,6 +29,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
@@ -680,6 +684,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             var currentGatto by remember { mutableStateOf<Map<String, Any>?>(null) }
             var lastMealQuantity by remember { mutableStateOf("") }
             var dispenserName by remember { mutableStateOf("") }
+            var selectedDispenserId by remember { mutableStateOf(dispenserId) }
 
             val capacitàDispenser = 100
 
@@ -708,6 +713,36 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             LaunchedEffect(currentGatto) {
                 currentGatto?.let {
                     lastMealQuantity = calcolaUltimoPastoQuantità(it)
+                }
+            }
+
+            // Dropdown menu per selezionare il dispenser
+            var expanded by remember { mutableStateOf(false) }
+            val availableDispensers = dispensers.filter { dispenser ->
+                !gatti.values.any { it["dispenserId"] == dispenser.value["dispenserId"] }
+            }
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = dispenserName.ifEmpty { "Seleziona un dispenser" })
+                }
+
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    availableDispensers.forEach { (key, dispenser) ->
+                        DropdownMenuItem(
+                        onClick = {
+                                selectedDispenserId = dispenser["dispenserId"] as Long
+                                dispenserName = dispenser["nome"] as String
+                                aggiornaDispenserIdNelDatabase(user, currentGatto?.get("nome") as? String ?: "", selectedDispenserId)
+                                expanded = false
+                            },
+                            text = { Text(dispenser["nome"] as String) }
+                        )
+                    }
                 }
             }
 
@@ -836,4 +871,19 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             }
         }
     }
+}
+
+fun aggiornaDispenserIdNelDatabase(user: String, gattoNome: String, nuovoDispenserId: Long) {
+    val database = FirebaseDatabase.getInstance().reference.child("Utenti").child(user).child("gatti")
+    database.orderByChild("nome").equalTo(gattoNome).addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            for (gattoSnapshot in snapshot.children) {
+                gattoSnapshot.ref.child("dispenserId").setValue(nuovoDispenserId)
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("DatabaseError", "Error updating dispenser ID: ${error.message}")
+        }
+    })
 }

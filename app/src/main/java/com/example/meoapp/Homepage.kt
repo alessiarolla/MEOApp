@@ -739,6 +739,9 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                 dispenserName = dispenser["nome"] as String
                                 aggiornaDispenserIdNelDatabase(user, currentGatto?.get("nome") as? String ?: "", selectedDispenserId)
                                 expanded = false
+                            navController.navigate("dispenserDetail/$selectedDispenserId") {
+                                popUpTo("dispenserDetail/$selectedDispenserId") { inclusive = true }
+                            }
                             },
                             text = { Text(dispenser["nome"] as String) }
                         )

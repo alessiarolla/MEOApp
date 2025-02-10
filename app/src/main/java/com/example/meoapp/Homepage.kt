@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -365,12 +366,13 @@ fun Homepage(navController: NavController) {
                 val livelloCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat() / capacitàDispenser * 100)
                 val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
                 val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { navController.navigate("dispenserDetail/$dispenserId") },
+                    horizontalArrangement = Arrangement.SpaceEvenly) {
                     CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g",
-                        onClick = { navController.navigate("dispenserDetail/$dispenserId") }
                     )
                     CircularProgressIndicator(livelloCiboCiotola, "   Cibo Ciotola: $labelCiboCiotola g  ",
-                        onClick = { navController.navigate("dispenserDetail/$dispenserId") }
                     )
                 }
             }
@@ -437,16 +439,15 @@ fun Clock(currentTime: String) {
 }
 
 @Composable
-fun CircularProgressIndicator(percentage: Float, label: String, onClick: () -> Unit) {
+fun CircularProgressIndicator(percentage: Float, label: String) {
     Card(
         modifier = Modifier
-            .padding(12.dp)
-            .clickable(onClick = onClick),
+            .padding(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF1CC93))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(14.dp)
+            modifier = Modifier.padding(12.dp)
         ) {
             Text(
                 text = label,
@@ -460,7 +461,7 @@ fun CircularProgressIndicator(percentage: Float, label: String, onClick: () -> U
 
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier.size(90.dp)
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     //cerchio esterno
@@ -474,7 +475,7 @@ fun CircularProgressIndicator(percentage: Float, label: String, onClick: () -> U
                         color = Color(0xFFF9E3C3),
                         startAngle = -90f,
                         sweepAngle = 360f,
-                        useCenter = true
+                        useCenter = true,
                     )
 
                     // Arco di progresso
@@ -483,6 +484,7 @@ fun CircularProgressIndicator(percentage: Float, label: String, onClick: () -> U
                         startAngle = -90f,
                         sweepAngle = 360 * (percentage / 100),
                         useCenter = true
+
                     )
 
                     // Cerchio interno per coprire la parte centrale
@@ -662,8 +664,16 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 .fillMaxSize()
                 .background(Color(0xFFF3D6A9))
                 .padding(innerPadding)
-                .padding(5.dp)
+                .padding(16.dp)
         ) {
+
+            Divider(
+                modifier = Modifier.padding(bottom = 10.dp),
+                color = Color(0xFF7F5855),
+                thickness = 2.dp
+            )
+
+
             var user = "annalisa"
             var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
             var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
@@ -734,18 +744,17 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         val livelloCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat() / capacitàDispenser * 100)
                         val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
                         val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly) {
                             CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g",
-                                onClick = { }
                             )
-                            CircularProgressIndicator(livelloCiboCiotola, "   Cibo Ciotola: $labelCiboCiotola g  ",
-                                onClick = { }
+                            CircularProgressIndicator(livelloCiboCiotola, "  Cibo Ciotola: $labelCiboCiotola g ",
                             )
                         }
-                    }
                 }
 
             }
         }
     }
-}
+}}

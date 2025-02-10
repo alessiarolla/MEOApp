@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -716,45 +717,17 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 }
             }
 
-            // Dropdown menu per selezionare il dispenser
-            var expanded by remember { mutableStateOf(false) }
-            val availableDispensers = dispensers.filter { dispenser ->
-                !gatti.values.any { it["dispenserId"] == dispenser.value["dispenserId"] }
-            }
 
-            Box(modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = dispenserName.ifEmpty { "Seleziona un dispenser" })
-                }
-
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    availableDispensers.forEach { (key, dispenser) ->
-                        DropdownMenuItem(
-                        onClick = {
-                                selectedDispenserId = dispenser["dispenserId"] as Long
-                                dispenserName = dispenser["nome"] as String
-                                aggiornaDispenserIdNelDatabase(user, currentGatto?.get("nome") as? String ?: "", selectedDispenserId)
-                                expanded = false
-                            navController.navigate("dispenserDetail/$selectedDispenserId") {
-                                popUpTo("dispenserDetail/$selectedDispenserId") { inclusive = true }
-                            }
-                            },
-                            text = { Text(dispenser["nome"] as String) }
-                        )
-                    }
-                }
-            }
 
             Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)) {
 
                 Spacer(modifier = Modifier.height(20.dp))
 
 
-                Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = "Nome dispenser:",
                         modifier = Modifier.weight(1f),
@@ -764,14 +737,61 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         fontSize = 16.sp
                     )
 
-                    Text(
-                        text =  "$dispenserName",
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.End,
-                        fontFamily = customFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                    // Dropdown menu per selezionare il dispenser
+                    var expanded by remember { mutableStateOf(false) }
+                    val availableDispensers = dispensers.filter { dispenser ->
+                        !gatti.values.any { it["dispenserId"] == dispenser.value["dispenserId"] }
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .width(150.dp) // Set the desired width
+                            .height(50.dp) // Set the desired height
+                            .padding(8.dp)
+                            .border(1.dp, Color.Black, shape = RoundedCornerShape(14.dp)),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3D6A9)) // Set the background color to match the background
+                    ) {
+                        TextButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                fontFamily = customFontFamily,
+                                color = Color.Black,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                text = dispenserName.ifEmpty { "Dispenser" })
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.arrow_down),
+                                    contentDescription = "Arrow Down",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.background(Color(0xFFF3D6A9)) // Set the background color
+                        ) {
+                            availableDispensers.forEach { (key, dispenser) ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        selectedDispenserId = dispenser["dispenserId"] as Long
+                                        dispenserName = dispenser["nome"] as String
+                                        aggiornaDispenserIdNelDatabase(user, currentGatto?.get("nome") as? String ?: "", selectedDispenserId)
+                                        expanded = false
+                                        navController.navigate("dispenserDetail/$selectedDispenserId") {
+                                            popUpTo("dispenserDetail/$selectedDispenserId") { inclusive = true }
+                                        }
+                                    },
+                                    text = { Text(dispenser["nome"] as String) }
+                                )
+                            }
+                        }
+                    }
 
                 }
 

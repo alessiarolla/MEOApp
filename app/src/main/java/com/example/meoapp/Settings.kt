@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -40,6 +42,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +52,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.time.format.TextStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,14 +124,50 @@ fun Settings(navController: NavController) {
     if (showDialogPass) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Modifica password") },
+            title = {
+                Text(
+                    text = "Modifica password",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontFamily = customFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                )
+            },
             text = {
-                Column {
-                    Text("Inserisci la nuova password:")
-                    TextField(
-                        value = password,
-                        onValueChange = { password = it }
+                var isPasswordVisible by remember { mutableStateOf(false) }
+                Card {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     )
+                    {
+                        TextField(
+                            value = if (isPasswordVisible) password else "*".repeat(password.length),
+                            onValueChange = { password = it },
+                            modifier = Modifier.weight(1f),
+                            textStyle = androidx.compose.ui.text.TextStyle(
+                                textAlign = TextAlign.Start,
+                                fontFamily = customFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            ),
+                            singleLine = true,
+                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+                        )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Icon(
+                        imageVector = if (isPasswordVisible) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isPasswordVisible) "Nascondi password" else "Mostra password",
+                        modifier = Modifier
+                            .size(20.dp)
+                            .padding(2.dp)
+                            .clickable { isPasswordVisible = !isPasswordVisible }
+                    )
+                    }
                 }
             },
             confirmButton = {
@@ -259,7 +300,7 @@ fun Settings(navController: NavController) {
                             fontSize = 16.sp
                         )
                         Text(
-                            text = password,
+                            text = "*".repeat(password.length),
                             modifier = Modifier.weight(1f),
                             textAlign = TextAlign.End,
                             fontFamily = customFontFamily,

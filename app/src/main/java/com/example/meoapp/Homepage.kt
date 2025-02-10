@@ -774,10 +774,12 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
-                            modifier = Modifier.background(Color(0xFFF3D6A9)) // Set the background color
+                            modifier = Modifier.
+                                background(Color(0xFFF3D6A9))
                         ) {
                             availableDispensers.forEach { (key, dispenser) ->
                                 DropdownMenuItem(
+                                    modifier = Modifier.height(30.dp),
                                     onClick = {
                                         selectedDispenserId = dispenser["dispenserId"] as Long
                                         dispenserName = dispenser["nome"] as String
@@ -787,8 +789,14 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                             popUpTo("dispenserDetail/$selectedDispenserId") { inclusive = true }
                                         }
                                     },
-                                    text = { Text(dispenser["nome"] as String) }
-                                )
+                                    text = {
+                                        Text(
+                                            text = dispenser["nome"] as String,
+                                            fontFamily = customFontFamily,
+                                            color = Color.Black,
+                                            fontSize = 10.sp
+                                        )
+                                    }                                )
                             }
                         }
                     }

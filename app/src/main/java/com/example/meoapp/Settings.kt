@@ -1,6 +1,8 @@
 package com.example.meoapp
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,12 +14,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -28,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -39,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +67,7 @@ fun Settings(navController: NavController) {
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
 
-    var nome by remember { mutableStateOf("") }
+    var nomeUtente by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var notifichePush by remember { mutableStateOf(false) }
@@ -76,7 +82,7 @@ fun Settings(navController: NavController) {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val userSnapshot = snapshot.children.firstOrNull()
                 userSnapshot?.let {
-                    nome = it.child("nome").getValue(String::class.java) ?: ""
+                    nomeUtente = it.child("nomeUtente").getValue(String::class.java) ?: ""
                     email = it.child("email").getValue(String::class.java) ?: ""
                     password = it.child("password").getValue(String::class.java) ?: ""
                     notifichePush = it.child("notifichePush").getValue(Boolean::class.java) ?: true
@@ -90,31 +96,67 @@ fun Settings(navController: NavController) {
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Modifica nome") },
+
+            title = {
+                Text(
+                    text = "Modifica nome Utente",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontFamily = customFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                )
+            },
             text = {
-                Column {
-                    Text("Inserisci il nuovo nome:")
+                Card(
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                     TextField(
-                        value = nome,
-                        onValueChange = { nome = it }
-                    )
-                }
+                        value = nomeUtente,
+                        onValueChange = { nomeUtente = it },
+                        modifier = Modifier.weight(1f),
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        ),singleLine = true
+                        )
+                }}
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        database.child(userEmail).child("nome").setValue(nome)
+                        database.child(userEmail).child("nomeUtente").setValue(nomeUtente)
+                        database.child(userEmail).child("email").setValue(nomeUtente)
                         showDialog = false
-                    }
+                        navController.navigate("settings") {
+                            popUpTo("settings") { inclusive = true }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
+
                 ) {
                     Text("Conferma")
                 }
             },
             dismissButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text("Annulla")
+                Button(
+                    onClick = { showDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
+
+                ) {
+                    Text("  Annulla  ")
                 }
-            }
+            },
+            containerColor = Color(0xFFF7E2C3) // Set the background color to match the rest
+
         )
     }
 
@@ -123,7 +165,7 @@ fun Settings(navController: NavController) {
 
     if (showDialogPass) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showDialogPass = false },
             title = {
                 Text(
                     text = "Modifica password",
@@ -136,13 +178,15 @@ fun Settings(navController: NavController) {
             },
             text = {
                 var isPasswordVisible by remember { mutableStateOf(false) }
-                Card {
+                Card(
+                ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(6.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(6.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
-                    )
-                    {
+                    ) {
                         TextField(
                             value = if (isPasswordVisible) password else "*".repeat(password.length),
                             onValueChange = { password = it },
@@ -157,16 +201,16 @@ fun Settings(navController: NavController) {
                             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
                         )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                    Icon(
-                        imageVector = if (isPasswordVisible) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = if (isPasswordVisible) "Nascondi password" else "Mostra password",
-                        modifier = Modifier
-                            .size(20.dp)
-                            .padding(2.dp)
-                            .clickable { isPasswordVisible = !isPasswordVisible }
-                    )
+                        Image(
+                            painter = painterResource(id = if (isPasswordVisible) R.drawable.visible else R.drawable.not_visible),
+                            contentDescription = if (isPasswordVisible) "Nascondi password" else "Mostra password",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .padding(4.dp)
+                                .clickable { isPasswordVisible = !isPasswordVisible }
+                        )
                     }
                 }
             },
@@ -175,16 +219,21 @@ fun Settings(navController: NavController) {
                     onClick = {
                         database.child(userEmail).child("password").setValue(password)
                         showDialogPass = false
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
+
                 ) {
                     Text("Conferma")
                 }
             },
             dismissButton = {
-                Button(onClick = { showDialogPass = false }) {
-                    Text("Annulla")
+                Button(onClick = { showDialogPass = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
+                ) {
+                    Text("  Annulla  ")
                 }
-            }
+            },
+            containerColor = Color(0xFFF7E2C3) // Set the background color to match the rest
         )
     }
 
@@ -225,49 +274,12 @@ fun Settings(navController: NavController) {
                 fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
                 ){
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    //nome
-                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
-                        Text(
-                            text = "Il tuo nome:",
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Start,
-                            fontFamily = customFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-
-
-                        Text(
-                            text = nome,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.End,
-                            fontFamily = customFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp)) // Aggiunto uno spazio qui
-
-
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit Icon",
-                            modifier = Modifier
-                                .size(20.dp) // Adjust the size as needed
-                                .padding(2.dp) // Reduced padding
-                                .clickable { showDialog = true }
-                        )
-                    }
-
-
-
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
 
 
                     //nome utente
-                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "Il tuo nome utente:",
                             modifier = Modifier.weight(1f),
@@ -284,13 +296,27 @@ fun Settings(navController: NavController) {
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
+
+                        Spacer(modifier = Modifier.width(8.dp)) // Aggiunto uno spazio qui
+
+
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Icon",
+                            modifier = Modifier
+                                .size(24.dp) // Adjust the size as needed
+                                .padding(2.dp) // Reduced padding
+                                .clickable { showDialog = true }
+                        )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(35.dp))
 
 
                     //password
-                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth().padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
                             text = "La tua password:",
                             modifier = Modifier.weight(1f),
@@ -315,14 +341,14 @@ fun Settings(navController: NavController) {
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit Icon",
                             modifier = Modifier
-                                .size(20.dp) // Adjust the size as needed
+                                .size(24.dp) // Adjust the size as needed
                                 .padding(2.dp) // Reduced padding
                                 .clickable { showDialogPass = true }
                         )
                     }
 
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(35.dp))
 
 
                     //notifichePush
@@ -351,7 +377,7 @@ fun Settings(navController: NavController) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(80.dp))
 
 
                     Text(
@@ -365,6 +391,7 @@ fun Settings(navController: NavController) {
                         fontSize = 16.sp
                     )
 
+                    Spacer(modifier = Modifier.height(30.dp))
 
 
                     Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
@@ -385,6 +412,9 @@ fun Settings(navController: NavController) {
                             fontSize = 16.sp
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(15.dp))
+
 
                     Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
                         Text(

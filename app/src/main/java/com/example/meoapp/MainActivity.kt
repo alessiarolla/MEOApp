@@ -114,7 +114,7 @@ class MainActivity : ComponentActivity() {
         routineCheckerRunnable = object : Runnable {
             override fun run() {
                 fetchAndCheckData()  // Controlla i dati ogni secondo
-                handler.postDelayed(this, 60000)  // Ripeti ogni minuto
+                handler.postDelayed(this, 1000)  // Ripeti ogni secondo
             }
         }
         handler.post(routineCheckerRunnable)
@@ -150,7 +150,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
+    private val sentNotifications = mutableMapOf<String, Boolean>()
     private fun fetchAndCheckData() {
         val userId = "annalisa"
         database.child("Utenti").child(userId).addValueEventListener(object : ValueEventListener {
@@ -162,33 +162,43 @@ class MainActivity : ComponentActivity() {
                         val nomeDispenser = dispenser.child("nome").getValue(String::class.java) ?: "Dispenser"
                         val livelloCiboCiotola = dispenser.child("livelloCiboCiotola").getValue(Int::class.java) ?: 0
                         val livelloCiboDispenser = dispenser.child("livelloCiboDispenser").getValue(Int::class.java) ?: 0
-
                         if (livelloCiboCiotola == 0) {
-                            sendNotification(userId, "La ciotola del dispenser \"$nomeDispenser\" è vuota!")
+                            if (!sentNotifications.containsKey("ciotola_$nomeDispenser")) {
+                                sendNotification(userId, "La ciotola del dispenser \"$nomeDispenser\" è vuota!")
+                                sentNotifications["ciotola_$nomeDispenser"] = true
+                            }
+                        } else {
+                            sentNotifications.remove("ciotola_$nomeDispenser")
                         }
                         if (livelloCiboDispenser == 0) {
-                            sendNotification(userId, "Il dispenser \"$nomeDispenser\" è vuoto!")
+                            if (!sentNotifications.containsKey("dispenser_$nomeDispenser")) {
+                                sendNotification(userId, "Il dispenser \"$nomeDispenser\" è vuoto!")
+                                sentNotifications["dispenser_$nomeDispenser"] = true
+                            }
+                        } else {
+                            sentNotifications.remove("dispenser_$nomeDispenser")
                         }
                     }
-
                     val gatti = snapshot.child("gatti").children
                     val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
                     val currentTime = dateFormat.format(Date())
-
                     for (gatto in gatti) {
                         val nomeGatto = gatto.child("nome").getValue(String::class.java) ?: "Gatto"
                         val routine = gatto.child("routine").children
-
                         for (orario in routine) {
                             val oraRoutine = orario.child("ora").getValue(String::class.java)
                             if (oraRoutine != null && oraRoutine == currentTime) {
-                                sendNotification(userId, "È ora del pasto per $nomeGatto!")
+                                if (!sentNotifications.containsKey("routine_$nomeGatto")) {
+                                    sendNotification(userId, "È ora del pasto per $nomeGatto!")
+                                    sentNotifications["routine_$nomeGatto"] = true
+                                }
+                            } else {
+                                sentNotifications.remove("routine_$nomeGatto")
                             }
                         }
                     }
                 }
             }
-
             override fun onCancelled(error: DatabaseError) {
                 Log.e("MainActivity", "Database error: ${error.message}")
             }

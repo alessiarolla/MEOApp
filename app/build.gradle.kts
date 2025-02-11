@@ -50,6 +50,7 @@ android {
     }
 }
 
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -63,6 +64,18 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
+//    implementation(libs.androidx.foundation)
+//    implementation(libs.ui.graphics)
+//    implementation(libs.material3)
+//    implementation(libs.ui.tooling.preview)
+//    implementation(libs.androidx.runtime)
+//    implementation(libs.androidx.foundation.layout)
+//    implementation(libs.charts)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("com.diogobernardino:williamchart:3.10.1")
+
+
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

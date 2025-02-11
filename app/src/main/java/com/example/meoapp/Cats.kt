@@ -47,6 +47,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -55,12 +56,20 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import com.github.mikephil.charting.charts.BarChart
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
+import androidx.compose.ui.viewinterop.AndroidView
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+
 
 //import android.content.Context
 
@@ -915,7 +924,12 @@ fun ThirdPage() {
     var expanded by remember { mutableStateOf(false) }
     val cronologia = gattiList.find { it.nome == GlobalState.gatto }?.cronologia ?: emptyList()
 
-    val (averageGrams, averagePercentage) = calculateStatistics(cronologia, selectedPeriod)
+    // Applica il filtro basato sul periodo selezionato
+    val filteredCronologia = remember(selectedPeriod, cronologia) {
+        filterCronologia(cronologia, selectedPeriod)
+    }
+
+    val (averageGrams, averagePercentage) = calculateStatistics(filteredCronologia, selectedPeriod)
 
     Box(
         modifier = Modifier
@@ -940,7 +954,6 @@ fun ThirdPage() {
                     onValueChange = { selectedPeriod = it },
                     readOnly = true,
                     modifier = Modifier
-                        //.fillMaxWidth()
                         .menuAnchor()
                         .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
                         .height(50.dp)
@@ -968,32 +981,207 @@ fun ThirdPage() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Placeholder for the chart
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .border(1.dp, Color.Black)
-                    //.background(Color.LightGray)
-            ) {
-                // Implement the chart here
-            }
+            // Grafico con dati filtrati
+            FoodChart(filteredCronologia, selectedPeriod)
         }
     }
 }
 
-fun calculateStatistics(cronologia: List<orario>, period: String): Pair<Double, Double> {
-//    val filteredCronologia = when (period) {
-//        "Settimanali" -> cronologia.filter {
-//            (it.giorno?.toLongOrNull() ?: 0L) >= Calendar.getInstance()
-//                .apply { add(Calendar.DAY_OF_YEAR, -7) }.timeInMillis
+fun filterCronologia(cronologia: List<orario>, period: String): List<orario> {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val calendar = Calendar.getInstance()
+
+    fun isCurrentWeek(date: String): Boolean {
+        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
+        return dateCalendar.get(Calendar.WEEK_OF_YEAR) == calendar.get(Calendar.WEEK_OF_YEAR) &&
+                dateCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
+    }
+
+    fun getWeekOfMonth(date: String): Int {
+        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
+        return dateCalendar.get(Calendar.WEEK_OF_MONTH)
+    }
+
+    return when (period) {
+        "Settimanali" -> cronologia.filter { it.giorno?.let { isCurrentWeek(it) } ?: false }
+        "Mensili" -> cronologia.groupBy { it.giorno?.let { getWeekOfMonth(it) } ?: 0 }
+            .mapValues { (_, list) ->
+                list.reduce { acc, orario ->
+                    orario.copy(
+                        mangiato = ((acc.mangiato?.toFloatOrNull() ?: 0f) + (orario.mangiato?.toFloatOrNull() ?: 0f)).toString()
+                    )
+                }
+            }.values.toList()
+        else -> cronologia
+    }
+}
+
+@Composable
+fun FoodChart(cronologia: List<orario>, period: String) {
+    val context = LocalContext.current
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val calendar = Calendar.getInstance()
+
+    val xAxisLabels: List<String>
+    val foodMap: Map<String, Float>
+
+    if (period == "Settimanali") {
+        xAxisLabels = listOf("Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom")
+        foodMap = xAxisLabels.associateWith { 0f }.toMutableMap()
+
+        cronologia.forEach { record ->
+            record.giorno?.let { dateString ->
+                val date = formatter.parse(dateString)
+                if (date != null) {
+                    calendar.time = date
+                    val dayIndex = (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7
+                    val dayLabel = xAxisLabels[dayIndex]
+                    foodMap[dayLabel] = (foodMap[dayLabel] ?: 0f) + (record.mangiato?.toFloatOrNull() ?: 0f)
+                }
+            }
+        }
+    } else {
+        xAxisLabels = listOf("Settimana 1", "Settimana 2", "Settimana 3", "Settimana 4")
+        foodMap = xAxisLabels.associateWith { 0f }.toMutableMap()
+
+        cronologia.forEach { record ->
+            record.giorno?.let { dateString ->
+                val date = formatter.parse(dateString)
+                if (date != null) {
+                    calendar.time = date
+                    val weekIndex = calendar.get(Calendar.WEEK_OF_MONTH) - 1
+                    val weekLabel = xAxisLabels.getOrElse(weekIndex) { "Settimana 4" }
+                    foodMap[weekLabel] = (foodMap[weekLabel] ?: 0f) + (record.mangiato?.toFloatOrNull() ?: 0f)
+                }
+            }
+        }
+    }
+
+    val entries = foodMap.entries.mapIndexed { index, entry ->
+        BarEntry(index.toFloat(), entry.value)
+    }
+
+    AndroidView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .padding(16.dp),
+        factory = { ctx ->
+            BarChart(ctx).apply {
+                description.isEnabled = false
+                xAxis.position = XAxis.XAxisPosition.BOTTOM
+                axisRight.isEnabled = false
+                axisLeft.axisMinimum = 0f
+                xAxis.granularity = 1f
+                xAxis.valueFormatter = IndexAxisValueFormatter(xAxisLabels)
+
+                val dataSet = BarDataSet(entries, "Cibo mangiato")
+                dataSet.color = Color.Blue.toArgb()
+                dataSet.valueTextSize = 12f
+                dataSet.valueTextColor = Color.Black.toArgb()
+
+                val barData = BarData(dataSet)
+                barData.barWidth = 0.5f
+
+                this.data = barData
+                invalidate()
+            }
+        },
+        update = { chart ->
+            val newEntries = foodMap.entries.mapIndexed { index, entry ->
+                BarEntry(index.toFloat(), entry.value)
+            }
+            val dataSet = BarDataSet(newEntries, "Cibo mangiato")
+            dataSet.color = Color.Blue.toArgb()
+            dataSet.valueTextSize = 12f
+
+            val barData = BarData(dataSet)
+            barData.barWidth = 0.5f
+
+            chart.data = barData
+            chart.xAxis.valueFormatter = IndexAxisValueFormatter(xAxisLabels)
+            chart.invalidate()
+        }
+    )
+}
+
+
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun ThirdPage() {
+//    var selectedPeriod by remember { mutableStateOf("Settimanali") }
+//    val periodOptions = listOf("Settimanali", "Mensili")
+//    var expanded by remember { mutableStateOf(false) }
+//    val cronologia = gattiList.find { it.nome == GlobalState.gatto }?.cronologia ?: emptyList()
+//
+//    val (averageGrams, averagePercentage) = calculateStatistics(cronologia, selectedPeriod)
+//
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(500.dp)
+//            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(16.dp)
+//        ) {
+//            Text(text = "Statistiche", style = MaterialTheme.typography.titleMedium)
+//
+//            ExposedDropdownMenuBox(
+//                expanded = expanded,
+//                onExpandedChange = { expanded = !expanded }
+//            ) {
+//                OutlinedTextField(
+//                    value = selectedPeriod,
+//                    onValueChange = { selectedPeriod = it },
+//                    readOnly = true,
+//                    modifier = Modifier
+//                        //.fillMaxWidth()
+//                        .menuAnchor()
+//                        .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+//                        .height(50.dp)
+//                )
+//                ExposedDropdownMenu(
+//                    expanded = expanded,
+//                    onDismissRequest = { expanded = false }
+//                ) {
+//                    periodOptions.forEach { option ->
+//                        DropdownMenuItem(
+//                            text = { Text(option) },
+//                            onClick = {
+//                                selectedPeriod = option
+//                                expanded = false
+//                            }
+//                        )
+//                    }
+//                }
+//            }
+//
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            Text(text = "Media grammi mangiati: $averageGrams gr", style = MaterialTheme.typography.bodyLarge)
+//            Text(text = "Media percentuale cibo mangiato: $averagePercentage%", style = MaterialTheme.typography.bodyLarge)
+//
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            // Placeholder for the chart
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(200.dp)
+//                    .border(1.dp, Color.Black)
+//                    //.background(Color.LightGray)
+//            ) {
+//                FoodChart(cronologia)
+//            }
 //        }
-//        "Mensili" -> cronologia.filter {
-//            (it.giorno?.toLongOrNull() ?: 0L) >= Calendar.getInstance()
-//                .apply { add(Calendar.MONTH, -1) }.timeInMillis
-//        }
-//        else -> cronologia
 //    }
+//}
+//
+fun calculateStatistics(cronologia: List<orario>, period: String): Pair<Double, Double> {
     fun isCurrentWeek(date: String): Boolean {
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val calendar = Calendar.getInstance()
@@ -1024,6 +1212,80 @@ fun calculateStatistics(cronologia: List<orario>, period: String): Pair<Double, 
 
     return Pair(averageGrams, averagePercentage)
 }
+//
+//@Composable
+//fun FoodChart(cronologia: List<orario>) {
+//    val context = LocalContext.current
+//    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+//    val calendar = Calendar.getInstance()
+//
+//    // Lista dei giorni della settimana
+//    val daysOfWeek = listOf("Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom")
+//
+//    // Mappa per il cibo mangiato ogni giorno della settimana
+//    val foodMap = mutableMapOf<String, Float>().apply {
+//        daysOfWeek.forEach { put(it, 0f) }
+//    }
+//
+//    // Popoliamo la mappa con i dati reali
+//    cronologia.forEach { record ->
+//        record.giorno?.let { dateString ->
+//            val date = formatter.parse(dateString)
+//            if (date != null) {
+//                calendar.time = date
+//                val dayIndex = (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7  // Adatta l'ordine dei giorni
+//                val dayLabel = daysOfWeek[dayIndex]
+//                foodMap[dayLabel] = (foodMap[dayLabel] ?: 0f) + (record.mangiato?.toFloatOrNull() ?: 0f)
+//            }
+//        }
+//    }
+//
+//    val entries = foodMap.entries.mapIndexed { index, entry ->
+//        BarEntry(index.toFloat(), entry.value)
+//    }
+//
+//    AndroidView(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(300.dp)
+//            .padding(16.dp),
+//        factory = { ctx ->
+//            BarChart(ctx).apply {
+//                description.isEnabled = false
+//                xAxis.position = XAxis.XAxisPosition.BOTTOM
+//                axisRight.isEnabled = false
+//                axisLeft.axisMinimum = 0f // Inizia sempre da zero
+//                xAxis.granularity = 1f // Per evitare valori duplicati
+//
+//                val dataSet = BarDataSet(entries, "Cibo mangiato")
+//                dataSet.color = Color.Blue.toArgb()
+//                dataSet.valueTextSize = 12f
+//                dataSet.valueTextColor = Color.Black.toArgb()
+//
+//                val barData = BarData(dataSet)
+//                barData.barWidth = 0.5f // Larghezza delle barre
+//
+//                this.data = barData
+//                invalidate()
+//            }
+//        },
+//        update = { chart ->
+//            val newEntries = foodMap.entries.mapIndexed { index, entry ->
+//                BarEntry(index.toFloat(), entry.value)
+//            }
+//            val dataSet = BarDataSet(newEntries, "Cibo mangiato")
+//            dataSet.color = Color.Blue.toArgb()
+//            dataSet.valueTextSize = 12f
+//
+//            val barData = BarData(dataSet)
+//            barData.barWidth = 0.5f
+//
+//            chart.data = barData
+//            chart.invalidate() // Aggiorna il grafico
+//        }
+//    )
+//}
+
 
 @Composable
 fun Carousel() {

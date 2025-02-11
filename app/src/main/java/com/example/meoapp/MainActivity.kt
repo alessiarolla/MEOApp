@@ -15,10 +15,17 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,6 +43,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.meoapp.ui.theme.MEOAppTheme
 import com.google.firebase.FirebaseApp
@@ -224,27 +232,45 @@ class MainActivity : ComponentActivity() {
 
         NavigationBar(
             containerColor = Color(0xFFA37F6F),
-            modifier = Modifier.height(80.dp) // Imposta l'altezza desiderata
-        )  {
-            items.forEach { item ->
-                NavigationBarItem(
-                    label = {},
-                    icon = {
-                        Image(
-                            painter = painterResource(id = item.iconRes),
-                            contentDescription = null,
-                            modifier = Modifier.size(70.dp) // Set the desired size
+            modifier = Modifier.height(80.dp)
+        ) {
+            val navBackStackEntry = navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry.value?.destination?.route
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                items.forEach { item ->
+                    val isSelected = currentRoute == item.route
+                    NavigationBarItem(
+                        label = {},
+                        icon = {
+                            Image(
+                                painter = painterResource(id = item.iconRes),
+                                contentDescription = null,
+                                modifier = Modifier.size(70.dp)
+                            )
+                        },
+                        selected = isSelected,
+
+                        onClick = {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color(0xFF7F5855), // icona selezionata
+                            selectedTextColor = Color(0xFF7F5855), // testo selezionato
+                            indicatorColor = Color(0xFF7F5855), // indicatore di selezione
+
+                        ),
                         )
-                    },
-                    selected = navController.currentDestination?.route == item.route,
-                    onClick = {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                )
+                }
             }
         }
     }

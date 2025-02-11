@@ -104,6 +104,8 @@ class MainActivity : ComponentActivity() {
                                 Log.e("MainActivity", "Dispenser ID not found or invalid")
                             }
                         }
+                        //composable("notification") { Notification(navController) }
+
                     }
                 }
             }
@@ -191,9 +193,10 @@ class MainActivity : ComponentActivity() {
                                 if (!sentNotifications.containsKey("routine_$nomeGatto")) {
                                     sendNotification(userId, "È ora del pasto per $nomeGatto!")
                                     sentNotifications["routine_$nomeGatto"] = true
+                                    Handler(Looper.getMainLooper()).postDelayed({
+                                        sentNotifications.remove("routine_$nomeGatto")
+                                    }, 60000)
                                 }
-                            } else {
-                                sentNotifications.remove("routine_$nomeGatto")
                             }
                         }
                     }

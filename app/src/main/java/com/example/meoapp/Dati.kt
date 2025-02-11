@@ -3,6 +3,7 @@ package com.example.meoapp
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,13 +33,13 @@ data class Utente (
 data class gatto (
     val nome: String = "",
     val peso: String = "",
-    //val foto: Any,
     val dataNascita: String = "",
     val dispenserId: Int = 0,
     val routine: List<orario> = emptyList(),
     val cronologia: List<orario> = emptyList(),
     val ultimoPasto: orario? = orario("00:00", "0"),
     val icona: String = "",
+    val sesso: String = "",
 )
 
 data class orario (
@@ -59,7 +60,7 @@ data class dispenser(
 )
 
 
-var gattiList = mutableListOf<gatto>()
+var gattiList = mutableStateListOf<gatto>()
 
 fun fetchGattiFromFirebase() {
     val user = Utente("annalisa", "ciao1")
@@ -73,17 +74,12 @@ fun fetchGattiFromFirebase() {
                 gattiList.clear()
                 for (gattoSnapshot in snapshot.children) {
                     try {
-//                        // Recupera l'intero oggetto gatto
-//                        val gatto = gattoSnapshot.getValue(gatto::class.java)
-//                        // Aggiungi l'oggetto gatto alla lista
-//                        gatto?.let {
-//                            gattiList.add(it)
-//                        }
                         val gattoMap = gattoSnapshot.value as? Map<String, Any>
                         gattoMap?.let {
                             val gatto = gatto(
                                 nome = it["nome"] as? String ?: "",
                                 peso = it["peso"] as? String ?: "",
+                                sesso = it["sesso"] as? String ?: "",
                                 dataNascita = it["dataNascita"] as? String ?: "",
                                 dispenserId = (it["dispenserId"] as? Long)?.toInt() ?: 0,
                                 routine = (it["routine"] as?  Map<String, Map<String, String>>)?.values?.map { orarioMap ->
@@ -95,7 +91,9 @@ fun fetchGattiFromFirebase() {
                                 cronologia = (it["cronologia"] as? Map<String, Map<String, String>>)?.values?.map { orarioMap ->
                                     orario(
                                         ora = orarioMap["ora"] ?: "",
-                                        quantita = orarioMap["quantita"] ?: ""
+                                        quantita = orarioMap["quantita"] ?: "",
+                                        mangiato = orarioMap["mangiato"] ?: "",
+                                        giorno = orarioMap["giorno"] ?: ""
                                     )
                                 } ?: emptyList(),
                                 ultimoPasto = it["ultimoPasto"]?.let { ultimoPastoMap ->

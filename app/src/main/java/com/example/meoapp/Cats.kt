@@ -45,12 +45,21 @@ import android.app.DatePickerDialog
 import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 
 //import android.content.Context
@@ -218,7 +227,7 @@ fun AddCats (navController: NavController){
                         val day = calendar.get(Calendar.DAY_OF_MONTH)
                         val month = calendar.get(Calendar.MONTH) + 1 // Mesi partono da 0
                         val year = calendar.get(Calendar.YEAR)
-                        dataNascita = "$day-$month-$year"
+                        dataNascita = "$day/$month/$year"
                     }
                     showDatePicker = false
                 }) {
@@ -507,19 +516,71 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Aggiungi pasto") },
+        title = { Text("Nuovo pasto", style = MaterialTheme.typography.titleMedium,
+            fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))) },
         text = {
             Column {
-                OutlinedTextField(
-                    value = orario,
-                    onValueChange = { orario = it },
-                    //label = { Text("Orario") }
-                )
-                OutlinedTextField(
-                    value = quantita,
-                    onValueChange = { quantita = it },
-                    //label = { Text("Quantità") }
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.orario), // Replace with your drawable resource
+                        contentDescription = "Clock Icon",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
+
+                    )
+                    OutlinedTextField(
+                        value = orario,
+                        onValueChange = {
+                            if (it.length <= 5 && it.matches(Regex("^\\d{0,2}:?\\d{0,2}$"))) {
+                                orario = it
+                            }
+                        },
+//                        visualTransformation = VisualTransformation { text ->
+//                            val formattedText = if (text.length >= 2) {
+//                                text.subSequence(0, 2).toString() + ":" + text.subSequence(2, text.length)
+//                            } else {
+//                                text
+//                            }
+//                            TransformedText(AnnotatedString(formattedText.toString()), OffsetMapping.Identity)
+//                        },
+                        modifier = Modifier
+                            .padding(bottom = 10.dp)
+                            .width(100.dp)
+                            .height(50.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.quantita), // Replace with your drawable resource
+                        contentDescription = "food Icon",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
+
+                        )
+                    OutlinedTextField(
+                        value = quantita,
+                        onValueChange = { quantita = it },
+                        //label = { Text("Quantità") }
+                        modifier = Modifier
+                            .padding(bottom = 10.dp)
+                            .width(100.dp)
+                            .height(50.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+
+                        )
+                }
             }
         },
         confirmButton = {
@@ -561,14 +622,23 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                 },
                 enabled = isFormValid
             ) {
-                Text("Aggiungi")
+                Text("Aggiungi", style = (MaterialTheme.typography.titleSmall),
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                        .padding(8.dp),
+                    color = Color(0xFF7F5855))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Annulla")
+                Text("Annulla", style = (MaterialTheme.typography.titleSmall),
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    fontSize = 12.sp, color = Color(0xFF7F5855))
             }
-        }
+        },
+        containerColor = Color(0XFFFFF5E3)
     )
 }
 
@@ -651,8 +721,10 @@ fun FirstPage() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(16.dp)
             .height(500.dp)
-            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
+            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp))
+            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -668,20 +740,24 @@ fun FirstPage() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Routine", style = MaterialTheme.typography.titleMedium)
+                Text(text = "Routine", style = MaterialTheme.typography.titleMedium,
+                    fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
             }
             LazyColumn {
                 itemsIndexed(gattiList.find { it.nome == GlobalState.gatto }?.routine?: emptyList()) { index, routine ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(8.dp)
+                            .padding(vertical = 4.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0XFFFFF5E3))
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(top = 2.dp, end = 10.dp, start = 10.dp, bottom = 12.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -689,14 +765,17 @@ fun FirstPage() {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Routine ${index + 1}",
-                                    style = MaterialTheme.typography.bodySmall
+                                    text = "Pasto ${index + 1}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontWeight = FontWeight.Bold,
                                 )
                                 Row {
                                     IconButton(onClick = { showAddRoutineDialog = true }) {
                                         Icon(
-                                            Icons.Default.Edit,
-                                            contentDescription = "Edit Routine"
+                                            painter = painterResource(R.drawable.modifica),
+                                            contentDescription = "Edit Routine",
+                                            modifier = Modifier.size(18.dp)
                                         )
                                     }
                                     IconButton(onClick = {
@@ -704,38 +783,53 @@ fun FirstPage() {
                                         orariodelete = routine
                                     }) {
                                         Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = "Delete Routine"
+                                            painter = painterResource(R.drawable.elimina),
+                                            contentDescription = "Delete Routine",
+                                            modifier = Modifier.size(18.dp)
                                         )
                                     }
                                 }
                             }
+                            Divider(
+                                modifier = Modifier.padding(bottom = 10.dp),
+                                color = Color(0xFF7F5855),
+                                thickness = 1.dp
+                            )
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(start = 20.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.orario), // Replace with your drawable resource
                                     contentDescription = "Icona",
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
                                 Text(
                                     text = routine.ora,
-                                    style = MaterialTheme.typography.bodySmall
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
+                            Spacer(modifier = Modifier.height(10.dp))
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(start = 20.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.quantita), // Replace with your drawable resource
                                     contentDescription = "Icona",
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = "${routine.quantita} grammi",
-                                    style = MaterialTheme.typography.bodySmall
+                                    text = "${routine.quantita} gr",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
                         }
@@ -746,8 +840,15 @@ fun FirstPage() {
         }
         Button(onClick = { showAddRoutineDialog = true },
             modifier = Modifier.align(Alignment.BottomCenter)
+                .padding(top = 16.dp, bottom = 16.dp)
+                .height(50.dp)
+                .width(200.dp)
+                .border(1.dp, Color(0xFF000000), RoundedCornerShape(30.dp)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855), contentColor = Color.White),
             ){
-            Text("+ aggiungi routine")
+            Text("+ aggiungi routine", style = (MaterialTheme.typography.titleSmall),
+                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                fontSize = 12.sp)
         }
     }
 }
@@ -882,15 +983,37 @@ fun ThirdPage() {
 }
 
 fun calculateStatistics(cronologia: List<orario>, period: String): Pair<Double, Double> {
+//    val filteredCronologia = when (period) {
+//        "Settimanali" -> cronologia.filter {
+//            (it.giorno?.toLongOrNull() ?: 0L) >= Calendar.getInstance()
+//                .apply { add(Calendar.DAY_OF_YEAR, -7) }.timeInMillis
+//        }
+//        "Mensili" -> cronologia.filter {
+//            (it.giorno?.toLongOrNull() ?: 0L) >= Calendar.getInstance()
+//                .apply { add(Calendar.MONTH, -1) }.timeInMillis
+//        }
+//        else -> cronologia
+//    }
+    fun isCurrentWeek(date: String): Boolean {
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val calendar = Calendar.getInstance()
+        val currentWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+        val currentYear = calendar.get(Calendar.YEAR)
+        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
+        return dateCalendar.get(Calendar.WEEK_OF_YEAR) == currentWeek && dateCalendar.get(Calendar.YEAR) == currentYear
+    }
+
+    fun isCurrentMonth(date: String): Boolean {
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val calendar = Calendar.getInstance()
+        val currentMonth = calendar.get(Calendar.MONTH)
+        val currentYear = calendar.get(Calendar.YEAR)
+        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
+        return dateCalendar.get(Calendar.MONTH) == currentMonth && dateCalendar.get(Calendar.YEAR) == currentYear
+    }
     val filteredCronologia = when (period) {
-        "Settimanali" -> cronologia.filter {
-            (it.giorno?.toLongOrNull() ?: 0L) >= Calendar.getInstance()
-                .apply { add(Calendar.DAY_OF_YEAR, -7) }.timeInMillis
-        }
-        "Mensili" -> cronologia.filter {
-            (it.giorno?.toLongOrNull() ?: 0L) >= Calendar.getInstance()
-                .apply { add(Calendar.MONTH, -1) }.timeInMillis
-        }
+        "Settimanali" -> cronologia.filter { it.giorno?.let { isCurrentWeek(it) } ?: false }
+        "Mensili" -> cronologia.filter { it.giorno?.let { isCurrentMonth(it) } ?: false }
         else -> cronologia
     }
 
@@ -911,7 +1034,7 @@ fun Carousel() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(450.dp)
             .fillMaxSize()
     ) {
         HorizontalPager(
@@ -955,88 +1078,134 @@ fun CatDetail(navController: NavController, gatto: gatto) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("DETTAGLI") },
+                title = { Text("DETTAGLI", style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF7F5855),
+                    fontSize = 26.sp
+                ), modifier = Modifier.padding(top = 25.dp)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF3D6A9) // Sostituisci con il colore desiderato
+                ),
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigate("cats") }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(top = 25.dp)) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF7F5855))
                     }
                 }
             )
-            Divider()
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Top
+        Column (
+            modifier = Modifier.fillMaxSize()
+                .background(Color(0xFFF3D6A9))
         ) {
-            Card(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                shape = RoundedCornerShape(16.dp)
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Top
             ) {
-                Row(
+                Divider(
+                    modifier = Modifier.padding(bottom = 10.dp),
+                    color = Color(0xFF7F5855),
+                    thickness = 2.dp
+                )
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(bottom = 16.dp, start = 16.dp, end = 12.dp, top = 23.dp)
+                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(23.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0XFFFFD89D))
                 ) {
-                    Image(
-                        painter = painterResource(id = iconResource), // Replace with your drawable resource
-                        contentDescription = "Cat Image",
-                        modifier = Modifier.size(80.dp)
-                    )
-                    Column(
-                        modifier = Modifier.weight(1f).padding(start = 16.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = gatto.nome, style = MaterialTheme.typography.bodyLarge)
-                        Text(text = "Peso: ${gatto.peso} kg", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Età: ${calculateAge(gatto.dataNascita)} anni", style = MaterialTheme.typography.bodySmall)
-                    }
-                    IconButton(onClick = { showDialog = true }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Cat")
+                        Image(
+                            painter = painterResource(id = iconResource), // Replace with your drawable resource
+                            contentDescription = "Cat Image",
+                            modifier = Modifier.size(120.dp)
+                        )
+                        Column(
+                            modifier = Modifier.weight(1f).padding(start = 16.dp)
+                        ) {
+                            Text(text = gatto.nome, style = MaterialTheme.typography.titleMedium,
+                                fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                modifier = Modifier.padding(bottom = 5.dp))
+                            Text(
+                                text = "Peso: ${gatto.peso} kg",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                modifier = Modifier.padding(bottom = 5.dp)
+                            )
+                            Text(
+                                text = "Età: ${calculateAge(gatto.dataNascita)} anni",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                modifier = Modifier.padding(bottom = 5.dp)
+                            )
+                            Text(
+                                text = "Sesso: ${gatto.sesso}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular))
+                            )
+
+                        }
+//                        IconButton(onClick = { showDialog = true }) {
+//                            Icon(Icons.Default.Edit, contentDescription = "Edit Cat")
+//                        }
                     }
                 }
-            }
-            Carousel()
+                Carousel()
 
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Seleziona un'immagine") },
-                    text = {
-                        LazyColumn {
-                            items(listOf(R.drawable.foto_profilo, R.drawable.foto_profilo, R.drawable.foto_profilo)) { image ->
-                                Image(
-                                    painter = painterResource(id = image),
-                                    contentDescription = "Selectable Image",
-                                    modifier = Modifier
-                                        .size(80.dp)
-                                        .clickable {
-                                            // Handle image selection
-                                            showDialog = false
-                                        }
-                                )
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Seleziona un'immagine") },
+                        text = {
+                            LazyColumn {
+                                items(
+                                    listOf(
+                                        R.drawable.foto_profilo,
+                                        R.drawable.foto_profilo,
+                                        R.drawable.foto_profilo
+                                    )
+                                ) { image ->
+                                    Image(
+                                        painter = painterResource(id = image),
+                                        contentDescription = "Selectable Image",
+                                        modifier = Modifier
+                                            .size(80.dp)
+                                            .clickable {
+                                                // Handle image selection
+                                                showDialog = false
+                                            }
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Conferma")
                             }
                         }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showDialog = false }) {
-                            Text("Conferma")
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     }
 }
 
 fun calculateAge(birthDate: String): Int {
-    val parts = birthDate.split("-")
+    val parts = birthDate.split("/")
     val day = parts[0].toInt()
     val month = parts[1].toInt()
     val year = parts[2].toInt()

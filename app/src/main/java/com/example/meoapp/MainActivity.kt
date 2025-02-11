@@ -164,10 +164,10 @@ class MainActivity : ComponentActivity() {
                         val livelloCiboDispenser = dispenser.child("livelloCiboDispenser").getValue(Int::class.java) ?: 0
 
                         if (livelloCiboCiotola == 0) {
-                            sendNotification("La ciotola del dispenser \"$nomeDispenser\" è vuota!")
+                            sendNotification(userId, "La ciotola del dispenser \"$nomeDispenser\" è vuota!")
                         }
                         if (livelloCiboDispenser == 0) {
-                            sendNotification("Il dispenser \"$nomeDispenser\" è vuoto!")
+                            sendNotification(userId, "Il dispenser \"$nomeDispenser\" è vuoto!")
                         }
                     }
 
@@ -182,7 +182,7 @@ class MainActivity : ComponentActivity() {
                         for (orario in routine) {
                             val oraRoutine = orario.child("ora").getValue(String::class.java)
                             if (oraRoutine != null && oraRoutine == currentTime) {
-                                sendNotification("È ora del pasto per $nomeGatto!")
+                                sendNotification(userId, "È ora del pasto per $nomeGatto!")
                             }
                         }
                     }
@@ -198,7 +198,30 @@ class MainActivity : ComponentActivity() {
 
 
 
-    private fun sendNotification(message: String) {
+    private fun saveNotificationToDatabase(userId: String, message: String) {
+        val currentDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+        val currentTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+        val notification = mapOf(
+            "ora" to currentTime,
+            "data" to currentDate,
+            "testo" to message
+        )
+
+        val notificationsRef = database.child("Utenti").child(userId).child("notifiche")
+        notificationsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val notificationsList = snapshot.children.map { it.value as Map<String, String> }.toMutableList()
+                notificationsList.add(notification)
+                notificationsRef.setValue(notificationsList)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("MainActivity", "Database error: ${error.message}")
+            }
+        })
+    }
+
+    private fun sendNotification(userId: String, message: String) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             Log.e("MainActivity", "Permission for notifications not granted")
             return
@@ -220,6 +243,9 @@ class MainActivity : ComponentActivity() {
         with(NotificationManagerCompat.from(this)) {
             notify(System.currentTimeMillis().toInt(), builder.build())
         }
+
+        // Save the notification to the database
+        saveNotificationToDatabase(userId, message)
     }
 
     @Composable

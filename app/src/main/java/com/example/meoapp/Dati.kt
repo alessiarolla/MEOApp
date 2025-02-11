@@ -26,8 +26,15 @@ data class Utente (
     val dispensers: List<dispenser>? = null,
     //val Tema: String,
     val notifichePush: Boolean? = null,
+    val notifiche: notifiche? = null,
     //val Lingua: String,
     //val DimensioneTesto: Int,
+)
+
+data class notifiche(
+    val ora: String = "",   // formato HH:mm
+    val data: String? = null, // formato "dd/MM/yyyy"
+    val testo: String = ""
 )
 
 data class gatto (

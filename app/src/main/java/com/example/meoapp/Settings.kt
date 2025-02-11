@@ -93,6 +93,7 @@ fun Settings(navController: NavController) {
         })
     }
 
+    
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -164,6 +165,9 @@ fun Settings(navController: NavController) {
 
 
     if (showDialogPass) {
+        var passwordInput by remember { mutableStateOf(password) }
+        var isPasswordVisible by remember { mutableStateOf(false) }
+
         AlertDialog(
             onDismissRequest = { showDialogPass = false },
             title = {
@@ -177,9 +181,7 @@ fun Settings(navController: NavController) {
                 )
             },
             text = {
-                var isPasswordVisible by remember { mutableStateOf(false) }
-                Card(
-                ) {
+                Card {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -188,8 +190,8 @@ fun Settings(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         TextField(
-                            value = if (isPasswordVisible) password else "*".repeat(password.length),
-                            onValueChange = { password = it },
+                            value = passwordInput,
+                            onValueChange = { passwordInput = it },
                             modifier = Modifier.weight(1f),
                             textStyle = androidx.compose.ui.text.TextStyle(
                                 textAlign = TextAlign.Start,
@@ -217,25 +219,28 @@ fun Settings(navController: NavController) {
             confirmButton = {
                 Button(
                     onClick = {
+                        password = passwordInput
                         database.child(userEmail).child("password").setValue(password)
                         showDialogPass = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
-
                 ) {
                     Text("Conferma")
                 }
             },
             dismissButton = {
-                Button(onClick = { showDialogPass = false },
+                Button(
+                    onClick = { showDialogPass = false },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
                 ) {
-                    Text("  Annulla  ")
+                    Text("Annulla")
                 }
             },
-            containerColor = Color(0xFFF7E2C3) // Set the background color to match the rest
+            containerColor = Color(0xFFF7E2C3)
         )
     }
+
+
 
 
     Scaffold(

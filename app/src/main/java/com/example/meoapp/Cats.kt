@@ -222,10 +222,26 @@ fun AddCats (navController: NavController){
 
     val isFormValid = nome.isNotBlank() && peso.isNotBlank() && dataNascita.isNotBlank() && dispenser.isNotBlank() && sesso.isNotBlank()
 
+
     val context = LocalContext.current
-    val datePickerState = rememberDatePickerState()
+    val config = context.resources.configuration
+    config.setLocale(Locale("it"))
+    context.resources.updateConfiguration(config, context.resources.displayMetrics)
+
 
     if (showDatePicker) {
+        val currentTimeMillis = remember { System.currentTimeMillis() } // Data attuale
+        val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker,
+            initialSelectedDateMillis = currentTimeMillis, // Seleziona oggi come predefinito
+            yearRange = 1900..Calendar.getInstance().get(Calendar.YEAR), // Limita gli anni
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    return utcTimeMillis <= currentTimeMillis // Solo date fino a oggi
+                }
+            }
+        )
+
+
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
@@ -240,11 +256,30 @@ fun AddCats (navController: NavController){
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text("Conferma", color = Color(0xFF7F5855), fontFamily = FontFamily(Font(R.font.autouroneregular)))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Annulla", fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        color = Color(0xFF7F5855)) // Modifica il colore del testo del pulsante
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(state = datePickerState,
+                title = { Text("SELEZIONA UNA DATA", style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF7F5855),
+                    fontSize = 20.sp), modifier = Modifier.padding(start = 15.dp, top = 15.dp))},
+                colors = DatePickerDefaults.colors(
+                containerColor = Color(0xFFF7E2C3), // Modifica il colore di sfondo del DatePicker
+                titleContentColor = Color(0xFF7F5855), // Modifica il colore del titolo
+                headlineContentColor = Color(0xFF7F5855), // Modifica il colore del testo principale
+                weekdayContentColor = Color(0xFF7F5855), // Modifica il colore dei giorni della settimana
+                subheadContentColor = Color(0xFF7F5855), // Modifica il colore del testo secondario
+                selectedDayContentColor = Color.White, // Modifica il colore del testo del giorno selezionato
+                selectedDayContainerColor = Color(0xFF7F5855) // Modifica il colore di sfondo del giorno selezionato
+            ))
         }
     }
 
@@ -458,7 +493,10 @@ fun AddCats (navController: NavController){
                         )
                         ExposedDropdownMenu(
                             expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier
+                                .background(Color(0xFFA37F6F))
+                                .fillMaxWidth()
                         ) {
                             sessoOptions.forEach { option ->
                                 DropdownMenuItem(
@@ -471,9 +509,10 @@ fun AddCats (navController: NavController){
                                         sesso = option
                                         expanded = false
                                     },
-                                    modifier = Modifier
-                                        .background(Color(0xFFA37F6F))
-                                        .fillMaxHeight()
+                                    colors = MenuDefaults.itemColors(
+                                        textColor = Color(0xFF000000),
+
+                                    )
                                 )
                             }
                         }
@@ -730,7 +769,7 @@ fun FirstPage() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .height(500.dp)
             .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp))
             .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(16.dp)),
@@ -867,8 +906,10 @@ fun SecondPage() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .height(500.dp)
-            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
+            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp))
+            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -884,31 +925,60 @@ fun SecondPage() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Cronologia pasti", style = MaterialTheme.typography.titleMedium)
+                Text(text = "Cronologia pasti", style = MaterialTheme.typography.titleMedium,
+                    fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
             }
-            gattiList.find { it.nome == GlobalState.gatto }?.cronologia?.forEachIndexed { index, routine ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Column(
+            LazyColumn {
+                itemsIndexed (gattiList.find { it.nome == GlobalState.gatto }?.cronologia?: emptyList()) { index, routine ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(vertical = 8.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0XFFFFF5E3))
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 2.dp, end = 10.dp, start = 10.dp, bottom = 12.dp)
                         ) {
-                            Text(text = "${routine.giorno ?: "N/A"}, h ${routine.ora}", style = MaterialTheme.typography.bodySmall)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${routine.giorno ?: "N/A"}, h ${routine.ora}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                            Divider(
+                                modifier = Modifier.padding(bottom = 10.dp),
+                                color = Color(0xFF7F5855),
+                                thickness = 1.dp
+                            )
+                            Text(
+                                text = "Quantità totale: ${routine.quantita} gr",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "Quantità mangiata: ${routine.mangiato ?: "N/A"} gr",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
                         }
-                        Divider()
-                        Text(text = "Quantità totale: ${routine.quantita} gr", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Quantità mangiata: ${routine.mangiato ?: "N/A"} gr", style = MaterialTheme.typography.bodySmall)
-                        Log.d("Routine", "Giorno: ${routine.giorno}, Mangiato: ${routine.mangiato}")
                     }
                 }
             }
@@ -931,19 +1001,33 @@ fun ThirdPage() {
 
     val (averageGrams, averagePercentage) = calculateStatistics(filteredCronologia, selectedPeriod)
 
+    // Calcola le ultime 4 settimane per il grafico mensile
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val calendar = Calendar.getInstance()
+    calendar.firstDayOfWeek = Calendar.MONDAY  // Imposta il lunedì come primo giorno della settimana
+    val currentWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+    val currentYear = calendar.get(Calendar.YEAR)
+
+    // Calcola le settimane precedenti
+    val previousWeeks = getPreviousWeeks(currentWeek, currentYear)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .height(500.dp)
-            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
+            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp))
+            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
+                .align(Alignment.TopStart)
         ) {
-            Text(text = "Statistiche", style = MaterialTheme.typography.titleMedium)
+            Text(text = "Statistiche", style = MaterialTheme.typography.titleMedium,
+                fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
 
             ExposedDropdownMenuBox(
                 expanded = expanded,
@@ -955,8 +1039,10 @@ fun ThirdPage() {
                     readOnly = true,
                     modifier = Modifier
                         .menuAnchor()
-                        .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
-                        .height(50.dp)
+                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                        .height(50.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
@@ -982,42 +1068,123 @@ fun ThirdPage() {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Grafico con dati filtrati
-            FoodChart(filteredCronologia, selectedPeriod)
+            FoodChart(filteredCronologia, selectedPeriod, previousWeeks)
         }
     }
+}
+
+// Funzione per filtrare e ottenere le ultime 4 settimane
+fun getPreviousWeeks(week: Int, year: Int): List<Pair<Int, Int>> {
+    val weeks = mutableListOf<Pair<Int, Int>>()
+    var currentWeek = week
+    var currentYear = year
+//    val tempCalendar = Calendar.getInstance()
+//    tempCalendar.firstDayOfWeek = Calendar.MONDAY
+
+    // Aggiungi la settimana corrente
+    weeks.add(Pair(currentYear, currentWeek))
+
+    // Aggiungi le settimane precedenti
+    for (i in 1..3) {
+        currentWeek -= 1
+        if (currentWeek == 0) {
+            currentWeek = 52  // La settimana 52 o 53 dell'anno precedente
+            currentYear -= 1
+        }
+        weeks.add(Pair(currentYear, currentWeek))
+    }
+
+    return weeks.reversed() // Le settimane vanno dalla più vecchia alla più recente
 }
 
 fun filterCronologia(cronologia: List<orario>, period: String): List<orario> {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val calendar = Calendar.getInstance()
+    calendar.firstDayOfWeek = Calendar.MONDAY  // Imposta il lunedì come primo giorno della settimana
+
+    fun parseDate(date: String): Calendar {
+        return Calendar.getInstance().apply {
+            time = formatter.parse(date)
+            firstDayOfWeek = Calendar.MONDAY // Assicuriamoci che il lunedì sia il primo giorno della settimana
+        }
+    }
 
     fun isCurrentWeek(date: String): Boolean {
         val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
+
+        // Modifica qui: settimana che inizia da lunedì
+        val dayOfWeek = (dateCalendar.get(Calendar.DAY_OF_WEEK) + 5) % 7  // 1 -> Lunedì, 7 -> Domenica
+        dateCalendar.set(Calendar.DAY_OF_WEEK, dayOfWeek)
+
         return dateCalendar.get(Calendar.WEEK_OF_YEAR) == calendar.get(Calendar.WEEK_OF_YEAR) &&
                 dateCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
     }
 
-    fun getWeekOfMonth(date: String): Int {
+    fun isCurrentMonth(date: String): Boolean {
         val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
-        return dateCalendar.get(Calendar.WEEK_OF_MONTH)
+        return dateCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) &&
+                dateCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
     }
+
+    fun getWeekOfYear(date: String): Int {
+//        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
+//
+//        // Setta il primo giorno della settimana a lunedì
+//        val dayOfWeek = (dateCalendar.get(Calendar.DAY_OF_WEEK) + 5) % 7  // 1 -> Lunedì, 7 -> Domenica
+//        dateCalendar.set(Calendar.DAY_OF_WEEK, dayOfWeek)
+
+        return parseDate(date).get(Calendar.WEEK_OF_YEAR)
+    }
+
+    fun getYearOfDate(date: String): Int {
+        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
+        return dateCalendar.get(Calendar.YEAR)
+    }
+
+    // Ottieni la settimana e l'anno corrente
+    val currentWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+    val currentYear = calendar.get(Calendar.YEAR)
+
+
 
     return when (period) {
         "Settimanali" -> cronologia.filter { it.giorno?.let { isCurrentWeek(it) } ?: false }
-        "Mensili" -> cronologia.groupBy { it.giorno?.let { getWeekOfMonth(it) } ?: 0 }
-            .mapValues { (_, list) ->
-                list.reduce { acc, orario ->
-                    orario.copy(
-                        mangiato = ((acc.mangiato?.toFloatOrNull() ?: 0f) + (orario.mangiato?.toFloatOrNull() ?: 0f)).toString()
-                    )
+        "Mensili" -> {
+            val previousWeeks = getPreviousWeeks(currentWeek, currentYear)
+
+            // Raggruppa i pasti per settimana dell'anno (indipendentemente dal mese)
+            val weeklyMeals = cronologia.filter { it.giorno?.let { date ->
+                val week = getWeekOfYear(date)
+                val year = getYearOfDate(date)
+                previousWeeks.contains(Pair(year, week))
+            } ?: false }
+                .groupBy { record ->
+                    // Calcola la settimana e l'anno del pasto
+                    val date = formatter.parse(record.giorno ?: "")
+                    val dateCalendar = Calendar.getInstance().apply { time = date }
+                    val weekOfYear = dateCalendar.get(Calendar.WEEK_OF_YEAR)
+                    val year = dateCalendar.get(Calendar.YEAR)
+
+                    // Ritorna una coppia (anno, settimana)
+                    Pair(year, weekOfYear)
                 }
-            }.values.toList()
+                .mapValues { (_, meals) ->
+                    // Somma i pasti consumati nella stessa settimana
+                    meals.reduce { acc, meal ->
+                        acc.copy(
+                            mangiato = ((acc.mangiato?.toFloatOrNull() ?: 0f) + (meal.mangiato?.toFloatOrNull() ?: 0f)).toString()
+                        )
+                    }
+                }
+
+            weeklyMeals.values.toList()
+        }
         else -> cronologia
     }
 }
 
 @Composable
-fun FoodChart(cronologia: List<orario>, period: String) {
+fun FoodChart(cronologia: List<orario>, period: String, previousWeeks: List<Pair<Int, Int>> = emptyList()) {
     val context = LocalContext.current
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val calendar = Calendar.getInstance()
@@ -1041,16 +1208,36 @@ fun FoodChart(cronologia: List<orario>, period: String) {
             }
         }
     } else {
-        xAxisLabels = listOf("Settimana 1", "Settimana 2", "Settimana 3", "Settimana 4")
+        xAxisLabels = listOf("Set. 1", "Set. 2", "Set. 3", "Set. 4")
         foodMap = xAxisLabels.associateWith { 0f }.toMutableMap()
 
+//        cronologia.forEach { record ->
+//            record.giorno?.let { dateString ->
+//                val date = formatter.parse(dateString)
+//                if (date != null) {
+//                    calendar.time = date
+//                    val weekIndex = calendar.get(Calendar.WEEK_OF_MONTH) - 1
+//                    val weekLabel = xAxisLabels.getOrElse(weekIndex) { "Set. 4" }
+//                    foodMap[weekLabel] = (foodMap[weekLabel] ?: 0f) + (record.mangiato?.toFloatOrNull() ?: 0f)
+//                }
+//            }
+//        }
         cronologia.forEach { record ->
             record.giorno?.let { dateString ->
                 val date = formatter.parse(dateString)
                 if (date != null) {
                     calendar.time = date
-                    val weekIndex = calendar.get(Calendar.WEEK_OF_MONTH) - 1
-                    val weekLabel = xAxisLabels.getOrElse(weekIndex) { "Settimana 4" }
+                    val weekIndex = calendar.get(Calendar.WEEK_OF_YEAR) // Prendi il numero della settimana dell'anno
+                    // Controlla se il pasto è in una delle ultime 4 settimane
+                    val weekLabel = when (weekIndex) {
+                        previousWeeks[0].second -> "Set. 1" // La settimana più vecchia
+                        previousWeeks[1].second -> "Set. 2"
+                        previousWeeks[2].second -> "Set. 3"
+                        previousWeeks[3].second -> "Set. 4" // La settimana più recente
+                        else -> return@forEach  // Ignora le settimane fuori dalle ultime 4
+                    }
+
+                    // Aggiungi i dati per la settimana giusta
                     foodMap[weekLabel] = (foodMap[weekLabel] ?: 0f) + (record.mangiato?.toFloatOrNull() ?: 0f)
                 }
             }
@@ -1065,7 +1252,7 @@ fun FoodChart(cronologia: List<orario>, period: String) {
         modifier = Modifier
             .fillMaxWidth()
             .height(300.dp)
-            .padding(16.dp),
+            .padding(10.dp),
         factory = { ctx ->
             BarChart(ctx).apply {
                 description.isEnabled = false
@@ -1075,10 +1262,10 @@ fun FoodChart(cronologia: List<orario>, period: String) {
                 xAxis.granularity = 1f
                 xAxis.valueFormatter = IndexAxisValueFormatter(xAxisLabels)
 
-                val dataSet = BarDataSet(entries, "Cibo mangiato")
-                dataSet.color = Color.Blue.toArgb()
+                val dataSet = BarDataSet(entries, "Cibo consumato")
+                dataSet.color = Color(0xFF7F5855).toArgb()
                 dataSet.valueTextSize = 12f
-                dataSet.valueTextColor = Color.Black.toArgb()
+                dataSet.valueTextColor = Color(0xFF7F5855).toArgb()
 
                 val barData = BarData(dataSet)
                 barData.barWidth = 0.5f
@@ -1091,8 +1278,8 @@ fun FoodChart(cronologia: List<orario>, period: String) {
             val newEntries = foodMap.entries.mapIndexed { index, entry ->
                 BarEntry(index.toFloat(), entry.value)
             }
-            val dataSet = BarDataSet(newEntries, "Cibo mangiato")
-            dataSet.color = Color.Blue.toArgb()
+            val dataSet = BarDataSet(newEntries, "Cibo consumato")
+            dataSet.color = Color(0xFF7F5855).toArgb()
             dataSet.valueTextSize = 12f
 
             val barData = BarData(dataSet)
@@ -1105,82 +1292,6 @@ fun FoodChart(cronologia: List<orario>, period: String) {
     )
 }
 
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun ThirdPage() {
-//    var selectedPeriod by remember { mutableStateOf("Settimanali") }
-//    val periodOptions = listOf("Settimanali", "Mensili")
-//    var expanded by remember { mutableStateOf(false) }
-//    val cronologia = gattiList.find { it.nome == GlobalState.gatto }?.cronologia ?: emptyList()
-//
-//    val (averageGrams, averagePercentage) = calculateStatistics(cronologia, selectedPeriod)
-//
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(500.dp)
-//            .background(Color(0XFFF7E2C3), shape = RoundedCornerShape(16.dp)),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(16.dp)
-//        ) {
-//            Text(text = "Statistiche", style = MaterialTheme.typography.titleMedium)
-//
-//            ExposedDropdownMenuBox(
-//                expanded = expanded,
-//                onExpandedChange = { expanded = !expanded }
-//            ) {
-//                OutlinedTextField(
-//                    value = selectedPeriod,
-//                    onValueChange = { selectedPeriod = it },
-//                    readOnly = true,
-//                    modifier = Modifier
-//                        //.fillMaxWidth()
-//                        .menuAnchor()
-//                        .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
-//                        .height(50.dp)
-//                )
-//                ExposedDropdownMenu(
-//                    expanded = expanded,
-//                    onDismissRequest = { expanded = false }
-//                ) {
-//                    periodOptions.forEach { option ->
-//                        DropdownMenuItem(
-//                            text = { Text(option) },
-//                            onClick = {
-//                                selectedPeriod = option
-//                                expanded = false
-//                            }
-//                        )
-//                    }
-//                }
-//            }
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            Text(text = "Media grammi mangiati: $averageGrams gr", style = MaterialTheme.typography.bodyLarge)
-//            Text(text = "Media percentuale cibo mangiato: $averagePercentage%", style = MaterialTheme.typography.bodyLarge)
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            // Placeholder for the chart
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//                    .border(1.dp, Color.Black)
-//                    //.background(Color.LightGray)
-//            ) {
-//                FoodChart(cronologia)
-//            }
-//        }
-//    }
-//}
-//
 fun calculateStatistics(cronologia: List<orario>, period: String): Pair<Double, Double> {
     fun isCurrentWeek(date: String): Boolean {
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -1212,79 +1323,6 @@ fun calculateStatistics(cronologia: List<orario>, period: String): Pair<Double, 
 
     return Pair(averageGrams, averagePercentage)
 }
-//
-//@Composable
-//fun FoodChart(cronologia: List<orario>) {
-//    val context = LocalContext.current
-//    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-//    val calendar = Calendar.getInstance()
-//
-//    // Lista dei giorni della settimana
-//    val daysOfWeek = listOf("Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom")
-//
-//    // Mappa per il cibo mangiato ogni giorno della settimana
-//    val foodMap = mutableMapOf<String, Float>().apply {
-//        daysOfWeek.forEach { put(it, 0f) }
-//    }
-//
-//    // Popoliamo la mappa con i dati reali
-//    cronologia.forEach { record ->
-//        record.giorno?.let { dateString ->
-//            val date = formatter.parse(dateString)
-//            if (date != null) {
-//                calendar.time = date
-//                val dayIndex = (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7  // Adatta l'ordine dei giorni
-//                val dayLabel = daysOfWeek[dayIndex]
-//                foodMap[dayLabel] = (foodMap[dayLabel] ?: 0f) + (record.mangiato?.toFloatOrNull() ?: 0f)
-//            }
-//        }
-//    }
-//
-//    val entries = foodMap.entries.mapIndexed { index, entry ->
-//        BarEntry(index.toFloat(), entry.value)
-//    }
-//
-//    AndroidView(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(300.dp)
-//            .padding(16.dp),
-//        factory = { ctx ->
-//            BarChart(ctx).apply {
-//                description.isEnabled = false
-//                xAxis.position = XAxis.XAxisPosition.BOTTOM
-//                axisRight.isEnabled = false
-//                axisLeft.axisMinimum = 0f // Inizia sempre da zero
-//                xAxis.granularity = 1f // Per evitare valori duplicati
-//
-//                val dataSet = BarDataSet(entries, "Cibo mangiato")
-//                dataSet.color = Color.Blue.toArgb()
-//                dataSet.valueTextSize = 12f
-//                dataSet.valueTextColor = Color.Black.toArgb()
-//
-//                val barData = BarData(dataSet)
-//                barData.barWidth = 0.5f // Larghezza delle barre
-//
-//                this.data = barData
-//                invalidate()
-//            }
-//        },
-//        update = { chart ->
-//            val newEntries = foodMap.entries.mapIndexed { index, entry ->
-//                BarEntry(index.toFloat(), entry.value)
-//            }
-//            val dataSet = BarDataSet(newEntries, "Cibo mangiato")
-//            dataSet.color = Color.Blue.toArgb()
-//            dataSet.valueTextSize = 12f
-//
-//            val barData = BarData(dataSet)
-//            barData.barWidth = 0.5f
-//
-//            chart.data = barData
-//            chart.invalidate() // Aggiorna il grafico
-//        }
-//    )
-//}
 
 
 @Composable

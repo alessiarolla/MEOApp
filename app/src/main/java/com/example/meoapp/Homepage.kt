@@ -56,6 +56,7 @@ import java.util.concurrent.TimeUnit
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.fontResource
+import androidx.compose.ui.text.font.FontVariation.width
 import kotlin.math.cos
 import kotlin.math.sin
 @OptIn(ExperimentalMaterial3Api::class)
@@ -152,18 +153,32 @@ fun Homepage(navController: NavController) {
         }
 
 
+            Row(){
+            Image(
+                painter = painterResource(id = R.drawable.notification), // Replace with your image resource
+                contentDescription = "Notifiche",
+                modifier = Modifier
+                    .padding(start = 40.dp, bottom = 14.dp)
+                    .size(36.dp)
+                    .clickable {
+                        navController.navigate("notification")
+                    }
+            )
 
-        // Add this inside the Column in the Homepage composable at line 150
-        Image(
-            painter = painterResource(id = R.drawable.notification), // Replace with your image resource
-            contentDescription = "Notifiche",
-            modifier = Modifier
-                .padding(start = 40.dp, bottom = 14.dp)
-                .size(36.dp)
-                .clickable {
-                    navController.navigate("notification")
-                }
-        )
+            /*
+            Image(
+                painter = painterResource(id = R.drawable.dispenser_icon), // Replace with your image resource
+                contentDescription = "Pagina Dispenser",
+                modifier = Modifier
+                    .padding(start = 40.dp, bottom = 14.dp)
+                    .size(36.dp)
+                    .clickable {
+                        navController.navigate("dispenserDetail/$dispenserId") },
+
+                )
+                */
+
+            }
 
 
 
@@ -202,6 +217,10 @@ fun Homepage(navController: NavController) {
                     val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
                     val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
                     val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
+
+
+
+
 
                     val imageRes = when {
                         perc <= 0.33 -> R.drawable.percprossimopastobassa
@@ -999,68 +1018,146 @@ fun Notification(navController: NavController) {
             )
 
             if (notifications.isEmpty()) {
-                Text(
-                    "Nessuna notifica presente",
-                    style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF7F5855)),
-                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-                    textAlign = TextAlign.Center
-                )
-            } else {
-                LazyColumn {
-                    items(notifications.size) { index ->
-                        val notification = notifications[index]
-                        val data = notification["data"]
-                        val ora = notification["ora"]
-                        val testo = notification["testo"]
-
-                        Card(
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(vertical = 8.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0XFFF7E2C3))
+                    ){
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1D0))
-                        ) {
+                                .padding(20.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Text(
+                                text = "Nessuna notifica presente",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                fontFamily = customFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
 
-                            Column(
-                                modifier = Modifier.
-                                    padding(16.dp),
-                                verticalArrangement = Arrangement.Center
+                    }
+
+
+                }
+            } else {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0XFFF7E2C3))
+                    ){
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Text(text = "Ultime notifiche", style = MaterialTheme.typography.titleMedium,
+                                fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize()
+
                             ) {
-                                Text(
-                                    text = "$data, h $ora",
-                                    textAlign = TextAlign.Start,
-                                    fontFamily = customFontFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
-                                Divider(
-                                    color = Color.Black,
-                                    thickness = 1.dp,
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                )
-                                Text(
-                                    text = "$testo",
-                                    textAlign = TextAlign.Start,
-                                    fontFamily = customFontFamily,
-                                    fontWeight = FontWeight.Normal,
-                                    fontSize = 14.sp
-                                )
+                                items(notifications.size) { index ->
+                                    val notification = notifications[index]
+                                    val data = notification["data"]
+                                    val ora = notification["ora"]
+                                    val testo = notification["testo"]
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 8.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ){
+
+                                    }
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
+                                        shape = RoundedCornerShape(8.dp),
+                                        elevation = CardDefaults.cardElevation(4.dp),
+                                        colors = CardDefaults.cardColors(containerColor = Color(0XFFFFF5E3))
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(16.dp),
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                text = "$data, h $ora",
+                                                textAlign = TextAlign.Start,
+                                                fontFamily = customFontFamily,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 16.sp
+                                            )
+                                            Divider(
+                                                color = Color.Black,
+                                                thickness = 1.dp,
+                                                modifier = Modifier.padding(vertical = 4.dp)
+                                            )
+                                            Text(
+                                                text = "$testo",
+                                                textAlign = TextAlign.Start,
+                                                fontFamily = customFontFamily,
+                                                fontWeight = FontWeight.Normal,
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
+
+                    }
+
+                    Button(
+                        onClick = {
+                            database.removeValue()  // Cancella tutte le notifiche dal database
+                        },
+                        modifier = Modifier
+                            .width(160.dp)
+                            .padding(16.dp)
+                            .align(Alignment.BottomCenter),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855))
+                    ) {
+                        Text("Cancella\nnotifiche",
+                            color = Color.White,
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp)
                     }
                 }
 
 
-                Button(
-                    onClick = {
-                        database.removeValue()  // Cancella tutte le notifiche dal database
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855))
-                ) {
-                    Text("Cancella notifiche", color = Color.White)
-                }
+
             }
         }
     }

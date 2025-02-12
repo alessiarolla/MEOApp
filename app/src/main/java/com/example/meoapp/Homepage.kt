@@ -56,9 +56,6 @@ import java.util.concurrent.TimeUnit
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.fontResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import kotlin.math.cos
 import kotlin.math.sin
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1019,46 +1016,32 @@ fun Notification(navController: NavController) {
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .height(120.dp),
+                                .padding(10.dp),
                             colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1D0))
                         ) {
+
                             Column(
                                 modifier = Modifier.
-                                    padding(4.dp),
+                                    padding(16.dp),
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = buildAnnotatedString {
-                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                            append("Data: ")
-                                        }
-                                        append("$data")
-                                    },
+                                    text = "$data, h $ora",
                                     textAlign = TextAlign.Start,
                                     fontFamily = customFontFamily,
-                                    fontSize = 14.sp
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                                Divider(
+                                    color = Color.Black,
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(vertical = 4.dp)
                                 )
                                 Text(
-                                    text = buildAnnotatedString {
-                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                            append("Ora: ")
-                                        }
-                                        append("$ora")
-                                    },
+                                    text = "$testo",
                                     textAlign = TextAlign.Start,
                                     fontFamily = customFontFamily,
-                                    fontSize = 14.sp
-                                )
-                                Text(
-                                    text = buildAnnotatedString {
-                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                            append("Messaggio: ")
-                                        }
-                                        append("$testo")
-                                    },
-                                    textAlign = TextAlign.Start,
-                                    fontFamily = customFontFamily,
+                                    fontWeight = FontWeight.Normal,
                                     fontSize = 14.sp
                                 )
                             }

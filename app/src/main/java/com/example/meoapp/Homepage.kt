@@ -56,6 +56,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.fontResource
 import kotlin.math.cos
 import kotlin.math.sin
+@OptIn(ExperimentalMaterial3Api::class)
+
+
 
 @Composable
 fun Homepage(navController: NavController) {
@@ -75,7 +78,7 @@ fun Homepage(navController: NavController) {
 
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
-    
+
     LaunchedEffect(user) {
         database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -146,6 +149,22 @@ fun Homepage(navController: NavController) {
             )
         }
 
+
+
+        // Add this inside the Column in the Homepage composable at line 150
+        Image(
+            painter = painterResource(id = R.drawable.notification), // Replace with your image resource
+            contentDescription = "Notifiche",
+            modifier = Modifier
+                .padding(start = 40.dp, bottom = 14.dp)
+                .size(36.dp)
+                .clickable {
+                    navController.navigate("notification")
+                }
+        )
+
+
+
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 
             if (gatti.size == 0){
@@ -201,7 +220,7 @@ fun Homepage(navController: NavController) {
                                 Image(
                                     painter = painterResource(id = imageRes),
                                     contentDescription = "Indicatore prossimità pasto",
-                                    modifier = Modifier.size(190.dp).align(Alignment.CenterHorizontally)
+                                    modifier = Modifier.size(160.dp).align(Alignment.CenterHorizontally)
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -209,7 +228,9 @@ fun Homepage(navController: NavController) {
                                 Text(
                                     text = " $nome",
                                     fontFamily = customFontFamily,
-                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontSize = 30.sp,
+                                        fontWeight = FontWeight.Bold),
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Center
                                 )
@@ -222,54 +243,41 @@ fun Homepage(navController: NavController) {
                                 val routine = gattoData["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
 
                                 if (routine.isEmpty()) {
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(1.5.dp, Color.Black, shape = RoundedCornerShape(25.dp)),
-                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFCA9E8B)),
-                                        shape = RoundedCornerShape(25.dp)
-                                    ) {
+                                    Spacer(modifier = Modifier.height(20.dp))
                                         Text(
                                             text = "Nessuna routine programmata",
                                             fontFamily = customFontFamily,
                                             style = MaterialTheme.typography.titleLarge.
-                                            copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                                            copy(fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
                                             modifier = Modifier
                                                 .padding(16.dp)
                                                 .fillMaxWidth(),
                                             textAlign = TextAlign.Center
                                         )
-                                    }
+
                                     } else {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(top = 8.dp)
+                                            .padding(top = 20.dp) //tra nome gatto e prossimo pasto tra...
                                     ) {
-                                        Card(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .border(1.5.dp, Color.Black, shape = RoundedCornerShape(25.dp)),
-                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFCA9E8B)),
-                                            shape = RoundedCornerShape(25.dp)
-                                        ) {
+
                                             Text(
                                                 text = "Prossimo pasto tra...",
                                                 fontFamily = customFontFamily,
-                                                style = MaterialTheme.typography.titleLarge.
-                                                copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                                                style = MaterialTheme.typography.titleSmall.
+                                                copy(fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
                                                 modifier = Modifier
-                                                    .padding(16.dp)
+                                                    .padding(10.dp)
                                                     .fillMaxWidth(),
                                                 textAlign = TextAlign.Center
                                             )
-                                        }
+
 
                                         Card(
                                             modifier = Modifier
                                                 .align(Alignment.BottomCenter)
-                                                .padding(top = 50.dp)
+                                                .padding(top = 34.dp)
                                                 .width(200.dp)
                                                 .border(1.dp, Color.Black, shape = RoundedCornerShape(15.dp)),
                                             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -745,7 +753,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
 
                     Card(
                         modifier = Modifier
-                            .width(150.dp) // Set the desired width
+                            .width(130.dp) // Set the desired width
                             .height(50.dp) // Set the desired height
                             .padding(8.dp)
                             .border(1.dp, Color.Black, shape = RoundedCornerShape(14.dp)),
@@ -804,7 +812,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 }
 
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
 
                 currentGatto?.let { gatto ->
@@ -854,7 +862,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     val filteredDispensers = dispensers.values.filter { it["dispenserId"] == dispenserId }
@@ -873,7 +881,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
 
                 Card(
@@ -881,10 +889,10 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                     modifier = Modifier
                         .width(170.dp) // Set the desired width
                         .align(Alignment.CenterHorizontally)
-                        .border(2.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
-                        .background(Color(0xFFA37F6F), RoundedCornerShape(25.dp)),
-                    shape = RoundedCornerShape(25.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFA37F6F))
+                        .border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
+                        .background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
+                    shape = RoundedCornerShape(40.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
                 ) {
                     Text(
                         text = "Aggiungi\n\ndispenser",
@@ -918,3 +926,73 @@ fun aggiornaDispenserIdNelDatabase(user: String, gattoNome: String, nuovoDispens
         }
     })
 }
+
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Notification(navController: NavController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "NOTIFICHE",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                            color = Color(0xFF7F5855),
+                            fontSize = 26.sp
+                        ),
+                        modifier = Modifier.padding(top = 25.dp)
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF3D6A9)
+                ),
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(top = 25.dp)
+                    ) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF7F5855))
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF3D6A9))
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            Divider(
+                modifier = Modifier.padding(bottom = 10.dp),
+                color = Color(0xFF7F5855),
+                thickness = 2.dp
+            )
+            var user = "annalisa"
+            var notification by remember { mutableStateOf<List<Map<String, String>>>(emptyList()) }
+
+            val database = FirebaseDatabase.getInstance().reference.child("Utenti")
+            LaunchedEffect(user) {
+                database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val userSnapshot = snapshot.children.firstOrNull()
+                        if (userSnapshot != null) {
+                            userSnapshot.child("notifiche").let {
+                                notification = it.children.associate { it.key!! to it.value as Map<String, String> }.values.toList()
+                            }
+                        }}
+                    override fun onCancelled(error: DatabaseError) {}
+                })
+            }
+
+
+
+            }
+    }
+}
+

@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
                                 Log.e("MainActivity", "Dispenser ID not found or invalid")
                             }
                         }
-                        //composable("notification") { Notification(navController) }
+                        composable("notification") { Notification(navController) }
 
                     }
                 }

@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -54,6 +56,9 @@ import java.util.concurrent.TimeUnit
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.fontResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import kotlin.math.cos
 import kotlin.math.sin
 @OptIn(ExperimentalMaterial3Api::class)
@@ -961,6 +966,28 @@ fun Notification(navController: NavController) {
             )
         }
     ) { innerPadding ->
+        var user = "annalisa"
+        var notifications by remember { mutableStateOf<List<Map<String, String>>>(emptyList()) }
+        val database = FirebaseDatabase.getInstance().reference.child("Utenti").child(user).child("notifiche")
+
+        LaunchedEffect(user) {
+            database.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val notificationsList = mutableListOf<Map<String, String>>()
+                    for (notifica in snapshot.children) {
+                        val data = notifica.child("data").getValue(String::class.java) ?: ""
+                        val ora = notifica.child("ora").getValue(String::class.java) ?: ""
+                        val testo = notifica.child("testo").getValue(String::class.java) ?: ""
+                        notificationsList.add(mapOf("data" to data, "ora" to ora, "testo" to testo))
+                    }
+                    // Ordina dalla più recente alla più vecchia
+                    notifications = notificationsList.sortedByDescending { it["data"] + it["ora"] }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -973,26 +1000,87 @@ fun Notification(navController: NavController) {
                 color = Color(0xFF7F5855),
                 thickness = 2.dp
             )
-            var user = "annalisa"
-            var notification by remember { mutableStateOf<List<Map<String, String>>>(emptyList()) }
 
-            val database = FirebaseDatabase.getInstance().reference.child("Utenti")
-            LaunchedEffect(user) {
-                database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        val userSnapshot = snapshot.children.firstOrNull()
-                        if (userSnapshot != null) {
-                            userSnapshot.child("notifiche").let {
-                                notification = it.children.associate { it.key!! to it.value as Map<String, String> }.values.toList()
+            if (notifications.isEmpty()) {
+                Text(
+                    "Nessuna notifica presente",
+                    style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF7F5855)),
+                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                LazyColumn {
+                    items(notifications.size) { index ->
+                        val notification = notifications[index]
+                        val data = notification["data"]
+                        val ora = notification["ora"]
+                        val testo = notification["testo"]
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .height(120.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1D0))
+                        ) {
+                            Column(
+                                modifier = Modifier.
+                                    padding(4.dp),
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                            append("Data: ")
+                                        }
+                                        append("$data")
+                                    },
+                                    textAlign = TextAlign.Start,
+                                    fontFamily = customFontFamily,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                            append("Ora: ")
+                                        }
+                                        append("$ora")
+                                    },
+                                    textAlign = TextAlign.Start,
+                                    fontFamily = customFontFamily,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                            append("Messaggio: ")
+                                        }
+                                        append("$testo")
+                                    },
+                                    textAlign = TextAlign.Start,
+                                    fontFamily = customFontFamily,
+                                    fontSize = 14.sp
+                                )
                             }
-                        }}
-                    override fun onCancelled(error: DatabaseError) {}
-                })
+                        }
+                    }
+                }
+
+
+                Button(
+                    onClick = {
+                        database.removeValue()  // Cancella tutte le notifiche dal database
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855))
+                ) {
+                    Text("Cancella notifiche", color = Color.White)
+                }
             }
-
-
-
-            }
+        }
     }
 }
+
 

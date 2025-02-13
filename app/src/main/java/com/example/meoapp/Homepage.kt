@@ -776,8 +776,10 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             fontFamily = FontFamily(Font(R.font.autouroneregular)),
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 18.sp,
-                            textAlign = TextAlign.Center
-                        )
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
+
+                            )
 
                     Spacer(modifier = Modifier.height(20.dp))
 

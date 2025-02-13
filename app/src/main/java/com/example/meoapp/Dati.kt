@@ -15,11 +15,13 @@ import com.google.firebase.database.ValueEventListener
 object GlobalState {
     var utente: Utente? = null
     var gatto: String = ""
+    var username: String = ""
 }
 
 
 data class Utente (
     val nome: String = "",
+    val email: String? = "",
     val password: String = "",
     val nomeUtente: String? = null,
     val gatti: Any = emptyMap<String, gatto>(),

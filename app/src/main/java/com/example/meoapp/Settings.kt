@@ -63,7 +63,7 @@ import java.time.format.TextStyle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Settings(navController: NavController) {
-    var userEmail = "annalisa"
+    var userEmail = GlobalState.username
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
 
@@ -133,14 +133,16 @@ fun Settings(navController: NavController) {
             },
             confirmButton = {
                 Button(
-                    onClick = {
+                    onClick = {},
+                    /*onClick = {
                         database.child(userEmail).child("nomeUtente").setValue(nomeUtente)
                         database.child(userEmail).child("email").setValue(nomeUtente)
+                        GlobalState.username = nomeUtente
                         showDialog = false
                         navController.navigate("settings") {
                             popUpTo("settings") { inclusive = true }
                         }
-                    },
+                    },*/
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
 
                 ) {

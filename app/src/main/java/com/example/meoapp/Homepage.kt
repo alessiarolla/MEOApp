@@ -66,7 +66,7 @@ import kotlin.math.sin
 
 @Composable
 fun Homepage(navController: NavController) {
-    var user = "annalisa"
+    var user = GlobalState.username
     var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
     var currentDispenserIndex by remember { mutableStateOf(0) }
@@ -720,7 +720,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 thickness = 2.dp
             )
 
-            var user = "annalisa"
+            var user = GlobalState.username
             var gatti by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
             var dispensers by remember { mutableStateOf<Map<String, Map<String, Any>>>(emptyMap()) }
             var currentGatto by remember { mutableStateOf<Map<String, Any>?>(null) }
@@ -1076,7 +1076,7 @@ fun Notification(navController: NavController) {
             )
         }
     ) { innerPadding ->
-        var user = "annalisa"
+        var user = GlobalState.username
         var notifications by remember { mutableStateOf<List<Map<String, String>>>(emptyList()) }
         val database = FirebaseDatabase.getInstance().reference.child("Utenti").child(user).child("notifiche")
 

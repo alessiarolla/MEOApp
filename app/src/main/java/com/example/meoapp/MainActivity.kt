@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -74,15 +76,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             MEOAppTheme {
                 val navController = rememberNavController()
+
                 Scaffold(
-                    bottomBar = { BottomBar(navController) }
+                    bottomBar = {BottomBar(navController)}
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "home",
+                        startDestination = "login",
                         Modifier.padding(innerPadding)
                     ) {
                         composable("login") { Login(navController) }
+                        composable("registrazione") { Registrazione(navController) }
                         composable("home") { Homepage(navController) }
                         composable("settings") { Settings(navController) }
                         composable("cats") { Cats(navController) }
@@ -154,7 +158,7 @@ class MainActivity : ComponentActivity() {
 
     private val sentNotifications = mutableMapOf<String, Boolean>()
     private fun fetchAndCheckData() {
-        val userId = "annalisa"
+        var userId = GlobalState.username
         database.child("Utenti").child(userId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val notifichePush = snapshot.child("notifichePush").getValue(Boolean::class.java) ?: false

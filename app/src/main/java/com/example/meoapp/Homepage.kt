@@ -42,6 +42,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -153,7 +154,11 @@ fun Homepage(navController: NavController) {
         }
 
 
-            Row(){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.notification), // Replace with your image resource
                 contentDescription = "Notifiche",
@@ -165,18 +170,20 @@ fun Homepage(navController: NavController) {
                     }
             )
 
-            /*
-            Image(
+                val currentGatto = gatti.values.toList().getOrNull(currentGattoIndex)
+                val dispenserId = currentGatto?.get("dispenserId") as? Long ?: 0
+
+                Image(
                 painter = painterResource(id = R.drawable.dispenser_icon), // Replace with your image resource
                 contentDescription = "Pagina Dispenser",
                 modifier = Modifier
-                    .padding(start = 40.dp, bottom = 14.dp)
+                    .padding(end = 40.dp, bottom = 14.dp)
                     .size(36.dp)
                     .clickable {
                         navController.navigate("dispenserDetail/$dispenserId") },
 
                 )
-                */
+
 
             }
 
@@ -185,6 +192,8 @@ fun Homepage(navController: NavController) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 
             if (gatti.size == 0){
+                Spacer(modifier = Modifier.height(50.dp))
+
                 Text(
                     text = "Nessun gatto inserito",
                     fontFamily = customFontFamily,
@@ -402,8 +411,7 @@ fun Homepage(navController: NavController) {
                 val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
                 val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
                 Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { navController.navigate("dispenserDetail/$dispenserId") },
+                    .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly) {
                     CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g",
                     )
@@ -688,7 +696,11 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.padding(top = 25.dp)
                     ) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF7F5855))
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color(0xFF7F5855)
+                        )
                     }
                 }
             )
@@ -721,23 +733,29 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
             LaunchedEffect(user) {
-                database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        val userSnapshot = snapshot.children.firstOrNull()
-                        if (userSnapshot != null) {
-                            userSnapshot.child("gatti").let {
-                                gatti = it.children.associate { it.key!! to it.value as Map<String, Any> }
+                database.orderByChild("nomeUtente").equalTo(user)
+                    .addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val userSnapshot = snapshot.children.firstOrNull()
+                            if (userSnapshot != null) {
+                                userSnapshot.child("gatti").let {
+                                    gatti =
+                                        it.children.associate { it.key!! to it.value as Map<String, Any> }
+                                }
+                                userSnapshot.child("dispensers").let {
+                                    dispensers =
+                                        it.children.associate { it.key!! to it.value as Map<String, Any> }
+                                }
+                                currentGatto =
+                                    gatti.values.firstOrNull { it["dispenserId"] == dispenserId }
+                                dispenserName =
+                                    dispensers.values.firstOrNull { it["dispenserId"] == dispenserId }
+                                        ?.get("nome") as? String ?: ""
                             }
-                            userSnapshot.child("dispensers").let {
-                                dispensers = it.children.associate { it.key!! to it.value as Map<String, Any> }
-                            }
-                            currentGatto = gatti.values.firstOrNull { it["dispenserId"] == dispenserId }
-                            dispenserName = dispensers.values.firstOrNull { it["dispenserId"] == dispenserId }?.get("nome") as? String ?: ""
                         }
-                    }
 
-                    override fun onCancelled(error: DatabaseError) {}
-                })
+                        override fun onCancelled(error: DatabaseError) {}
+                    })
             }
 
             LaunchedEffect(currentGatto) {
@@ -747,187 +765,263 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             }
 
 
+            if (gatti.isEmpty()) {
+                Column(){
 
-            Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)) {
+                        Text(
+                            text = "Nessun dispenser presente",
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .fillMaxWidth(),
+                            fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center
+                        )
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Nome dispenser:",
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Start,
-                        fontFamily = customFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-
-                    // Dropdown menu per selezionare il dispenser
-                    var expanded by remember { mutableStateOf(false) }
-                    val availableDispensers = dispensers.filter { dispenser ->
-                        !gatti.values.any { it["dispenserId"] == dispenser.value["dispenserId"] }
-                    }
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Card(
+                        onClick = { },
                         modifier = Modifier
-                            .width(130.dp) // Set the desired width
-                            .height(50.dp) // Set the desired height
-                            .padding(8.dp)
-                            .border(1.dp, Color.Black, shape = RoundedCornerShape(14.dp)),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3D6A9)) // Set the background color to match the background
+                            .width(170.dp) // Set the desired width
+                            .align(Alignment.CenterHorizontally)
+                            .border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
+                            .background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
+                        shape = RoundedCornerShape(40.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
                     ) {
-                        TextButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                fontFamily = customFontFamily,
-                                color = Color.Black,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                text = dispenserName.ifEmpty { "Dispenser" })
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.arrow_down),
-                                    contentDescription = "Arrow Down",
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.
-                                background(Color(0xFFF3D6A9))
-                        ) {
-                            availableDispensers.forEach { (key, dispenser) ->
-                                DropdownMenuItem(
-                                    modifier = Modifier.height(30.dp),
-                                    onClick = {
-                                        selectedDispenserId = dispenser["dispenserId"] as Long
-                                        dispenserName = dispenser["nome"] as String
-                                        aggiornaDispenserIdNelDatabase(user, currentGatto?.get("nome") as? String ?: "", selectedDispenserId)
-                                        expanded = false
-                                        navController.navigate("dispenserDetail/$selectedDispenserId") {
-                                            popUpTo("dispenserDetail/$selectedDispenserId") { inclusive = true }
-                                        }
-                                    },
-                                    text = {
-                                        Text(
-                                            text = dispenser["nome"] as String,
-                                            fontFamily = customFontFamily,
-                                            color = Color.Black,
-                                            fontSize = 10.sp
-                                        )
-                                    }                                )
-                            }
-                        }
+                        Text(
+                            text = "Aggiungi\n\ndispenser",
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .fillMaxWidth(),
+                            fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 18.sp,
+                            color = Color(0xFFFFFFFF),
+                            textAlign = TextAlign.Center
+                        )
                     }
+
+
 
                 }
 
 
-                Spacer(modifier = Modifier.height(40.dp))
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
+                ) {
+
+                    Spacer(modifier = Modifier.height(20.dp))
 
 
-                currentGatto?.let { gatto ->
-                    currentGatto?.let { gatto ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Nome dispenser:",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+
+                        // Dropdown menu per selezionare il dispenser
+                        var expanded by remember { mutableStateOf(false) }
+                        val availableDispensers = dispensers.filter { dispenser ->
+                            !gatti.values.any { it["dispenserId"] == dispenser.value["dispenserId"] }
+                        }
+
+                        Card(
+                            modifier = Modifier
+                                .width(130.dp) // Set the desired width
+                                .height(50.dp) // Set the desired height
+                                .padding(8.dp)
+                                .border(1.dp, Color.Black, shape = RoundedCornerShape(14.dp)),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF3D6A9)) // Set the background color to match the background
                         ) {
-                            Text(
-                                text = "Gatto associato:",
-                                modifier = Modifier.weight(1f),
-                                textAlign = TextAlign.Start,
-                                fontFamily = customFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-
-                            Column(
-                                modifier = Modifier.height(120.dp), // Imposta un'altezza specifica
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            )
-                            { val iconResource = when (gatto["icona"]) {
-                                "foto-profilo1" -> R.drawable.foto_profilo
-                                "foto-profilo2" -> R.drawable.foto_profilo2
-                                "foto-profilo3" -> R.drawable.foto_profilo3
-                                // Aggiungi altri casi per le altre icone
-                                else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
-                            }
-                                Image(
-                                    painter = painterResource(id = iconResource), // Replace with your drawable resource
-                                    contentDescription = "Cat Image",
-                                    modifier = Modifier.size(80.dp).padding(end = 8.dp)
-                                )
+                            TextButton(
+                                onClick = { expanded = true },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
                                 Text(
-                                    text = "${gatto["nome"]}",
+                                    fontFamily = customFontFamily,
+                                    color = Color.Black,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    text = dispenserName.ifEmpty { "Dispenser" })
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.arrow_down),
+                                        contentDescription = "Arrow Down",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier.background(Color(0xFFF3D6A9))
+                            ) {
+                                availableDispensers.forEach { (key, dispenser) ->
+                                    DropdownMenuItem(
+                                        modifier = Modifier.height(30.dp),
+                                        onClick = {
+                                            selectedDispenserId = dispenser["dispenserId"] as Long
+                                            dispenserName = dispenser["nome"] as String
+                                            aggiornaDispenserIdNelDatabase(
+                                                user,
+                                                currentGatto?.get("nome") as? String ?: "",
+                                                selectedDispenserId
+                                            )
+                                            expanded = false
+                                            navController.navigate("dispenserDetail/$selectedDispenserId") {
+                                                popUpTo("dispenserDetail/$selectedDispenserId") {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        },
+                                        text = {
+                                            Text(
+                                                text = dispenser["nome"] as String,
+                                                fontFamily = customFontFamily,
+                                                color = Color.Black,
+                                                fontSize = 10.sp
+                                            )
+                                        })
+                                }
+                            }
+                        }
+
+                    }
+
+
+                    Spacer(modifier = Modifier.height(40.dp))
+
+
+                    currentGatto?.let { gatto ->
+                        currentGatto?.let { gatto ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Gatto associato:",
                                     modifier = Modifier.weight(1f),
                                     textAlign = TextAlign.Start,
                                     fontFamily = customFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
                                 )
+
+                                Column(
+                                    modifier = Modifier.height(120.dp), // Imposta un'altezza specifica
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                )
+                                {
+                                    val iconResource = when (gatto["icona"]) {
+                                        "foto-profilo1" -> R.drawable.foto_profilo
+                                        "foto-profilo2" -> R.drawable.foto_profilo2
+                                        "foto-profilo3" -> R.drawable.foto_profilo3
+                                        // Aggiungi altri casi per le altre icone
+                                        else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
+                                    }
+                                    Image(
+                                        painter = painterResource(id = iconResource), // Replace with your drawable resource
+                                        contentDescription = "Cat Image",
+                                        modifier = Modifier.size(80.dp).padding(end = 8.dp)
+                                    )
+                                    Text(
+                                        text = "${gatto["nome"]}",
+                                        modifier = Modifier.weight(1f),
+                                        textAlign = TextAlign.Start,
+                                        fontFamily = customFontFamily,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    )
+                                }
+
+
                             }
-
-
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
 
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    val filteredDispensers = dispensers.values.filter { it["dispenserId"] == dispenserId }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val filteredDispensers =
+                            dispensers.values.filter { it["dispenserId"] == dispenserId }
 
-                    if (filteredDispensers.isNotEmpty()) {
-                        val currentDispenser = filteredDispensers.firstOrNull() ?: emptyMap()
-                        val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
-                        val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / lastMealQuantityFloat) * 100
-                        val livelloCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat() / capacitàDispenser * 100)
-                        val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
-                        val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                            CircularProgressIndicator(livelloCiboDispenser, "Cibo Dispenser: $labelCiboDispenser g")
-                            CircularProgressIndicator(livelloCiboCiotola, "  Cibo Ciotola: $labelCiboCiotola g ")
+                        if (filteredDispensers.isNotEmpty()) {
+                            val currentDispenser = filteredDispensers.firstOrNull() ?: emptyMap()
+                            val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
+                            val livelloCiboCiotola =
+                                ((currentDispenser["livelloCiboCiotola"] as? Long
+                                    ?: 0).toFloat() / lastMealQuantityFloat) * 100
+                            val livelloCiboDispenser =
+                                ((currentDispenser["livelloCiboDispenser"] as? Long
+                                    ?: 0).toFloat() / capacitàDispenser * 100)
+                            val labelCiboCiotola =
+                                ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
+                            val labelCiboDispenser =
+                                ((currentDispenser["livelloCiboDispenser"] as? Long
+                                    ?: 0).toString())
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                CircularProgressIndicator(
+                                    livelloCiboDispenser,
+                                    "Cibo Dispenser: $labelCiboDispenser g"
+                                )
+                                CircularProgressIndicator(
+                                    livelloCiboCiotola,
+                                    "  Cibo Ciotola: $labelCiboCiotola g "
+                                )
+                            }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
 
 
-                Card(
-                    onClick = { },
-                    modifier = Modifier
-                        .width(170.dp) // Set the desired width
-                        .align(Alignment.CenterHorizontally)
-                        .border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
-                        .background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
-                    shape = RoundedCornerShape(40.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
-                ) {
-                    Text(
-                        text = "Aggiungi\n\ndispenser",
+                    Card(
+                        onClick = { },
                         modifier = Modifier
-                            .padding(12.dp)
-                            .fillMaxWidth(),
-                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontSize = 18.sp,
-                        color = Color(0xFFFFFFFF),
-                        textAlign = TextAlign.Center
-                    )
-                }
+                            .width(170.dp) // Set the desired width
+                            .align(Alignment.CenterHorizontally)
+                            .border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
+                            .background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
+                        shape = RoundedCornerShape(40.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
+                    ) {
+                        Text(
+                            text = "Aggiungi\n\ndispenser",
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .fillMaxWidth(),
+                            fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 18.sp,
+                            color = Color(0xFFFFFFFF),
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
+                }
             }
         }
     }

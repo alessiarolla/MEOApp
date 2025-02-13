@@ -78,7 +78,12 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 Scaffold(
-                    bottomBar = {BottomBar(navController)}
+                    bottomBar = {
+                        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                        if (currentRoute != "login" && currentRoute != "registrazione") {
+                            BottomBar(navController)
+                        }
+                    }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,

@@ -59,7 +59,7 @@ data class orario (
 )
 
 data class dispenser(
-    val id: Int = 0,
+    val dispenserId: Int = 0,
     val nome: String,
     //val livelloBatteria: Int,
     val livelloCiboCiotola: Int,

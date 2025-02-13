@@ -63,8 +63,7 @@ data class dispenser(
     val nome: String,
     //val livelloBatteria: Int,
     val livelloCiboCiotola: Int,
-    val livelloCiboDispenser: Int,
-    val stato: Boolean,
+    val livelloCiboDispenser: Int
     //val gatti: List<gatto>
 )
 

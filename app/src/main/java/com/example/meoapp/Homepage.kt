@@ -594,7 +594,7 @@ fun calcolaUltimoPasto(gatto: Map<String, Any>): String {
 }
 
 fun calcolaUltimoPastoQuantità(gatto: Map<String, Any>): String {
-    return (gatto["ultimoPasto"] as? Map<String, Any>)?.get("quantità") as? String ?: "100"
+    return (gatto["ultimoPasto"] as? Map<String, Any>)?.get("quantita") as? String ?: "100"
 }
 
 

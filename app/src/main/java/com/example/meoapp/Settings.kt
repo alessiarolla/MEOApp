@@ -221,9 +221,11 @@ fun Settings(navController: NavController) {
             confirmButton = {
                 Button(
                     onClick = {
-                        password = passwordInput
-                        database.child(userEmail).child("password").setValue(password)
-                        showDialogPass = false
+                        if (passwordInput.isNotEmpty()) {
+                            password = passwordInput
+                            database.child(userEmail).child("password").setValue(password)
+                            showDialogPass = false
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
                 ) {

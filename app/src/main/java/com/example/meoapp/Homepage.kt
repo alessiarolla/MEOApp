@@ -1152,7 +1152,8 @@ fun Notification(navController: NavController) {
 
                 }
             } else {
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(    modifier = Modifier.height(510.dp)
+                ) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1238,25 +1239,25 @@ fun Notification(navController: NavController) {
 
                     }
 
-                    Button(
-                        onClick = {
-                            database.removeValue()  // Cancella tutte le notifiche dal database
-                        },
-                        modifier = Modifier
-                            .width(160.dp)
-                            .padding(16.dp)
-                            .align(Alignment.BottomCenter),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855))
-                    ) {
-                        Text("Cancella\nnotifiche",
-                            color = Color.White,
-                            textAlign = TextAlign.Start,
-                            fontFamily = customFontFamily,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 14.sp)
-                    }
-                }
 
+                }
+                Button(
+                    onClick = {
+                        database.removeValue()
+                    },
+                    modifier = Modifier
+                        .width(160.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855))
+                ) {
+                    Text("Cancella\nnotifiche",
+                        color = Color.White,
+                        textAlign = TextAlign.Start,
+                        fontFamily = customFontFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp)
+                }
 
 
             }

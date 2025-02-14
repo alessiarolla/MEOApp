@@ -529,7 +529,7 @@ fun AddCats (navController: NavController){
                             "icona" to selectedImage,
                             "routine" to emptyList<orario>(),
                         )
-                        val user = Utente("annalisa", "ciao1")
+                        val user = Utente(GlobalState.username)
                         if (user != null) {
                             val database = FirebaseDatabase.getInstance().reference
                             database.child("Utenti").child(user.nome).child("gatti").push()
@@ -558,9 +558,13 @@ fun AddCats (navController: NavController){
 
 @Composable
 fun AddRoutineDialog(onDismiss: () -> Unit) {
-    var orario by remember { mutableStateOf("") }
+    var ore by remember { mutableStateOf("") }
+    var min by remember { mutableStateOf("") }
+    var orario = "$ore:$min:00"
     var quantita by remember { mutableStateOf("") }
-    val isFormValid = orario.isNotBlank() && quantita.isNotBlank()
+    val isFormValid = orario.matches(Regex("^\\d{2}:\\d{2}:00$")) && quantita.isNotBlank()
+    var messaggioErrore by remember { mutableStateOf("") }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -580,23 +584,27 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
 
                     )
                     OutlinedTextField(
-                        value = orario,
-                        onValueChange = {
-                            if (it.length <= 5 && it.matches(Regex("^\\d{0,2}:?\\d{0,2}$"))) {
-                                orario = it
-                            }
-                        },
-//                        visualTransformation = VisualTransformation { text ->
-//                            val formattedText = if (text.length >= 2) {
-//                                text.subSequence(0, 2).toString() + ":" + text.subSequence(2, text.length)
-//                            } else {
-//                                text
-//                            }
-//                            TransformedText(AnnotatedString(formattedText.toString()), OffsetMapping.Identity)
-//                        },
+                        value = ore,
+                        onValueChange = { ore = it },
                         modifier = Modifier
                             .padding(bottom = 10.dp)
-                            .width(100.dp)
+                            .width(60.dp)
+                            .height(50.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                    Text(":", style = TextStyle(fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))), modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = 8.dp, end = 8.dp))
+                    OutlinedTextField(
+                        value = min,
+                        onValueChange = { min = it },
+                        singleLine = true,
+                        modifier = Modifier
+                            .padding(bottom = 10.dp)
+                            .width(60.dp)
                             .height(50.dp)
                             .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
                         shape = RoundedCornerShape(20.dp),
@@ -626,16 +634,29 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                             .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
                         shape = RoundedCornerShape(20.dp),
                         textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
-
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
                 }
+                Text(messaggioErrore, color = Color.Red, fontSize = 12.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
             }
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (isFormValid) {
-                        val user = Utente("annalisa", "ciao1")
+                    if (!isFormValid) {
+                        messaggioErrore = buildString {
+                            if (ore.isNotBlank() || min.isNotBlank()) {
+                                append("Il campo orario non può essere vuoto")
+                            }
+                            if (quantita.isBlank()) {
+                                if (isNotEmpty()) append(" ")
+                                append("Quantità non può essere vuota")
+                            } else if (orario.matches(Regex("^\\d{2}:\\d{2}:00$"))) {
+                                if (isNotEmpty()) append(" ")
+                                append("Orario non valido")
+                        }}
+                    } else if (isFormValid) {
+                        val user = Utente(GlobalState.username)
                         if (user != null) {
                             val database = FirebaseDatabase.getInstance().reference
                             val gattoName = GlobalState.gatto
@@ -677,6 +698,7 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                         .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
                         .padding(8.dp),
                     color = Color(0xFF7F5855))
+                //Log.d("Firebase", "Routine aggiunta: $orario")
             }
         },
         dismissButton = {
@@ -699,7 +721,7 @@ fun DeleteRoutineDialog(onDismiss: () -> Unit, orario: orario) {
         confirmButton = {
             TextButton(
                 onClick = {
-                    val user = Utente("annalisa", "ciao1")
+                    val user = Utente(GlobalState.username)
                     if (user != null) {
                         val database = FirebaseDatabase.getInstance().reference
                         val gattoName = GlobalState.gatto
@@ -854,7 +876,7 @@ fun FirstPage() {
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = routine.ora,
+                                    text = if (routine.ora.length >= 5) routine.ora.substring(0, 5) else routine.ora,
                                     style = MaterialTheme.typography.bodySmall,
                                     fontFamily = FontFamily(Font(R.font.autouroneregular)),
                                     fontSize = 14.sp,

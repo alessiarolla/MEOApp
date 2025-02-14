@@ -21,7 +21,7 @@ object GlobalState {
 
 data class Utente (
     val nome: String = "",
-    val email: String? = "",
+    //val email: String? = "",
     val password: String = "",
     val nomeUtente: String? = null,
     val gatti: Any = emptyMap<String, gatto>(),

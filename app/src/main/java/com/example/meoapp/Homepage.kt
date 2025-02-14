@@ -237,9 +237,14 @@ fun Homepage(navController: NavController) {
                         else -> R.drawable.percprossimopastoalta
                     }
                     item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
                         Card(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .height(350.dp)
+                                .width(300.dp)
                                 .padding(8.dp)
                                 .border(2.dp, Color.Black, shape = RoundedCornerShape(25.dp)),
                             colors = CardDefaults.cardColors(containerColor = Color(0xFFF7E2C3)),
@@ -375,7 +380,7 @@ fun Homepage(navController: NavController) {
 
                                 }
                             }
-                        }
+                        }}
                     }
                 }
             }

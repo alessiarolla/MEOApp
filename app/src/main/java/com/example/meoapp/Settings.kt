@@ -104,8 +104,7 @@ fun Settings(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     fontFamily = customFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    fontSize = 20.sp
                 )
             },
             text = {
@@ -125,8 +124,7 @@ fun Settings(navController: NavController) {
                         textStyle = androidx.compose.ui.text.TextStyle(
                             textAlign = TextAlign.Start,
                             fontFamily = customFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            fontSize = 14.sp
                         ),singleLine = true
                         )
                 }}
@@ -158,8 +156,7 @@ fun Settings(navController: NavController) {
                     Text("  Annulla  ")
                 }
             },
-            containerColor = Color(0xFFF7E2C3) // Set the background color to match the rest
-
+            containerColor = Color(0xFFF7E2C3)
         )
     }
 
@@ -178,8 +175,7 @@ fun Settings(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     fontFamily = customFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    fontSize = 20.sp
                 )
             },
             text = {
@@ -198,8 +194,7 @@ fun Settings(navController: NavController) {
                             textStyle = androidx.compose.ui.text.TextStyle(
                                 textAlign = TextAlign.Start,
                                 fontFamily = customFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
+                                fontSize = 14.sp
                             ),
                             singleLine = true,
                             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()

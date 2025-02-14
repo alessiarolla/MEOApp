@@ -38,11 +38,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -113,6 +117,8 @@ fun Login(navController: NavController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        var passwordVisible by remember { mutableStateOf(false) }
+
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -122,7 +128,17 @@ fun Login(navController: NavController) {
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
                     modifier = Modifier.fillMaxWidth(),
             ) },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (passwordVisible) R.drawable.visible else R.drawable.not_visible
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Image(
+                        painter = painterResource(id = image),
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            },
             modifier = Modifier
                 .width(250.dp)
                 .align(Alignment.CenterHorizontally)
@@ -134,7 +150,12 @@ fun Login(navController: NavController) {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(
-                "Non hai un account? Registrati ora",
+                buildAnnotatedString {
+                    append("Non hai un account? ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("Registrati ora")
+                    }
+                },
                 fontFamily = customFontFamily,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 10.sp),
             )
@@ -258,6 +279,7 @@ fun Registrazione(navController: NavController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        var passwordVisible by remember { mutableStateOf(false) }
 
         OutlinedTextField(
             value = password,
@@ -270,7 +292,17 @@ fun Registrazione(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                 )
             },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (passwordVisible) R.drawable.visible else R.drawable.not_visible
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Image(
+                        painter = painterResource(id = image),
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            },
             modifier = Modifier
                 .width(250.dp)
                 .align(Alignment.CenterHorizontally)
@@ -282,7 +314,12 @@ fun Registrazione(navController: NavController) {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(
-                "Hai già un account? Accedi",
+                buildAnnotatedString {
+                    append("Hai già un account? ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("Accedi")
+                    }
+                },
                 fontFamily = customFontFamily,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 10.sp),
             )

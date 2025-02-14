@@ -1152,7 +1152,7 @@ fun Notification(navController: NavController) {
 
                 }
             } else {
-                Box(    modifier = Modifier.height(510.dp)
+                Box(    modifier = Modifier.height(520.dp)
                 ) {
                     Card(
                         modifier = Modifier

@@ -198,6 +198,7 @@ fun Registrazione(navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     val database = FirebaseDatabase.getInstance()
     val utentiRef = database.getReference("Utenti")
+    var errore by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -291,16 +292,26 @@ fun Registrazione(navController: NavController) {
 
         Button(
             onClick = {
-                val nuovoUtente = mapOf(
-                    "email" to username,
-                    "password" to password,
-                    "nomeUtente" to username,
-                    "gatti" to emptyMap<String, Any>(),
-                    "dispensers" to emptyList<Any>(),
-                    "notifichePush" to true
-                )
-                utentiRef.child(username).setValue(nuovoUtente).addOnSuccessListener {
-                    showDialog = true
+                if (username.isNotEmpty() && password.isNotEmpty()) {
+                    utentiRef.child(username).get().addOnSuccessListener { snapshot ->
+                        if (snapshot.exists()) {
+                            showDialog = true
+                            errore = "Username già in uso"
+                        } else {
+                            val nuovoUtente = mapOf(
+                                "email" to username,
+                                "password" to password,
+                                "nomeUtente" to username,
+                                "gatti" to emptyMap<String, Any>(),
+                                "dispensers" to emptyList<Any>(),
+                                "notifichePush" to true
+                            )
+                            utentiRef.child(username).setValue(nuovoUtente).addOnSuccessListener {
+                                showDialog = true
+                                errore = "Utente registrato con successo"
+                            }
+                        }
+                    }
                 }
             },
             modifier = Modifier
@@ -313,48 +324,39 @@ fun Registrazione(navController: NavController) {
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
-
             )
         }
-    }
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = {},
-            title = { Text("Registrazione completata",
-                fontFamily = customFontFamily,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-
-            ) },
-            text = { Text("Utente registrato con successo",
-                fontFamily = customFontFamily,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 12.sp),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-
-            ) },
-            confirmButton = {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Button(
-                        onClick = { navController.navigate("login") },
-                        modifier = Modifier
-                            .width(150.dp)
-                            .align(Alignment.Center)
-                    ) {
-                        Text(
-                            "Continua",
-                            fontFamily = customFontFamily,
-                            style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Registrazione",
+                    fontFamily = customFontFamily,
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center)
+                },
+                text = { Text(errore,
+                    fontFamily = customFontFamily,
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 12.sp),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center)
+                },
+                confirmButton = {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Button(onClick = { showDialog = false },
+                            modifier = Modifier
+                                .width(80.dp)
+                                .align(Alignment.Center)) {
+                            Text("OK",
+                                fontFamily = customFontFamily,
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center)
+                        }}
                 }
-            }
-        )
-    }
-}
+            )
+        }
+    }}
 
 
 

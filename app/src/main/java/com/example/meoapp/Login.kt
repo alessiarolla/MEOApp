@@ -164,7 +164,7 @@ fun Login(navController: NavController) {
                 },
                 fontFamily = customFontFamily,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 10.sp),
-                color = Color(0xFF000000),
+                color = Color(0xFF7F5855),
             )
         }
         Spacer(modifier = Modifier.height(14.dp))
@@ -339,6 +339,7 @@ fun Registrazione(navController: NavController) {
                 },
                 fontFamily = customFontFamily,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 10.sp),
+                color = Color(0xFF7F5855)
             )
         }
 
@@ -347,31 +348,39 @@ fun Registrazione(navController: NavController) {
         Button(
             onClick = {
                 if (username.isNotEmpty() && password.isNotEmpty()) {
-                    utentiRef.child(username).get().addOnSuccessListener { snapshot ->
-                        if (snapshot.exists()) {
-                            showDialog = true
-                            errore = "Username già in uso"
-                        } else {
-                            val nuovoUtente = mapOf(
-                                "email" to username,
-                                "password" to password,
-                                "nomeUtente" to username,
-                                "gatti" to emptyMap<String, Any>(),
-                                "dispensers" to emptyList<Any>(),
-                                "notifichePush" to true
-                            )
-                            utentiRef.child(username).setValue(nuovoUtente).addOnSuccessListener {
+                    utentiRef.orderByChild("nomeUtente").equalTo(username).addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (snapshot.exists()) {
                                 showDialog = true
-                                errore = "Utente registrato con successo"
+                                errore = "Username già in uso"
+                            } else {
+                                val nuovoUtente = mapOf(
+                                    "email" to username,
+                                    "password" to password,
+                                    "nomeUtente" to username,
+                                    "gatti" to emptyMap<String, Any>(),
+                                    "dispensers" to emptyList<Any>(),
+                                    "notifichePush" to true
+                                )
+                                utentiRef.child(username).setValue(nuovoUtente).addOnSuccessListener {
+                                    showDialog = true
+                                    errore = "Utente registrato con successo"
+                                }
                             }
                         }
-                    }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            errore = "Errore di connessione"
+                        }
+                    })
                 }
             },
             modifier = Modifier
-                .width(150.dp)
+                .width(140.dp)
                 .align(Alignment.CenterHorizontally)
-        ) {
+                .background(Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                .border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855)),        ) {
             Text(
                 "Registrati",
                 fontFamily = customFontFamily,

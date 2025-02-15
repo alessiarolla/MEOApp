@@ -54,7 +54,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 
 @SuppressLint("RememberReturnType")
@@ -167,22 +170,30 @@ fun Login(navController: NavController) {
         Spacer(modifier = Modifier.height(14.dp))
         Button(
             onClick = {
-                utentiRef.child(username).get().addOnSuccessListener { snapshot ->
-                    if (snapshot.exists()) {
-                        val dbPassword = snapshot.child("password").value as? String
-                        if (dbPassword == password) {
-                            utentiRef.child("loggato").setValue(true)
-                            utentiRef.child("utenteLoggato").setValue(username)
-                            GlobalState.username = username
-                            navController.navigate("home")
-                        } else {
-                            errore = "Password errata"
+                if (username.isNotEmpty() && password.isNotEmpty()) {
+                    val utentiRef = database.getReference("Utenti")
+                    utentiRef.orderByChild("nomeUtente").equalTo(username).addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val userSnapshot = snapshot.children.firstOrNull()
+                            if (userSnapshot != null) {
+                                val dbPassword = userSnapshot.child("password").getValue(String::class.java)
+                                if (dbPassword == password) {
+                                    utentiRef.child("loggato").setValue(true)
+                                    utentiRef.child("utenteLoggato").setValue(username)
+                                    GlobalState.username = username
+                                    navController.navigate("home")
+                                } else {
+                                    errore = "Password errata"
+                                }
+                            } else {
+                                errore = "Username errato"
+                            }
                         }
-                    } else {
-                        errore = "Username errato"
-                    }
-                }.addOnFailureListener {
-                    errore = "Errore di connessione"
+
+                        override fun onCancelled(error: DatabaseError) {
+                            errore = "Errore di connessione"
+                        }
+                    })
                 }
             },
             modifier = Modifier
@@ -191,7 +202,6 @@ fun Login(navController: NavController) {
                 .background(Color(0xFF7F5855), RoundedCornerShape(20.dp))
                 .border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp)),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855)),
-            //shape = RoundedCornerShape(20.dp)
         ) {
             Text(
                 "Accedi",

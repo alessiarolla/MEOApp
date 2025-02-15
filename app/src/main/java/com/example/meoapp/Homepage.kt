@@ -1085,23 +1085,31 @@ fun Notification(navController: NavController) {
     ) { innerPadding ->
         var user = GlobalState.username
         var notifications by remember { mutableStateOf<List<Map<String, String>>>(emptyList()) }
-        val database = FirebaseDatabase.getInstance().reference.child("Utenti").child(user).child("notifiche")
+        val database = FirebaseDatabase.getInstance().reference.child("Utenti")
+
+        var nomeUtente by remember { mutableStateOf("") }
 
         LaunchedEffect(user) {
-            database.addValueEventListener(object : ValueEventListener {
+            database.orderByChild("nomeUtente").equalTo(user).addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val notificationsList = mutableListOf<Map<String, String>>()
-                    for (notifica in snapshot.children) {
-                        val data = notifica.child("data").getValue(String::class.java) ?: ""
-                        val ora = notifica.child("ora").getValue(String::class.java) ?: ""
-                        val testo = notifica.child("testo").getValue(String::class.java) ?: ""
-                        notificationsList.add(mapOf("data" to data, "ora" to ora, "testo" to testo))
+                    val userSnapshot = snapshot.children.firstOrNull()
+                    userSnapshot?.let {
+                        nomeUtente = it.child("nomeUtente").getValue(String::class.java) ?: ""
+
+                        val notificationsList = mutableListOf<Map<String, String>>()
+                        for (notifica in it.child("notifiche").children) {
+                            val data = notifica.child("data").getValue(String::class.java) ?: ""
+                            val ora = notifica.child("ora").getValue(String::class.java) ?: ""
+                            val testo = notifica.child("testo").getValue(String::class.java) ?: ""
+                            notificationsList.add(mapOf("data" to data, "ora" to ora, "testo" to testo))
+                        }
+                        notifications = notificationsList
                     }
-                    // Ordina dalla più recente alla più vecchia
-                    notifications = notificationsList.sortedByDescending { it["data"] + it["ora"] }
                 }
 
-                override fun onCancelled(error: DatabaseError) {}
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle possible errors
+                }
             })
         }
 

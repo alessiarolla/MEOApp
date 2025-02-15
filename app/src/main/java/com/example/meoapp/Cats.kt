@@ -408,6 +408,7 @@ fun AddCats (navController: NavController){
                             .width(100.dp),
                         shape = RoundedCornerShape(20.dp),
                         textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         trailingIcon = {
                             Box(
                                 modifier = Modifier
@@ -585,7 +586,7 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                     )
                     OutlinedTextField(
                         value = ore,
-                        onValueChange = { ore = it },
+                        onValueChange = { if (it.length <= 2) ore = it  },
                         modifier = Modifier
                             .padding(bottom = 10.dp)
                             .width(60.dp)
@@ -600,7 +601,7 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                         .padding(start = 8.dp, end = 8.dp))
                     OutlinedTextField(
                         value = min,
-                        onValueChange = { min = it },
+                        onValueChange = { if (it.length <= 2) min = it  },
                         singleLine = true,
                         modifier = Modifier
                             .padding(bottom = 10.dp)
@@ -637,24 +638,18 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
                 }
-                Text(messaggioErrore, color = Color.Red, fontSize = 12.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
+                Text(
+                    text = messaggioErrore,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)))
             }
         },
         confirmButton = {
             TextButton(
                 onClick = {
                     if (!isFormValid) {
-                        messaggioErrore = buildString {
-                            if (ore.isNotBlank() || min.isNotBlank()) {
-                                append("Il campo orario non può essere vuoto")
-                            }
-                            if (quantita.isBlank()) {
-                                if (isNotEmpty()) append(" ")
-                                append("Quantità non può essere vuota")
-                            } else if (orario.matches(Regex("^\\d{2}:\\d{2}:00$"))) {
-                                if (isNotEmpty()) append(" ")
-                                append("Orario non valido")
-                        }}
+                        messaggioErrore = "Riempi tutti i campi"
                     } else if (isFormValid) {
                         val user = Utente(GlobalState.username)
                         if (user != null) {
@@ -716,8 +711,10 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
 fun DeleteRoutineDialog(onDismiss: () -> Unit, orario: orario) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Conferma eliminazione") },
-        text = { Text("Sei sicuro di voler eliminare questa routine?") },
+        title = { Text("Conferma eliminazione", style = MaterialTheme.typography.titleMedium,
+            fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))  },
+        text = { Text("Sei sicuro di voler eliminare questa routine?", style = MaterialTheme.typography.bodySmall,
+            fontSize = 15.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))) },
         confirmButton = {
             TextButton(
                 onClick = {
@@ -780,6 +777,7 @@ fun FirstPage() {
     var showAddRoutineDialog by remember { mutableStateOf(false) }
     var showDeleteRoutineDialog by remember { mutableStateOf(false) }
     var orariodelete by remember { mutableStateOf(orario("","")) }
+    val sortedRoutine = gattiList.find { it.nome == GlobalState.gatto }?.routine?.sortedBy { it.ora } ?: emptyList()
 
     if (showAddRoutineDialog) {
         AddRoutineDialog(onDismiss = { showAddRoutineDialog = false })
@@ -814,7 +812,7 @@ fun FirstPage() {
                     fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
             }
             LazyColumn {
-                itemsIndexed(gattiList.find { it.nome == GlobalState.gatto }?.routine?: emptyList()) { index, routine ->
+                itemsIndexed(sortedRoutine) { index, routine ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -925,6 +923,8 @@ fun FirstPage() {
 
 @Composable
 fun SecondPage() {
+    val sortedRoutine = gattiList.find { it.nome == GlobalState.gatto }?.cronologia?.sortedWith(compareBy({ SimpleDateFormat("dd/MM/yyyy").parse(it.giorno) },{ it.ora })) ?: emptyList()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -951,7 +951,7 @@ fun SecondPage() {
                     fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
             }
             LazyColumn {
-                itemsIndexed (gattiList.find { it.nome == GlobalState.gatto }?.cronologia?: emptyList()) { index, routine ->
+                itemsIndexed (sortedRoutine) { index, routine ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()

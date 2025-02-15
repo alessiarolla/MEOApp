@@ -76,6 +76,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             MEOAppTheme {
                 val navController = rememberNavController()
+                val isLoggedIn = remember { mutableStateOf(false) }
+                checkIfUserIsLoggedIn { isLoggedIn.value = it }
 
                 Scaffold(
                     bottomBar = {
@@ -87,7 +89,18 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "login",
+                        startDestination = if (isLoggedIn.value) {
+                            database.child("Utenti").addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    GlobalState.username = snapshot.child("utenteLoggato").getValue(String::class.java) ?: ""
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    Log.e("MainActivity", "Database error: ${error.message}")
+                                }
+                            })
+                            "home"
+                        } else "login",
                         Modifier.padding(innerPadding)
                     ) {
                         composable("login") { Login(navController) }
@@ -119,6 +132,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun checkIfUserIsLoggedIn(callback: (Boolean) -> Unit) {
+        database.child("Utenti").child("loggato").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val isLoggedIn = snapshot.getValue(Boolean::class.java) ?: false
+                callback(isLoggedIn)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("MainActivity", "Database error: ${error.message}")
+                callback(false)
+            }
+        })
     }
 
     private fun startRoutineChecker() {

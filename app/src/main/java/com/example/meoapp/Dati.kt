@@ -29,8 +29,7 @@ data class Utente (
     //val Tema: String,
     val notifichePush: Boolean? = null,
     val notifiche: notifiche? = null,
-    //val Lingua: String,
-    //val DimensioneTesto: Int,
+    val loggato: Boolean? = false
 )
 
 data class notifiche(

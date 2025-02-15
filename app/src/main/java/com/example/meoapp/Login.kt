@@ -3,6 +3,7 @@ package com.example.meoapp
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +15,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -158,18 +161,17 @@ fun Login(navController: NavController) {
                 },
                 fontFamily = customFontFamily,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 10.sp),
+                color = Color(0xFF000000),
             )
         }
-
         Spacer(modifier = Modifier.height(14.dp))
-
-
         Button(
             onClick = {
                 utentiRef.child(username).get().addOnSuccessListener { snapshot ->
                     if (snapshot.exists()) {
                         val dbPassword = snapshot.child("password").value as? String
                         if (dbPassword == password) {
+                            utentiRef.child("loggato").setValue(true)
                             GlobalState.username = username
                             navController.navigate("home")
                         } else {
@@ -183,8 +185,12 @@ fun Login(navController: NavController) {
                 }
             },
             modifier = Modifier
-                .width(110.dp)
+                .width(120.dp)
                 .align(Alignment.CenterHorizontally)
+                .background(Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                .border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855)),
+            //shape = RoundedCornerShape(20.dp)
         ) {
             Text(
                 "Accedi",

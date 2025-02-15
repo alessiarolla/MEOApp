@@ -144,13 +144,35 @@ fun Homepage(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo_app),
-                contentDescription = "App Logo",
+            Box(
                 modifier = Modifier
-                    .padding(4.dp)
-                    .size(80.dp) // Adjust the size as needed
-            )
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo_app),
+                    contentDescription = "App Logo",
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(80.dp) // Adjust the size as needed
+                )
+
+                IconButton(
+                    onClick = {
+                        logout(navController)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(end = 16.dp, top = 4.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.logout),
+                        contentDescription = "Logout"
+                    )
+                }
+            }
+
+
         }
 
 
@@ -183,6 +205,7 @@ fun Homepage(navController: NavController) {
                         navController.navigate("dispenserDetail/$dispenserId") },
 
                 )
+
 
 
             }
@@ -1274,3 +1297,23 @@ fun Notification(navController: NavController) {
 }
 
 
+private fun logout(navController: NavController) {
+    val database = FirebaseDatabase.getInstance().reference.child("Utenti")
+    val user = GlobalState.username
+
+    database.orderByChild("nomeUtente").equalTo(user).addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val userSnapshot = snapshot.children.firstOrNull()
+            database.child("loggato")?.setValue(false)
+            database.child("utenteLoggato")?.setValue("")
+            GlobalState.username = ""
+            navController.navigate("login") {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("MainActivity", "Database error: ${error.message}")
+        }
+    })
+}

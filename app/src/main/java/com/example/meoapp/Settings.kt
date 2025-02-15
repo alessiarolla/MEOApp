@@ -131,16 +131,28 @@ fun Settings(navController: NavController) {
             },
             confirmButton = {
                 Button(
-                    onClick = {},
-                    /*onClick = {
-                        database.child(userEmail).child("nomeUtente").setValue(nomeUtente)
-                        database.child(userEmail).child("email").setValue(nomeUtente)
+
+                    onClick = {
+                        database.orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val userSnapshot = snapshot.children.firstOrNull()
+                                userSnapshot?.let {
+                                    it.ref.child("nomeUtente").setValue(nomeUtente)
+                                    it.ref.child("email").setValue(nomeUtente)
+                                    database.child("utenteLoggato").setValue(nomeUtente)
+
+                                }
+                            }
+                            override fun onCancelled(error: DatabaseError) {
+                                // Handle error
+                            }
+                        })
                         GlobalState.username = nomeUtente
                         showDialog = false
                         navController.navigate("settings") {
                             popUpTo("settings") { inclusive = true }
                         }
-                    },*/
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
 
                 ) {

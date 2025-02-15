@@ -46,8 +46,10 @@ import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -81,11 +83,15 @@ fun Cats(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("I TUOI GATTI", style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                    color = Color(0xFF7F5855),
-                    fontSize = 26.sp
-                ), modifier = Modifier.padding(top = 25.dp)) },
+                title = {
+                    Text(
+                        "I TUOI GATTI", style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                            color = Color(0xFF7F5855),
+                            fontSize = 26.sp
+                        ), modifier = Modifier.padding(top = 25.dp)
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFFF3D6A9) // Sostituisci con il colore desiderato
                 )
@@ -93,7 +99,7 @@ fun Cats(navController: NavController) {
 
         }
     ) { innerPadding ->
-        Column (
+        Column(
             modifier = Modifier.fillMaxSize()
                 .background(Color(0xFFF3D6A9))
         ) {
@@ -109,12 +115,105 @@ fun Cats(navController: NavController) {
                     color = Color(0xFF7F5855),
                     thickness = 2.dp
                 )
+
+                Spacer(modifier = Modifier.height(30.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(500.dp)
+                        .padding(bottom = 16.dp)
+                        .background(Color(0XFFFBF1E3), RoundedCornerShape(16.dp))
+                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(16.dp)),
+                ) {
+                    HorizontalPager(
+                        state = pagerState,
+                        //pageCount = gattiList.size,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        val cat = gattiList[page]
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            val iconResource = when (cat.icona) {
+                                "foto-profilo1" -> R.drawable.foto_profilo
+                                "foto-profilo2" -> R.drawable.foto_profilo
+                                "foto-profilo3" -> R.drawable.foto_profilo
+                                "foto-profilo4" -> R.drawable.foto_profilo
+                                // Aggiungi altri casi per le altre icone
+                                else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
+                            }
+                            Image(
+                                painter = painterResource(id = iconResource), // Replace with your drawable resource
+                                contentDescription = "Cat Image",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier
+                                    .size(200.dp),
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = cat.nome,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = cat.dataNascita,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                fontSize = 20.sp
+                            )
+                            Card(
+                                onClick = { GlobalState.gatto = cat.nome
+                                    navController.navigate("catDetail/${cat.nome}") },
+                                modifier = Modifier
+                                    //.border(1.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
+                                    //.background(Color(0XFF7F5855), RoundedCornerShape(25.dp))
+                                    .align(Alignment.End)
+                                    .padding(end = 15.dp, top = 80.dp),
+                                //shape = RoundedCornerShape(25.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowForward,
+                                    contentDescription = "Forward",
+                                    tint = Color(0xFF7F5855),
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .background(Color.Transparent, shape = CircleShape)
+                                        .border(2.dp, Color(0xFF7F5855), shape = CircleShape)
+                                        .padding(8.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    repeat(gattiList.size) { index ->
+                        val color =
+                            if (pagerState.currentPage == index) Color.Black else Color.Gray
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .background(color, shape = CircleShape)
+                                .padding(4.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
                 Card(
                     onClick = { navController.navigate("addcats") },
                     modifier = Modifier
-                        .align(Alignment.End)
                         .border(1.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
-                        .background(Color(0XFF7F5855), RoundedCornerShape(25.dp)),
+                        .background(Color(0XFF7F5855), RoundedCornerShape(25.dp))
+                        .align(Alignment.CenterHorizontally),
                     shape = RoundedCornerShape(25.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
                 ) {
@@ -126,68 +225,6 @@ fun Cats(navController: NavController) {
                         fontSize = 13.sp,
                         color = Color(0xFFFFFFFF)
                     )
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(500.dp)
-                        .padding(bottom = 16.dp)
-                        .background(Color(0XFFFBF1E3), RoundedCornerShape(16.dp))
-                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(16.dp)),
-                ) {
-
-                    HorizontalPager(
-                        state = pagerState,
-                        //pageCount = gattiList.size,
-                        modifier = Modifier.fillMaxSize()
-                    ) { page ->
-                        val cat = gattiList[page]
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable {
-                                    GlobalState.gatto = cat.nome
-                                    navController.navigate("catDetail/${cat.nome}")
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            val iconResource = when (cat.icona) {
-                                "foto-profilo1" -> R.drawable.foto_profilo
-                                "foto-profilo2" -> R.drawable.foto_profilo2
-                                "foto-profilo3" -> R.drawable.foto_profilo3
-                                // Aggiungi altri casi per le altre icone
-                                else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
-                            }
-                            Image(
-                                painter = painterResource(id = iconResource), // Replace with your drawable resource
-                                contentDescription = "Cat Image",
-                                modifier = Modifier.size(100.dp)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = cat.nome,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    repeat(gattiList.size) { index ->
-                        val color = if (pagerState.currentPage == index) Color.Black else Color.Gray
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .background(color, shape = CircleShape)
-                                .padding(4.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                    }
                 }
             }
         }
@@ -1050,10 +1087,12 @@ fun ThirdPage() {
         ) {
             Text(text = "Statistiche", style = MaterialTheme.typography.titleMedium,
                 fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
-
+            Spacer(modifier = Modifier.height(5.dp))
             ExposedDropdownMenuBox(
                 expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier
+                    .width(150.dp)
             ) {
                 OutlinedTextField(
                     value = selectedPeriod,
@@ -1084,8 +1123,9 @@ fun ThirdPage() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Media grammi mangiati: $averageGrams gr", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "Media percentuale cibo mangiato: $averagePercentage%", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Media grammi mangiati: $averageGrams gr", style = MaterialTheme.typography.bodyLarge, fontFamily = FontFamily(Font(R.font.autouroneregular)))
+            Spacer(modifier = Modifier.height(5.dp))
+            Text(text = "Media percentuale cibo mangiato: ${"%.2f".format(averagePercentage)}%", style = MaterialTheme.typography.bodyLarge, fontFamily = FontFamily(Font(R.font.autouroneregular)))
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -1098,22 +1138,29 @@ fun ThirdPage() {
 // Funzione per filtrare e ottenere le ultime 4 settimane
 fun getPreviousWeeks(week: Int, year: Int): List<Pair<Int, Int>> {
     val weeks = mutableListOf<Pair<Int, Int>>()
-    var currentWeek = week
-    var currentYear = year
-//    val tempCalendar = Calendar.getInstance()
-//    tempCalendar.firstDayOfWeek = Calendar.MONDAY
+    val calendar = Calendar.getInstance()
+    calendar.firstDayOfWeek = Calendar.MONDAY
+    calendar.minimalDaysInFirstWeek = 4 // Imposta lo standard ISO 8601
+//    var currentWeek = week
+//    var currentYear = year
 
-    // Aggiungi la settimana corrente
-    weeks.add(Pair(currentYear, currentWeek))
+    calendar.set(Calendar.YEAR, year)
+    calendar.set(Calendar.WEEK_OF_YEAR, week)
+    calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY) // Assicura che partiamo dal lunedì
+
+
+//    // Aggiungi la settimana corrente
+//    weeks.add(Pair(currentYear, currentWeek))
 
     // Aggiungi le settimane precedenti
-    for (i in 1..3) {
-        currentWeek -= 1
-        if (currentWeek == 0) {
-            currentWeek = 52  // La settimana 52 o 53 dell'anno precedente
-            currentYear -= 1
-        }
-        weeks.add(Pair(currentYear, currentWeek))
+    for (i in 0..3) {
+        val weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR)
+        val yearOfWeek = calendar.get(Calendar.YEAR)
+
+        weeks.add(Pair(yearOfWeek, weekOfYear))
+
+        // Scala di una settimana indietro
+        calendar.add(Calendar.WEEK_OF_YEAR, -1)
     }
 
     return weeks.reversed() // Le settimane vanno dalla più vecchia alla più recente
@@ -1128,18 +1175,25 @@ fun filterCronologia(cronologia: List<orario>, period: String): List<orario> {
         return Calendar.getInstance().apply {
             time = formatter.parse(date)
             firstDayOfWeek = Calendar.MONDAY // Assicuriamoci che il lunedì sia il primo giorno della settimana
+            minimalDaysInFirstWeek = 4
         }
     }
 
     fun isCurrentWeek(date: String): Boolean {
-        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
-
-        // Modifica qui: settimana che inizia da lunedì
-        val dayOfWeek = (dateCalendar.get(Calendar.DAY_OF_WEEK) + 5) % 7  // 1 -> Lunedì, 7 -> Domenica
-        dateCalendar.set(Calendar.DAY_OF_WEEK, dayOfWeek)
-
-        return dateCalendar.get(Calendar.WEEK_OF_YEAR) == calendar.get(Calendar.WEEK_OF_YEAR) &&
-                dateCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
+//        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
+//
+//        // Modifica qui: settimana che inizia da lunedì
+//        val dayOfWeek = (dateCalendar.get(Calendar.DAY_OF_WEEK) + 5) % 7  // 1 -> Lunedì, 7 -> Domenica
+//        dateCalendar.set(Calendar.DAY_OF_WEEK, dayOfWeek)
+//
+//        return dateCalendar.get(Calendar.WEEK_OF_YEAR) == calendar.get(Calendar.WEEK_OF_YEAR) &&
+//                dateCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
+        val parsedDate = parseDate(date)
+        val currentWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+        val currentYear = calendar.get(Calendar.YEAR)
+        val dateWeek = parsedDate.get(Calendar.WEEK_OF_YEAR)
+        val dateYear = parsedDate.get(Calendar.YEAR)
+        return currentWeek == dateWeek && currentYear == dateYear
     }
 
     fun isCurrentMonth(date: String): Boolean {
@@ -1149,13 +1203,8 @@ fun filterCronologia(cronologia: List<orario>, period: String): List<orario> {
     }
 
     fun getWeekOfYear(date: String): Int {
-//        val dateCalendar = Calendar.getInstance().apply { time = formatter.parse(date) }
-//
-//        // Setta il primo giorno della settimana a lunedì
-//        val dayOfWeek = (dateCalendar.get(Calendar.DAY_OF_WEEK) + 5) % 7  // 1 -> Lunedì, 7 -> Domenica
-//        dateCalendar.set(Calendar.DAY_OF_WEEK, dayOfWeek)
-
-        return parseDate(date).get(Calendar.WEEK_OF_YEAR)
+        val dateCalendar = parseDate(date)
+        return dateCalendar.get(Calendar.WEEK_OF_YEAR)
     }
 
     fun getYearOfDate(date: String): Int {
@@ -1176,8 +1225,11 @@ fun filterCronologia(cronologia: List<orario>, period: String): List<orario> {
 
             // Raggruppa i pasti per settimana dell'anno (indipendentemente dal mese)
             val weeklyMeals = cronologia.filter { it.giorno?.let { date ->
-                val week = getWeekOfYear(date)
-                val year = getYearOfDate(date)
+                val parsedDate = parseDate(date)
+                parsedDate.firstDayOfWeek = Calendar.MONDAY
+                parsedDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)  // Imposta sempre al lunedì
+                val week = parsedDate.get(Calendar.WEEK_OF_YEAR)
+                val year = parsedDate.get(Calendar.YEAR)
                 previousWeeks.contains(Pair(year, week))
             } ?: false }
                 .groupBy { record ->
@@ -1391,8 +1443,9 @@ fun CatDetail(navController: NavController, gatto: gatto) {
     //val pagerState = rememberPagerState()
     val iconResource = when (gatto.icona) {
         "foto-profilo1" -> R.drawable.foto_profilo
-        "foto-profilo2" -> R.drawable.foto_profilo2
-        "foto-profilo3" -> R.drawable.foto_profilo3
+        "foto-profilo2" -> R.drawable.foto_profilo
+        "foto-profilo3" -> R.drawable.foto_profilo
+        "foto-profilo4" -> R.drawable.foto_profilo
         // Aggiungi altri casi per le altre icone
         else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
     }

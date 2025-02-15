@@ -172,6 +172,7 @@ fun Login(navController: NavController) {
                         val dbPassword = snapshot.child("password").value as? String
                         if (dbPassword == password) {
                             utentiRef.child("loggato").setValue(true)
+                            utentiRef.child("utenteLoggato").setValue(username)
                             GlobalState.username = username
                             navController.navigate("home")
                         } else {

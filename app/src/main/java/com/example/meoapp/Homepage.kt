@@ -10,7 +10,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -1126,7 +1129,7 @@ fun Notification(navController: NavController) {
                             val testo = notifica.child("testo").getValue(String::class.java) ?: ""
                             notificationsList.add(mapOf("data" to data, "ora" to ora, "testo" to testo))
                         }
-                        notifications = notificationsList
+                        notifications = notificationsList.reversed()
                     }
                 }
 
@@ -1183,7 +1186,8 @@ fun Notification(navController: NavController) {
 
                 }
             } else {
-                Box(    modifier = Modifier.height(520.dp)
+                Box(
+                    modifier = Modifier.height(580.dp)
                 ) {
                     Card(
                         modifier = Modifier
@@ -1194,16 +1198,16 @@ fun Notification(navController: NavController) {
                         elevation = CardDefaults.cardElevation(4.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0XFFF7E2C3))
                     ){
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Text(text = "Ultime notifiche", style = MaterialTheme.typography.titleMedium,
-                                fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
-                        }
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(12.dp),
+//                            horizontalArrangement = Arrangement.SpaceBetween,
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ){
+//                            Text(text = "Ultime notifiche", style = MaterialTheme.typography.titleMedium,
+//                                fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
+//                        }
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1212,11 +1216,11 @@ fun Notification(navController: NavController) {
                             verticalAlignment = Alignment.CenterVertically
                         ){
                             LazyColumn(
-                                modifier = Modifier.fillMaxSize()
-
+                                modifier = Modifier
+                                    .fillMaxSize()
                             ) {
-                                items(notifications.size) { index ->
-                                    val notification = notifications[index]
+                                itemsIndexed(notifications) { index, notification ->
+                                    //val notification = notifications[index]
                                     val data = notification["data"]
                                     val ora = notification["ora"]
                                     val testo = notification["testo"]
@@ -1224,7 +1228,7 @@ fun Notification(navController: NavController) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(bottom = 8.dp),
+                                            .padding(vertical = 4.dp),
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ){
@@ -1233,7 +1237,7 @@ fun Notification(navController: NavController) {
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 8.dp)
+                                            .padding(vertical = 4.dp)
                                             .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
                                         shape = RoundedCornerShape(8.dp),
                                         elevation = CardDefaults.cardElevation(4.dp),
@@ -1277,7 +1281,7 @@ fun Notification(navController: NavController) {
                         database.removeValue()
                     },
                     modifier = Modifier
-                        .width(160.dp)
+                        .width(180.dp)
                         .align(Alignment.CenterHorizontally)
                         .padding(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855))
@@ -1287,7 +1291,7 @@ fun Notification(navController: NavController) {
                         textAlign = TextAlign.Start,
                         fontFamily = customFontFamily,
                         fontWeight = FontWeight.Normal,
-                        fontSize = 14.sp)
+                        fontSize = 16.sp)
                 }
 
 

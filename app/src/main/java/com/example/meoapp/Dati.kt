@@ -14,7 +14,7 @@ import com.google.firebase.database.ValueEventListener
 
 object GlobalState {
     var utente: Utente? = null
-    var gatto: String = ""
+    var gatto: gatto? = null
     var username: String = ""
 }
 
@@ -39,8 +39,8 @@ data class notifiche(
 )
 
 data class gatto (
-    val nome: String = "",
-    val peso: String = "",
+    var nome: String = "",
+    var peso: String = "",
     val dataNascita: String = "",
     val dispenserId: Int = 0,
     val routine: List<orario> = emptyList(),

@@ -16,6 +16,7 @@ object GlobalState {
     var utente: Utente? = null
     var gatto: gatto? = null
     var username: String = ""
+    var routine: orario = orario()
 }
 
 

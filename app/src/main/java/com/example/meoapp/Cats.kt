@@ -128,70 +128,111 @@ fun Cats(navController: NavController) {
                         .background(Color(0XFFFBF1E3), RoundedCornerShape(16.dp))
                         .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(16.dp)),
                 ) {
-                    HorizontalPager(
-                        state = pagerState,
-                        //pageCount = gattiList.size,
-                        modifier = Modifier.fillMaxSize()
-                    ) { page ->
-                        val cat = gattiList[page]
+                    if (gattiList.isEmpty()) {
                         Column(
                             modifier = Modifier
-                                .fillMaxSize(),
+                                .fillMaxSize()
+                                .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            val iconResource = when (cat.icona) {
-                                "foto-profilo1" -> R.drawable.icone_gatti_1
-                                "foto-profilo2" -> R.drawable.icone_gatti_2
-                                "foto-profilo3" -> R.drawable.icone_gatti_3
-                                "foto-profilo4" -> R.drawable.icone_gatti_4
-                                // Aggiungi altri casi per le altre icone
-                                else -> R.drawable.icone_gatti_1 // Icona di default se non corrisponde nessuna stringa
-                            }
-                            Spacer(modifier = Modifier.height(30.dp))
-                            Image(
-                                painter = painterResource(id = iconResource), // Replace with your drawable resource
-                                contentDescription = "Cat Image",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(200.dp)
-                                    .shadow(3.dp, shape = CircleShape),
-
-                            )
-                            Spacer(modifier = Modifier.height(25.dp))
                             Text(
-                                text = cat.nome,
-                                style = MaterialTheme.typography.titleMedium,
+                                text = "Non ci sono gatti aggiunti.",
+                                style = MaterialTheme.typography.bodyMedium,
                                 fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                fontSize = 20.sp
+                                color = Color(0xFF7F5855),
+                                fontSize = 18.sp
                             )
-                            Text(
-                                text = cat.dataNascita,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                fontSize = 20.sp
-                            )
+                            Spacer(modifier = Modifier.height(16.dp))
                             Card(
-                                onClick = { GlobalState.gatto = cat
-                                    navController.navigate("catDetail/${cat.nome}") },
+                                onClick = { navController.navigate("cats/addcats") },
                                 modifier = Modifier
                                     //.border(1.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
-                                    //.background(Color(0XFF7F5855), RoundedCornerShape(25.dp))
-                                    .align(Alignment.End)
-                                    .padding(end = 20.dp, top = 110.dp),
-                                //shape = RoundedCornerShape(25.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                                    .background(Color(0XFF7F5855), RoundedCornerShape(25.dp))
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(top = 500.dp),
+                                shape = RoundedCornerShape(25.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = "Forward",
-                                    tint = Color(0xFF7F5855),
-                                    modifier = Modifier
-                                        .size(50.dp)
-                                        .background(Color.Transparent, shape = CircleShape)
-                                        .border(2.dp, Color(0xFF7F5855), shape = CircleShape)
-                                        .padding(8.dp)
+                                Text(
+                                    text = "Aggiungi gatto",
+                                    modifier = Modifier.padding(16.dp),
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 18.sp,
+                                    color = Color(0xFFFFFFFF)
                                 )
+                            }
+                        }
+                    } else {
+                        HorizontalPager(
+                            state = pagerState,
+                            //pageCount = gattiList.size,
+                            modifier = Modifier.fillMaxSize()
+                        ) { page ->
+                            val cat = gattiList[page]
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                val iconResource = when (cat.icona) {
+                                    "foto-profilo1" -> R.drawable.icone_gatti_1
+                                    "foto-profilo2" -> R.drawable.icone_gatti_2
+                                    "foto-profilo3" -> R.drawable.icone_gatti_3
+                                    "foto-profilo4" -> R.drawable.icone_gatti_4
+                                    // Aggiungi altri casi per le altre icone
+                                    else -> R.drawable.icone_gatti_1 // Icona di default se non corrisponde nessuna stringa
+                                }
+                                Spacer(modifier = Modifier.height(60.dp))
+                                Image(
+                                    painter = painterResource(id = iconResource), // Replace with your drawable resource
+                                    contentDescription = "Cat Image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(250.dp)
+                                        //.shadow(3.dp, shape = CircleShape),
+
+                                    )
+                                Spacer(modifier = Modifier.height(50.dp))
+                                Text(
+                                    text = cat.nome,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontSize = 25.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = cat.dataNascita,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontSize = 20.sp
+                                )
+                                Card(
+                                    onClick = {
+                                        GlobalState.gatto = cat
+                                        navController.navigate("cats/catDetail/${cat.nome}")
+                                    },
+                                    modifier = Modifier
+                                        //.border(1.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
+                                        //.background(Color(0XFF7F5855), RoundedCornerShape(25.dp))
+                                        .align(Alignment.End)
+                                        .padding(end = 15.dp),
+                                    shape = CircleShape,
+                                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowForward,
+                                        contentDescription = "Forward",
+                                        tint = Color(0xFF7F5855),
+                                        modifier = Modifier
+                                            .size(50.dp)
+                                            .background(Color.Transparent, shape = CircleShape)
+                                            .border(2.dp, Color(0xFF7F5855), shape = CircleShape)
+                                            .padding(8.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -213,11 +254,11 @@ fun Cats(navController: NavController) {
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(35.dp))
                 Card(
-                    onClick = { navController.navigate("addcats") },
+                    onClick = { navController.navigate("cats/addcats") },
                     modifier = Modifier
-                        .border(1.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
+                        //.border(1.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
                         .background(Color(0XFF7F5855), RoundedCornerShape(25.dp))
                         .align(Alignment.CenterHorizontally),
                     shape = RoundedCornerShape(25.dp),
@@ -708,6 +749,7 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
     var quantita by remember { mutableStateOf("") }
     val isFormValid = orario.matches(Regex("^\\d{2}:\\d{2}:00$")) && quantita.isNotBlank()
     var notValid by remember { mutableStateOf(true) }
+    var existingroutine by remember { mutableStateOf(false) }
 
 
     AlertDialog(
@@ -799,6 +841,15 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                         fontFamily = FontFamily(Font(R.font.autouroneregular)),
                         modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp))
                 }
+                if(existingroutine) {
+                    Text(
+                        text = "Pasto già esistente",
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp))
+                }
+
             }
         },
         confirmButton = {
@@ -820,7 +871,8 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                                             val routineRef = database.child("Utenti").child(user.nome).child("gatti").child(catKey).child("routine")
                                             val existingRoutine = gattoSnapshot.child("routine").children.find { it.child("ora").value == orario }
                                             if (existingRoutine != null) {
-                                                existingRoutine.ref.child("quantita").setValue(quantita)
+                                                //existingRoutine.ref.child("quantita").setValue(quantita)
+                                                existingroutine = true
                                             } else {
                                                 val routineCount = gattoSnapshot.child("routine").childrenCount.toInt()
                                                 val newRoutineKey = "orario" + (routineCount + 1)
@@ -847,6 +899,181 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
                     .background(Color(0xFF7F5855), RoundedCornerShape(25.dp))
             ) {
                 Text("Aggiungi", style = (MaterialTheme.typography.titleSmall),
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        //.border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                        .padding(4.dp),
+                    color = Color(0xFFFFF5E3))
+                //Log.d("Firebase", "Routine aggiunta: $orario")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Annulla", style = (MaterialTheme.typography.titleSmall),
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    fontSize = 12.sp, color = Color(0xFF7F5855), modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(top = 15.dp))
+            }
+        },
+        containerColor = Color(0XFFFFF5E3),
+        modifier = Modifier.width(300.dp)
+    )
+}
+
+@Composable
+fun EditRoutineDialog(onDismiss: () -> Unit, routine: orario) {
+    var ore by remember { mutableStateOf(routine.ora.split(":")[0]) }
+    var min by remember { mutableStateOf(routine.ora.split(":")[1]) }
+    var orario = "$ore:$min:00"
+    var quantita by remember { mutableStateOf(routine.quantita) }
+    val isFormValid = ore.isNotBlank() && min.isNotBlank() && quantita.isNotBlank() && orario.matches(Regex("^\\d{2}:\\d{2}:00$"))
+    var notValid by remember { mutableStateOf(true) }
+
+
+    AlertDialog(
+        onDismissRequest = {  },
+        title = { Text("Modifica pasto", style = MaterialTheme.typography.titleMedium,
+            fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))) },
+        text = {
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.orario), // Replace with your drawable resource
+                        contentDescription = "Clock Icon",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
+
+                        )
+                    OutlinedTextField(
+                        value = ore,
+                        onValueChange = { if (it.length <= 2) ore = it  },
+                        modifier = Modifier
+                            .padding(bottom = 10.dp)
+                            .width(60.dp)
+                            .height(50.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                    Text(":", style = TextStyle(fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))), modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = 8.dp, end = 8.dp))
+                    OutlinedTextField(
+                        value = min,
+                        onValueChange = { if (it.length <= 2) min = it  },
+                        singleLine = true,
+                        modifier = Modifier
+                            .padding(bottom = 10.dp)
+                            .width(60.dp)
+                            .height(50.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.quantita), // Replace with your drawable resource
+                        contentDescription = "food Icon",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
+
+                        )
+                    OutlinedTextField(
+                        value = quantita,
+                        onValueChange = { quantita = it },
+                        //label = { Text("Quantità") }
+                        modifier = Modifier
+                            .padding(bottom = 2.dp)
+                            .width(100.dp)
+                            .height(50.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        trailingIcon = {
+                            Box(
+                                modifier = Modifier
+                                    //.fillMaxHeight()
+                                    .padding(end = 8.dp),
+                                contentAlignment = Alignment.BottomEnd
+                            ) {
+                                Text("gr", style = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))))
+                            }
+                        }
+                    )
+                }
+                if(!notValid && !isFormValid) {
+                    Text(
+                        text = "Riempi tutti i campi o inserisci \nun orario valido (HH:mm)",
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp))
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (!isFormValid) {
+                        notValid = false
+                    } else if (isFormValid) {
+                        val user = Utente(GlobalState.username)
+                        if (user != null) {
+                            val database = FirebaseDatabase.getInstance().reference
+                            val gattoName = GlobalState.gatto?.nome
+                            val gattiRef = database.child("Utenti").child(user.nome).child("gatti").orderByChild("nome").equalTo(gattoName)
+                            gattiRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    for (gattoSnapshot in snapshot.children) {
+                                        val catKey = gattoSnapshot.key
+                                        if (catKey != null) {
+                                            val routineRef = database.child("Utenti").child(user.nome).child("gatti").child(catKey).child("routine")
+                                            routineRef.orderByChild("ora").equalTo(routine.ora)
+                                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                                    override fun onDataChange(snapshot: DataSnapshot) {
+                                                        for (routineSnapshot in snapshot.children) {
+                                                            val routineKey = routineSnapshot.key
+                                                            Log.d("Firebase", "Routine trovata con key: $routineKey")
+                                                            if (routineKey != null) {
+                                                                routineRef.child(routineKey).setValue(orario(ora = "$ore:$min:00", quantita = quantita))
+                                                            }
+                                                        }
+                                                    }
+                                                    override fun onCancelled(error: DatabaseError) {
+                                                        Log.e("Firebase", "Errore nel leggere la routine: ${error.message}")
+                                                    }
+                                                })
+                                        }
+                                    }
+                                }
+                                override fun onCancelled(error: DatabaseError) {
+                                    Log.e("Firebase", "Errore nel leggere la routine: ${error.message}")
+                                }
+
+                            })
+                            onDismiss() // Chiude la finestra
+                        }
+                    }
+                },
+                //enabled = isFormValid,
+                modifier = Modifier
+                    //.border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp))
+                    .padding(8.dp)
+                    .background(Color(0xFF7F5855), RoundedCornerShape(25.dp))
+            ) {
+                Text("Salva", style = (MaterialTheme.typography.titleSmall),
                     fontFamily = FontFamily(Font(R.font.autouroneregular)),
                     fontSize = 12.sp,
                     modifier = Modifier
@@ -955,6 +1182,7 @@ fun DeleteRoutineDialog(onDismiss: () -> Unit, orario: orario) {
 fun FirstPage() {
     var showAddRoutineDialog by remember { mutableStateOf(false) }
     var showDeleteRoutineDialog by remember { mutableStateOf(false) }
+    var showEditRoutineDialog by remember { mutableStateOf(false) }
     var orariodelete by remember { mutableStateOf(orario("","")) }
     val sortedRoutine = gattiList.find { it.nome == GlobalState.gatto?.nome }?.routine?.sortedBy { it.ora } ?: emptyList()
 
@@ -963,6 +1191,9 @@ fun FirstPage() {
     }
     if (showDeleteRoutineDialog) {
         DeleteRoutineDialog(onDismiss = { showDeleteRoutineDialog = false }, orariodelete)
+    }
+    if (showEditRoutineDialog) {
+        EditRoutineDialog(onDismiss = { showEditRoutineDialog = false }, GlobalState.routine)
     }
 
     Box(
@@ -1031,7 +1262,8 @@ fun FirstPage() {
                                     fontWeight = FontWeight.Bold,
                                 )
                                 Row {
-                                    IconButton(onClick = { showAddRoutineDialog = true }) {
+                                    IconButton(onClick = { showEditRoutineDialog = true
+                                        GlobalState.routine = routine }) {
                                         Icon(
                                             painter = painterResource(R.drawable.modifica),
                                             contentDescription = "Edit Routine",
@@ -1631,13 +1863,14 @@ fun EditCatDialog(onDismiss: () -> Unit) {
                 Row {
                     Text("Nome: ", style = MaterialTheme.typography.titleSmall,
                         fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                        color = Color(0xFF7F5855), fontSize = 14.sp)
+                        color = Color(0xFF7F5855), fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterVertically).padding(top = 10.dp))
                     GlobalState.gatto?.nome?.let {
                         OutlinedTextField(
                             value = catName,
                             onValueChange = { catName = it },
                             shape = RoundedCornerShape(20.dp),
-                            textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
+                            textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                            modifier = Modifier.align(Alignment.CenterVertically).width(200.dp)
                         )
                     }
                 }
@@ -1645,13 +1878,14 @@ fun EditCatDialog(onDismiss: () -> Unit) {
                 Row{
                     Text("Peso: ", style = MaterialTheme.typography.titleSmall,
                         fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                        color = Color(0xFF7F5855), fontSize = 14.sp)
+                        color = Color(0xFF7F5855), fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterVertically).padding(top = 10.dp))
                     GlobalState.gatto?.peso?.let {
                         OutlinedTextField(
                             value = it,
                             onValueChange = {GlobalState.gatto?.peso = it},
                             shape = RoundedCornerShape(20.dp),
-                            textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
+                            textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                            modifier = Modifier.align(Alignment.CenterVertically).width(200.dp)
                         )
                     }
                 }

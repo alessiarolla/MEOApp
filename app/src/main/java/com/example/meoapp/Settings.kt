@@ -1,5 +1,6 @@
 package com.example.meoapp
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,6 +29,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -451,20 +453,60 @@ fun Settings(navController: NavController) {
                         )
                     }
 
+                    Button(
+                        onClick = {
+                            logout(navController)
+                        },
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(20.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
+                    ) {
+                        Text(
+                            text = "Logout",
+                            color = Color.White,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
 
-
-
+//                    IconButton(
+//                        onClick = {
+//                            logout(navController)
+//                        },
+//                        modifier = Modifier
+//                            .padding(end = 16.dp, top = 4.dp)
+//                            .align(Alignment.CenterHorizontally)
+//                    ) {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.logout),
+//                            contentDescription = "Logout"
+//                        )
+//                    }
                 }
-
-
             }
         }
     }
+}
 
+private fun logout(navController: NavController) {
+    val database = FirebaseDatabase.getInstance().reference.child("Utenti")
+    val user = GlobalState.username
 
+    database.orderByChild("nomeUtente").equalTo(user).addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val userSnapshot = snapshot.children.firstOrNull()
+            database.child("loggato")?.setValue(false)
+            database.child("utenteLoggato")?.setValue("")
+            GlobalState.username = ""
+            navController.navigate("login") {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+            }
+        }
 
-
-
-
-
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("MainActivity", "Database error: ${error.message}")
+        }
+    })
 }

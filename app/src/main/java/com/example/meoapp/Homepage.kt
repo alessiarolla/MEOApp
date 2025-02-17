@@ -159,26 +159,8 @@ fun Homepage(navController: NavController) {
                         .padding(4.dp)
                         .size(80.dp) // Adjust the size as needed
                 )
-
-                IconButton(
-                    onClick = {
-                        logout(navController)
-                    },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(end = 16.dp, top = 4.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.logout),
-                        contentDescription = "Logout"
-                    )
-                }
             }
-
-
         }
-
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -191,7 +173,7 @@ fun Homepage(navController: NavController) {
                     .padding(start = 40.dp, bottom = 14.dp)
                     .size(36.dp)
                     .clickable {
-                        navController.navigate("notification")
+                        navController.navigate("home/notification")
                     }
             )
 
@@ -205,7 +187,7 @@ fun Homepage(navController: NavController) {
                     .padding(end = 40.dp, bottom = 14.dp)
                     .size(36.dp)
                     .clickable {
-                        navController.navigate("dispenserDetail/$dispenserId") },
+                        navController.navigate("home/dispenserDetail/$dispenserId") },
 
                 )
 
@@ -819,7 +801,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         modifier = Modifier
                             .width(170.dp) // Set the desired width
                             .align(Alignment.CenterHorizontally)
-                            .border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
+                            //.border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
                             .background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
                         shape = RoundedCornerShape(40.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
@@ -917,8 +899,8 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                                 selectedDispenserId
                                             )
                                             expanded = false
-                                            navController.navigate("dispenserDetail/$selectedDispenserId") {
-                                                popUpTo("dispenserDetail/$selectedDispenserId") {
+                                            navController.navigate("home/dispenserDetail/$selectedDispenserId") {
+                                                popUpTo("home/dispenserDetail/$selectedDispenserId") {
                                                     inclusive = true
                                                 }
                                             }
@@ -963,11 +945,12 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                 )
                                 {
                                     val iconResource = when (gatto["icona"]) {
-                                        "foto-profilo1" -> R.drawable.foto_profilo
-                                        "foto-profilo2" -> R.drawable.foto_profilo2
-                                        "foto-profilo3" -> R.drawable.foto_profilo3
+                                        "foto-profilo1" -> R.drawable.icone_gatti_1
+                                        "foto-profilo2" -> R.drawable.icone_gatti_2
+                                        "foto-profilo3" -> R.drawable.icone_gatti_3
+                                        "foto-profilo4" -> R.drawable.icone_gatti_4
                                         // Aggiungi altri casi per le altre icone
-                                        else -> R.drawable.foto_profilo // Icona di default se non corrisponde nessuna stringa
+                                        else -> R.drawable.icone_gatti_1 // Icona di default se non corrisponde nessuna stringa
                                     }
                                     Image(
                                         painter = painterResource(id = iconResource), // Replace with your drawable resource
@@ -1036,7 +1019,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         modifier = Modifier
                             .width(170.dp) // Set the desired width
                             .align(Alignment.CenterHorizontally)
-                            .border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
+                            //.border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
                             .background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
                         shape = RoundedCornerShape(40.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
@@ -1301,23 +1284,3 @@ fun Notification(navController: NavController) {
 }
 
 
-private fun logout(navController: NavController) {
-    val database = FirebaseDatabase.getInstance().reference.child("Utenti")
-    val user = GlobalState.username
-
-    database.orderByChild("nomeUtente").equalTo(user).addListenerForSingleValueEvent(object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            val userSnapshot = snapshot.children.firstOrNull()
-            database.child("loggato")?.setValue(false)
-            database.child("utenteLoggato")?.setValue("")
-            GlobalState.username = ""
-            navController.navigate("login") {
-                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-            }
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-            Log.e("MainActivity", "Database error: ${error.message}")
-        }
-    })
-}

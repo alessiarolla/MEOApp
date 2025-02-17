@@ -108,8 +108,8 @@ class MainActivity : ComponentActivity() {
                         composable("home") { Homepage(navController) }
                         composable("settings") { Settings(navController) }
                         composable("cats") { Cats(navController) }
-                        composable("addcats") { AddCats(navController) }
-                        composable("catDetail/{catName}") { backStackEntry ->
+                        composable("cats/addcats") { AddCats(navController) }
+                        composable("cats/catDetail/{catName}") { backStackEntry ->
                             val catName = backStackEntry.arguments?.getString("catName")
                             val gatto = gattiList.find { it.nome == catName }
                             if (gatto != null) {
@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
                                 Log.e("MainActivity", "Cat not found: $catName")
                             }
                         }
-                        composable("dispenserDetail/{dispenserId}") { backStackEntry ->
+                        composable("home/dispenserDetail/{dispenserId}") { backStackEntry ->
                             val dispenserId = backStackEntry.arguments?.getString("dispenserId")?.toLongOrNull()
                             if (dispenserId != null) {
                                 DispenserDetail(navController, dispenserId)
@@ -126,7 +126,7 @@ class MainActivity : ComponentActivity() {
                                 Log.e("MainActivity", "Dispenser ID not found or invalid")
                             }
                         }
-                        composable("notification") { Notification(navController) }
+                        composable("home/notification") { Notification(navController) }
 
                     }
                 }
@@ -319,7 +319,7 @@ class MainActivity : ComponentActivity() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 items.forEach { item ->
-                    val isSelected = currentRoute == item.route
+                    val isSelected = currentRoute?.startsWith(item.route) == true || currentRoute?.contains(item.route) == true
                     NavigationBarItem(
                         label = {},
                         icon = {

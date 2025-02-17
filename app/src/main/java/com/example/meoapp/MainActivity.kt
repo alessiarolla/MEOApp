@@ -255,6 +255,33 @@ class MainActivity : ComponentActivity() {
                                             Log.e("MainActivity", "Database error: ${error.message}")
                                         }
                                     })
+
+                                    // Ottieni il dispenserId del gatto
+                                    val dispenserId = gatto.child("dispenserId").getValue(Int::class.java) ?: 0
+
+                                    // Recupera il livelloCiboDispenser del dispenser corrispondente
+                                    database.child("Utenti").child(userId).child("dispensers").orderByChild("dispenserId").equalTo(dispenserId.toDouble())
+                                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                                            override fun onDataChange(snapshot: DataSnapshot) {
+                                                for (dispenserSnapshot in snapshot.children) {
+                                                    val livelloCiboDispenser = dispenserSnapshot.child("livelloCiboDispenser").getValue(Int::class.java) ?: 0
+                                                    val quantita = quantitaRoutine?.toIntOrNull() ?: 0
+                                                    val nuovoLivelloCiboDispenser = livelloCiboDispenser - quantita
+
+                                                    // Aggiorna il livelloCiboDispenser nel database
+                                                    dispenserSnapshot.ref.child("livelloCiboDispenser").setValue(nuovoLivelloCiboDispenser)
+                                                }
+                                            }
+
+                                            override fun onCancelled(error: DatabaseError) {
+                                                Log.e("MainActivity", "Database error: ${error.message}")
+                                            }
+                                        })
+                                
+
+
+
+
                                 }
                             }
                         }

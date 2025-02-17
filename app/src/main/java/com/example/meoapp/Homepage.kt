@@ -279,6 +279,7 @@ fun Homepage(navController: NavController) {
                                 )
 
                                 val prossimoPasto = calcolaProssimoPasto(routine, currentTime)
+                                //GlobalState.prossimopasto = prossimoPasto
                                 val timeBetweenMealsMillis = convertToMillis(timeBetweenMeals)
                                 val timeSinceLastMealMillis = convertToMillis(timeSinceLastMeal)
                                 val perc = timeSinceLastMealMillis.toFloat() / timeBetweenMealsMillis.toFloat()
@@ -687,6 +688,17 @@ fun convertToMillis(time: String): Long {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DispenserDetail(navController: NavController, dispenserId: Long) {
+
+    fun getCurrentTimeFormatted(): String {
+        return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+    }
+    var currentTime by remember { mutableStateOf(getCurrentTimeFormatted()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000) // Ogni secondo
+            currentTime = getCurrentTimeFormatted()
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -741,7 +753,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             var dispenserName by remember { mutableStateOf("") }
             var selectedDispenserId by remember { mutableStateOf(dispenserId) }
 
-            val capacitàDispenser = 100
+            val capacitàDispenser = 1000
 
             val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
@@ -984,12 +996,44 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         if (filteredDispensers.isNotEmpty()) {
                             val currentDispenser = filteredDispensers.firstOrNull() ?: emptyMap()
                             val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
+
                             val livelloCiboCiotola =
                                 ((currentDispenser["livelloCiboCiotola"] as? Long
                                     ?: 0).toFloat() / lastMealQuantityFloat) * 100
-                            val livelloCiboDispenser =
-                                ((currentDispenser["livelloCiboDispenser"] as? Long
-                                    ?: 0).toFloat() / capacitàDispenser * 100)
+
+
+                            val routine = gatti["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()
+                            val routineEntry = routine.values.find { it["ora"] == currentTime }
+                            Log.d("Routine", "Routine: $routine")
+                            Log.d("Routine", "Routine entry: $routineEntry")
+                            Log.d("Routine", "Current time: $currentTime")
+                            val routineQuantity = routineEntry?.get("quantita")?.toString()?.toFloatOrNull() ?: 0f
+                            val sottrazioneCibo = (currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat() - routineQuantity
+                            val livelloCiboDispenser = sottrazioneCibo / capacitàDispenser * 100
+                            val dispenserRef = database.child("Utenti").child(user).child("dispensers")
+                            dispenserRef.orderByChild("dispenserId").equalTo(currentDispenser["dispenserId"].toString())
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(snapshot: DataSnapshot) {
+                                        for (dispenserSnapshot in snapshot.children) {
+                                            val dispenserKey = dispenserSnapshot.key
+                                            Log.d("Firebase", "Dispenser key: $dispenserKey")
+                                            if(dispenserKey != null) {
+                                                dispenserRef.child(dispenserKey).child("livelloCiboDispenser").setValue(sottrazioneCibo)
+                                            }
+                                        }
+                                    }
+                                    override fun onCancelled(error: DatabaseError) {
+                                        Log.e("Firebase", "Errore nel leggere il dispenser: ${error.message}")
+                                    }
+
+                                })
+
+
+                                //.child("livelloCiboDispenser").setValue((currentDispenser["livelloCiboDispenser"] as? Long ?: 0) - routineQuantity.toLong())
+
+//                            val livelloCiboDispenser =
+//                                ((currentDispenser["livelloCiboDispenser"] as? Long
+//                                    ?: 0).toFloat() / capacitàDispenser * 100)
                             val labelCiboCiotola =
                                 ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
                             val labelCiboDispenser =

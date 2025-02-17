@@ -17,6 +17,7 @@ object GlobalState {
     var gatto: gatto? = null
     var username: String = ""
     var routine: orario = orario()
+    var prossimopasto: String = ""
 }
 
 
@@ -60,10 +61,10 @@ data class orario (
 
 data class dispenser(
     val dispenserId: Int = 0,
-    val nome: String,
+    val nome: String = "",
     //val livelloBatteria: Int,
-    val livelloCiboCiotola: Int,
-    val livelloCiboDispenser: Int
+    val livelloCiboCiotola: Int = 0,
+    val livelloCiboDispenser: Int = 0
     //val gatti: List<gatto>
 )
 

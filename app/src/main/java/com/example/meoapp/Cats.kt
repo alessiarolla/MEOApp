@@ -73,6 +73,7 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import java.util.Date
 
 
 //import android.content.Context
@@ -745,9 +746,9 @@ fun AddCats (navController: NavController){
 fun AddRoutineDialog(onDismiss: () -> Unit) {
     var ore by remember { mutableStateOf("") }
     var min by remember { mutableStateOf("") }
-    var orario = "$ore:$min:00"
+    var orario = "$ore:$min"
     var quantita by remember { mutableStateOf("") }
-    val isFormValid = orario.matches(Regex("^\\d{2}:\\d{2}:00$")) && quantita.isNotBlank()
+    val isFormValid = orario.matches(Regex("^\\d{2}:\\d{2}$")) && quantita.isNotBlank()
     var notValid by remember { mutableStateOf(true) }
     var existingroutine by remember { mutableStateOf(false) }
 
@@ -926,9 +927,9 @@ fun AddRoutineDialog(onDismiss: () -> Unit) {
 fun EditRoutineDialog(onDismiss: () -> Unit, routine: orario) {
     var ore by remember { mutableStateOf(routine.ora.split(":")[0]) }
     var min by remember { mutableStateOf(routine.ora.split(":")[1]) }
-    var orario = "$ore:$min:00"
+    var orario = "$ore:$min"
     var quantita by remember { mutableStateOf(routine.quantita) }
-    val isFormValid = ore.isNotBlank() && min.isNotBlank() && quantita.isNotBlank() && orario.matches(Regex("^\\d{2}:\\d{2}:00$"))
+    val isFormValid = ore.isNotBlank() && min.isNotBlank() && quantita.isNotBlank() && orario.matches(Regex("^\\d{2}:\\d{2}$"))
     var notValid by remember { mutableStateOf(true) }
 
 
@@ -1047,7 +1048,7 @@ fun EditRoutineDialog(onDismiss: () -> Unit, routine: orario) {
                                                             val routineKey = routineSnapshot.key
                                                             Log.d("Firebase", "Routine trovata con key: $routineKey")
                                                             if (routineKey != null) {
-                                                                routineRef.child(routineKey).setValue(orario(ora = "$ore:$min:00", quantita = quantita))
+                                                                routineRef.child(routineKey).setValue(orario(ora = "$ore:$min", quantita = quantita))
                                                             }
                                                         }
                                                     }
@@ -2181,4 +2182,26 @@ fun calculateAge(birthDate: String): Int {
 }
 
 
-
+fun pushRoutineCronologia(routine: orario) {
+    val database = FirebaseDatabase.getInstance()
+    val gattoRef = database.getReference("Utenti").child(GlobalState.username).child("gatti").child(GlobalState.gatto?.nome ?: "")
+    val cronologiaRef = gattoRef.child("cronologia")
+    val key = cronologiaRef.push().key
+    val orario = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+    val giorno = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+    val routineMap = mapOf(
+        "giorno" to giorno,
+        "ora" to orario,
+        "quantita" to routine.quantita,
+        "mangiato" to routine.mangiato
+    )
+    key?.let {
+        cronologiaRef.child(it).setValue(routineMap).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("Firebase", "Routine aggiunta con successo")
+            } else {
+                Log.e("Firebase", "Errore durante l'aggiunta della routine: ${task.exception?.message}")
+            }
+        }
+    }
+}

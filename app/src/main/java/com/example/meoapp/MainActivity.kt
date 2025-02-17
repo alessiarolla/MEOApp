@@ -225,6 +225,8 @@ class MainActivity : ComponentActivity() {
                         val routine = gatto.child("routine").children
                         for (orario in routine) {
                             val oraRoutine = orario.child("ora").getValue(String::class.java)
+                            val quantitaRoutine = orario.child("quantita").getValue(String::class.java)
+
                             if (oraRoutine != null && oraRoutine == currentTime) {
                                 if (!sentNotifications.containsKey("routine_$nomeGatto")) {
                                     sendNotification(userId, "È ora del pasto per $nomeGatto!")
@@ -232,6 +234,13 @@ class MainActivity : ComponentActivity() {
                                     Handler(Looper.getMainLooper()).postDelayed({
                                         sentNotifications.remove("routine_$nomeGatto")
                                     }, 60000)
+                                    // Aggiorna ultimoPasto nel database
+                                    val ultimoPasto = mapOf(
+                                        "ora" to currentTime,
+                                        "quantita" to quantitaRoutine
+                                    )
+                                    database.child("Utenti").child(userId).child("gatti").child(gatto.key!!).child("ultimoPasto").setValue(ultimoPasto)
+
                                 }
                             }
                         }

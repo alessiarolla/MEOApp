@@ -238,10 +238,23 @@ class MainActivity : ComponentActivity() {
                                     val ultimoPasto = mapOf(
                                         "ora" to currentTime,
                                         "quantita" to quantitaRoutine,
-                                        "giorno" to SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                                        "giorno" to SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                                        "mangiato" to "0"
                                     )
                                     database.child("Utenti").child(userId).child("gatti").child(gatto.key!!).child("ultimoPasto").setValue(ultimoPasto)
 
+                                    val cronologiaRef = database.child("Utenti").child(userId).child("gatti").child(gatto.key!!).child("cronologia")
+                                    cronologiaRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onDataChange(snapshot: DataSnapshot) {
+                                            val pastoCount = snapshot.childrenCount
+                                            val pastoKey = "pasto${pastoCount + 1}"
+                                            cronologiaRef.child(pastoKey).setValue(ultimoPasto)
+                                        }
+
+                                        override fun onCancelled(error: DatabaseError) {
+                                            Log.e("MainActivity", "Database error: ${error.message}")
+                                        }
+                                    })
                                 }
                             }
                         }

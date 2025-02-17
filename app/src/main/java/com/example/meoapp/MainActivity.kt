@@ -237,7 +237,8 @@ class MainActivity : ComponentActivity() {
                                     // Aggiorna ultimoPasto nel database
                                     val ultimoPasto = mapOf(
                                         "ora" to currentTime,
-                                        "quantita" to quantitaRoutine
+                                        "quantita" to quantitaRoutine,
+                                        "giorno" to SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
                                     )
                                     database.child("Utenti").child(userId).child("gatti").child(gatto.key!!).child("ultimoPasto").setValue(ultimoPasto)
 

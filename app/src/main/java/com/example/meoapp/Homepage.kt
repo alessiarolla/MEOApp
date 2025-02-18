@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -33,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -60,7 +62,9 @@ import java.util.concurrent.TimeUnit
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.fontResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontVariation.width
+import androidx.compose.ui.text.input.KeyboardType
 import kotlin.math.cos
 import kotlin.math.sin
 @OptIn(ExperimentalMaterial3Api::class)
@@ -752,6 +756,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             var lastMealQuantity by remember { mutableStateOf("") }
             var dispenserName by remember { mutableStateOf("") }
             var selectedDispenserId by remember { mutableStateOf(dispenserId) }
+            var livelloCiboDispenser by remember { mutableStateOf("") }
 
             val capacitàDispenser = 1000
 
@@ -776,6 +781,10 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                 dispenserName =
                                     dispensers.values.firstOrNull { it["dispenserId"] == dispenserId }
                                         ?.get("nome") as? String ?: ""
+                                livelloCiboDispenser =
+                                    dispensers.values.firstOrNull { it["dispenserId"] == dispenserId }
+                                        ?.get("livelloCiboDispenser").toString()
+
                             }
                         }
 
@@ -786,6 +795,13 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             LaunchedEffect(currentGatto) {
                 currentGatto?.let {
                     lastMealQuantity = calcolaUltimoPastoQuantità(it)
+                }
+            }
+
+            fun updateLivelloCiboDispenser(newValue: String) {
+                val dispenserKey = dispensers.entries.firstOrNull { it.value["dispenserId"] == dispenserId }?.key
+                if (dispenserKey != null) {
+                    database.child(user).child("dispensers").child(dispenserKey).child("livelloCiboDispenser").setValue(newValue.toLong())
                 }
             }
 
@@ -840,6 +856,36 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 Column(
                     modifier = Modifier.fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
                 ) {
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Nome dispenser:",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        OutlinedTextField(
+                            value = livelloCiboDispenser,
+                            onValueChange = { newValue ->
+                                livelloCiboDispenser = if (newValue.isEmpty()) "1" else newValue
+                                updateLivelloCiboDispenser(livelloCiboDispenser)
+                            },
+                            modifier = Modifier
+                                .padding(bottom = 10.dp)
+                                .width(60.dp)
+                                .height(50.dp)
+                                .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
+                            shape = RoundedCornerShape(20.dp),
+                            textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
+
+                    }
 
                     Spacer(modifier = Modifier.height(20.dp))
 

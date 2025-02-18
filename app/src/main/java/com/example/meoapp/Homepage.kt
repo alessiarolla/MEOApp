@@ -814,15 +814,11 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             )
 
                             {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.quantita), // Replace with your drawable resource
-                                    contentDescription = "food Icon",
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .size(20.dp),
+                                
 
-                                    )
+                                Text("+", style = TextStyle(fontSize = 32.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))))
 
+                                Spacer(modifier = Modifier.width(4.dp))
 
                                 OutlinedTextField(
                                     value = CiboAggiuntoDispenser,
@@ -831,6 +827,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                             CiboAggiuntoDispenser = newValue
                                         }
                                     },
+
                                     modifier = Modifier
                                         .padding(bottom = 2.dp)
                                         .width(100.dp)

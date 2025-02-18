@@ -853,8 +853,9 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                 val dispenserKey = dispensers.entries.firstOrNull { it.value["dispenserId"] == dispenserId }?.key
                                 if (dispenserKey != null) {
                                     database.child(user).child("dispensers").child(dispenserKey).child("livelloCiboDispenser").setValue(livelloCiboDispenser.toLong())
-                                    showDialog = false
                                 }
+                                showDialog = false
+
                             },
                             modifier = Modifier
                                 //.border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp))

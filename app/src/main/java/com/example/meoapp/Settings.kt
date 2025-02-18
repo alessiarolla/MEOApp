@@ -31,8 +31,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -99,41 +101,34 @@ fun Settings(navController: NavController) {
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
+            containerColor = Color(0xFFFFF5E3),
 
             title = {
                 Text(
-                    text = "Modifica nome Utente",
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    fontFamily = customFontFamily,
-                    fontSize = 20.sp
-                )
+                    text = "Modifica nome Utente", style = MaterialTheme.typography.titleMedium,
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF7F5855), fontSize = 20.sp)
             },
             text = {
-                Card(
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                    TextField(
-                        value = nomeUtente,
-                        onValueChange = { nomeUtente = it },
-                        modifier = Modifier.weight(1f),
-                        textStyle = androidx.compose.ui.text.TextStyle(
-                            textAlign = TextAlign.Start,
-                            fontFamily = customFontFamily,
-                            fontSize = 14.sp
-                        ),singleLine = true
+                Column {
+                    Row {
+                        OutlinedTextField(
+                            value = nomeUtente,
+                            onValueChange = { nomeUtente = it },
+                            shape = RoundedCornerShape(20.dp),
+                            textStyle = androidx.compose.ui.text.TextStyle(
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular))
+                            ),
+                            modifier = Modifier.align(Alignment.CenterVertically).width(200.dp)
                         )
-                }}
+
+                    }
+                }
+
             },
             confirmButton = {
-                Button(
-
+                TextButton(
                     onClick = {
                         database.orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
@@ -155,22 +150,32 @@ fun Settings(navController: NavController) {
                             popUpTo("settings") { inclusive = true }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
-
+                    modifier = Modifier
+                        //.border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp))
+                        .padding(8.dp)
+                        .background(Color(0xFF7F5855), RoundedCornerShape(25.dp))
                 ) {
-                    Text("Conferma")
+                    Text("Salva", style = (MaterialTheme.typography.titleSmall),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            //.border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                            .padding(4.dp),
+                        color = Color(0xFFFFF5E3))
                 }
             },
             dismissButton = {
-                Button(
+                TextButton(
                     onClick = { showDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
 
                 ) {
-                    Text("  Annulla  ")
+                    Text("Annulla", style = (MaterialTheme.typography.titleSmall),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        fontSize = 14.sp, color = Color(0xFF7F5855), modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(top = 15.dp))
                 }
             },
-            containerColor = Color(0xFFF7E2C3)
         )
     }
 
@@ -183,35 +188,25 @@ fun Settings(navController: NavController) {
 
         AlertDialog(
             onDismissRequest = { showDialogPass = false },
+            containerColor = Color(0xFFFFF5E3),
             title = {
                 Text(
-                    text = "Modifica password",
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    fontFamily = customFontFamily,
-                    fontSize = 20.sp
-                )
+                    text = "Modifica password", style = MaterialTheme.typography.titleMedium,
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF7F5855), fontSize = 20.sp)
             },
             text = {
-                Card {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextField(
+                Column {
+                    Row {
+                        OutlinedTextField(
                             value = passwordInput,
                             onValueChange = { passwordInput = it },
-                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(20.dp),
                             textStyle = androidx.compose.ui.text.TextStyle(
-                                textAlign = TextAlign.Start,
-                                fontFamily = customFontFamily,
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily(Font(R.font.autouroneregular))
                             ),
-                            singleLine = true,
-                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+                            modifier = Modifier.align(Alignment.CenterVertically).width(200.dp)
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
@@ -224,8 +219,10 @@ fun Settings(navController: NavController) {
                                 .padding(4.dp)
                                 .clickable { isPasswordVisible = !isPasswordVisible }
                         )
-                    }
-                }
+                    }}
+
+
+
             },
             confirmButton = {
                 Button(
@@ -249,7 +246,6 @@ fun Settings(navController: NavController) {
                     Text("Annulla")
                 }
             },
-            containerColor = Color(0xFFF7E2C3)
         )
     }
 

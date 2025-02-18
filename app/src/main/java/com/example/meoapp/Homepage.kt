@@ -814,7 +814,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             )
 
                             {
-                                
+
 
                                 Text("+", style = TextStyle(fontSize = 32.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))))
 
@@ -1012,9 +1012,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
 
                         // Dropdown menu per selezionare il dispenser
                         var expanded by remember { mutableStateOf(false) }
-                        val availableDispensers = dispensers.filter { dispenser ->
-                            !gatti.values.any { it["dispenserId"] == dispenser.value["dispenserId"] }
-                        }
+                        val availableDispensers = dispensers
 
                         Card(
                             modifier = Modifier
@@ -1058,11 +1056,11 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                         onClick = {
                                             selectedDispenserId = dispenser["dispenserId"] as Long
                                             dispenserName = dispenser["nome"] as String
-                                            aggiornaDispenserIdNelDatabase(
-                                                user,
-                                                currentGatto?.get("nome") as? String ?: "",
-                                                selectedDispenserId
-                                            )
+                                            //aggiornaDispenserIdNelDatabase(
+                                            //    user,
+                                            //    currentGatto?.get("nome") as? String ?: "",
+                                            //    selectedDispenserId
+                                            //)
                                             expanded = false
                                             navController.navigate("home/dispenserDetail/$selectedDispenserId") {
                                                 popUpTo("home/dispenserDetail/$selectedDispenserId") {

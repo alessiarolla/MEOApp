@@ -424,8 +424,12 @@ fun Homepage(navController: NavController) {
 
             if (filteredDispensers.isNotEmpty()) {
                 val currentDispenser = filteredDispensers.getOrNull(currentDispenserIndex) ?: emptyMap()
-                val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
-                val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / lastMealQuantityFloat) * 100
+                val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 40f
+
+                //val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
+                val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / 40) * 100
+
+                //val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / lastMealQuantityFloat) * 100
                 val livelloCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toFloat() / capacitàDispenser * 100)
                 val labelCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toString())
                 val labelCiboDispenser = ((currentDispenser["livelloCiboDispenser"] as? Long ?: 0).toString())
@@ -1148,9 +1152,8 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             val currentDispenser = filteredDispensers.firstOrNull() ?: emptyMap()
                             val lastMealQuantityFloat = lastMealQuantity.toFloatOrNull() ?: 100f
 
-                            val livelloCiboCiotola =
-                                ((currentDispenser["livelloCiboCiotola"] as? Long
-                                    ?: 0).toFloat() / lastMealQuantityFloat) * 100
+                            val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / 40) * 100
+                            //val livelloCiboCiotola = ((currentDispenser["livelloCiboCiotola"] as? Long ?: 0).toFloat() / lastMealQuantityFloat) * 100
 
 
                             val routine = gatti["routine"] as? Map<String, Map<String, Any>> ?: emptyMap()

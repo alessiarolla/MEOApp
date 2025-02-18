@@ -186,7 +186,7 @@ fun Cats(navController: NavController) {
                                     // Aggiungi altri casi per le altre icone
                                     else -> R.drawable.icone_gatti_1 // Icona di default se non corrisponde nessuna stringa
                                 }
-                                Spacer(modifier = Modifier.height(70.dp))
+                                Spacer(modifier = Modifier.height(60.dp))
                                 Image(
                                     painter = painterResource(id = iconResource), // Replace with your drawable resource
                                     contentDescription = "Cat Image",
@@ -196,41 +196,42 @@ fun Cats(navController: NavController) {
                                         //.shadow(3.dp, shape = CircleShape),
 
                                     )
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(50.dp))
                                 Text(
                                     text = cat.nome,
                                     style = MaterialTheme.typography.titleLarge,
                                     fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                    fontSize = 28.sp,
+                                    fontSize = 25.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-//                                Text(
-//                                    text = cat.dataNascita,
-//                                    style = MaterialTheme.typography.bodyLarge,
-//                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
-//                                    fontSize = 20.sp
-//                                )
-                                Spacer(modifier = Modifier.height(20.dp))
+                                Text(
+                                    text = cat.dataNascita,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontSize = 20.sp
+                                )
                                 Card(
                                     onClick = {
                                         GlobalState.gatto = cat
                                         navController.navigate("cats/catDetail/${cat.nome}")
                                     },
                                     modifier = Modifier
-                                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(25.dp)),
+                                        //.border(1.dp, Color(0xFF000000), RoundedCornerShape(25.dp))
                                         //.background(Color(0XFF7F5855), RoundedCornerShape(25.dp))
-                                        //.align(Alignment.Bo)
-                                        //.padding(end = 15.dp),
-                                    shape = RoundedCornerShape(25.dp),
+                                        .align(Alignment.End)
+                                        .padding(end = 15.dp),
+                                    shape = CircleShape,
                                     colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                                 ) {
-                                    Text(
-                                        text = "Dettagli",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                        fontSize = 18.sp,
-                                        color = Color(0xFF7F5855),
-                                        modifier = Modifier.padding(16.dp)
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowForward,
+                                        contentDescription = "Forward",
+                                        tint = Color(0xFF7F5855),
+                                        modifier = Modifier
+                                            .size(50.dp)
+                                            .background(Color.Transparent, shape = CircleShape)
+                                            .border(2.dp, Color(0xFF7F5855), shape = CircleShape)
+                                            .padding(8.dp)
                                     )
                                 }
                             }
@@ -285,11 +286,10 @@ fun AddCats (navController: NavController){
     var nome by remember { mutableStateOf("") }
     var peso by remember { mutableStateOf("") }
     var dataNascita by remember { mutableStateOf("") }
-    var selectedDispenser by remember { mutableStateOf("") }
+    var dispenser by remember { mutableStateOf("") }
     var sesso by remember { mutableStateOf("") }
     val sessoOptions = listOf("Maschio", "Femmina")
     var expanded by remember { mutableStateOf(false) }
-    var expanded1 by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var selectedImage by remember { mutableStateOf("foto-profilo1") }
     var tempSelectedImage by remember { mutableStateOf(selectedImage) }
@@ -308,7 +308,7 @@ fun AddCats (navController: NavController){
         else -> R.drawable.icone_gatti_1 // Default image
     }
 
-    val isFormValid = nome.isNotBlank() && peso.isNotBlank() && dataNascita.isNotBlank() && selectedDispenser.isNotBlank() && sesso.isNotBlank() && !gattiList.any { it.nome == nome }
+    val isFormValid = nome.isNotBlank() && peso.isNotBlank() && dataNascita.isNotBlank() && dispenser.isNotBlank() && sesso.isNotBlank() && !gattiList.any { it.nome == nome }
     var notvalid by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -316,13 +316,6 @@ fun AddCats (navController: NavController){
     config.setLocale(Locale("it"))
     context.resources.updateConfiguration(config, context.resources.displayMetrics)
 
-    var availableDispensers by remember { mutableStateOf(listOf<String>()) }
-    // Fetch available dispensers from Firebase
-    LaunchedEffect(Unit) {
-        fetchAvailableDispensers { dispensers ->
-            availableDispensers = dispensers
-        }
-    }
 
     if (showDatePicker) {
         val currentTimeMillis = remember { System.currentTimeMillis() } // Data attuale
@@ -618,92 +611,23 @@ fun AddCats (navController: NavController){
                         .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        "Dispenser", modifier = Modifier
-                            .alignByBaseline()
-                            .align(Alignment.CenterVertically)
-                            .padding(top = 10.dp),
+                    Text("Dispenser", modifier = Modifier.alignByBaseline(),
                         style = (MaterialTheme.typography.bodyMedium),
-                        fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 16.sp
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 16.sp)
+                    OutlinedTextField(
+                        value = dispenser,
+                        singleLine = true,
+                        onValueChange = { dispenser = it },
+                        modifier = Modifier
+                            .alignByBaseline()
+                            .weight(1f)
+                            .padding(start = 30.dp)
+                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                            .height(50.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
                     )
-                    ExposedDropdownMenuBox(
-                        expanded = expanded1,
-                        onExpandedChange = { expanded1 = !expanded1 }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedDispenser,
-                            onValueChange = { selectedDispenser = it },
-                            readOnly = true,
-                            modifier = Modifier
-                                .alignByBaseline()
-                                .weight(1f)
-                                .menuAnchor()
-                                .padding(start = 75.dp)
-                                .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
-                                .height(50.dp),
-                            shape = RoundedCornerShape(20.dp),
-                            textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expanded1,
-                            onDismissRequest = { expanded1 = false }
-                        ) {
-                            if (availableDispensers.isEmpty()) {
-                                Text(
-                                    text = "Nessun dispenser disponibile",
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                    fontSize = 14.sp
-                                )
-                            } else {
-                                availableDispensers.forEach { dispenser ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                dispenser,
-                                                style = (MaterialTheme.typography.bodySmall),
-                                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                                fontSize = 14.sp
-                                            )
-                                        },
-                                        onClick = {
-                                            selectedDispenser = dispenser
-                                            expanded1 = false
-                                        },
-                                        colors = MenuDefaults.itemColors(
-                                            textColor = Color(0xFF000000),
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
                 }
-
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
-//                    horizontalArrangement = Arrangement.SpaceBetween
-//                ) {
-//                    Text("Dispenser", modifier = Modifier.alignByBaseline(),
-//                        style = (MaterialTheme.typography.bodyMedium),
-//                        fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 16.sp)
-//                    OutlinedTextField(
-//                        value = dispenser,
-//                        singleLine = true,
-//                        onValueChange = { dispenser = it },
-//                        modifier = Modifier
-//                            .alignByBaseline()
-//                            .weight(1f)
-//                            .padding(start = 30.dp)
-//                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
-//                            .height(50.dp),
-//                        shape = RoundedCornerShape(20.dp),
-//                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
-//                    )
-//                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -786,7 +710,7 @@ fun AddCats (navController: NavController){
                             "nome" to nome,
                             "peso" to peso,
                             "dataNascita" to dataNascita,
-                            "dispenserId" to selectedDispenser.toInt(),
+                            "dispenserId" to dispenser,
                             "sesso" to sesso,
                             "icona" to selectedImage,
                             "routine" to emptyList<orario>(),
@@ -816,38 +740,6 @@ fun AddCats (navController: NavController){
             }
         }
     }
-}
-
-fun fetchAvailableDispensers(onResult: (List<String>) -> Unit) {
-    val database = FirebaseDatabase.getInstance()
-    val dispensersRef = database.getReference("Utenti").child(GlobalState.username).child("dispensers")
-    val gattiRef = database.getReference("Utenti").child(GlobalState.username).child("gatti")
-
-    dispensersRef.addListenerForSingleValueEvent(object : ValueEventListener {
-        override fun onDataChange(dispensersSnapshot: DataSnapshot) {
-
-            val allDispensers = dispensersSnapshot.children.mapNotNull { it.child("dispenserId").getValue(Int::class.java)?.toString()  }
-            Log.d("Dispenser", allDispensers.toString())
-            gattiRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(gattiSnapshot: DataSnapshot) {
-                    val usedDispensers = gattiSnapshot.children.mapNotNull { it.child("dispenserId").getValue(Int::class.java)?.toString() }
-                    Log.d("Dispenser", usedDispensers.toString())
-                    val availableDispensers = allDispensers.filterNot { usedDispensers.contains(it) }
-                    Log.d("Dispenser", availableDispensers.toString())
-                    onResult(availableDispensers)
-
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle possible errors.
-                }
-            })
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-            // Handle possible errors.
-        }
-    })
 }
 
 @Composable
@@ -1333,7 +1225,7 @@ fun FirstPage() {
                     modifier = Modifier
                         //.align(Alignment.BottomCenter)
                         .height(35.dp)
-                        .width(120.dp)
+                        .width(115.dp)
                         .border(1.dp, Color(0xFF000000), RoundedCornerShape(30.dp))
                         .background(Color(0xFF7F5855), RoundedCornerShape(30.dp)),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7F5855), contentColor = Color.White),
@@ -2048,7 +1940,7 @@ fun EditCatDialog(onDismiss: () -> Unit) {
 }
 
 @Composable
-fun DeleteCatDialog(onDismiss: () -> Unit, navController: NavController) {
+fun DeleteCatDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = {},
         containerColor = Color(0xFFFFF5E3),
@@ -2065,19 +1957,16 @@ fun DeleteCatDialog(onDismiss: () -> Unit, navController: NavController) {
         confirmButton = {
             TextButton(onClick = {
                 val database = FirebaseDatabase.getInstance()
-                val gattoRef = database.getReference("Utenti").child(GlobalState.username).child("gatti")
-                gattoRef.orderByChild("nome").equalTo(GlobalState.gatto?.nome).addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        for (child in snapshot.children) {
-                            child.ref.removeValue()
-                        }
+                val gattoRef = database.getReference("Utenti").child(GlobalState.username).child("gatti").child(GlobalState.gatto?.nome ?: "")
+                gattoRef.removeValue().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("Firebase", "Gatto eliminato con successo")
+                    } else {
+                        Log.e("Firebase", "Errore durante l'eliminazione del gatto: ${task.exception?.message}")
                     }
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.e("Firebase", "Errore durante l'eliminazione del gatto: ${error.message}")
-                    }
-                })
-                onDismiss()
-                navController.navigate("cats")},
+                }
+
+                onDismiss() },
                 modifier = Modifier
                 //.border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp))
                 .padding(8.dp)
@@ -2112,7 +2001,7 @@ fun CatDetail(navController: NavController, gatto: gatto) {
     var showDeleteCatDialog by remember { mutableStateOf(false) }
     //val pagerState = rememberPagerState()
     if (showDeleteCatDialog) {
-        DeleteCatDialog(onDismiss = { showDeleteCatDialog = false }, navController = navController)
+        DeleteCatDialog(onDismiss = { showDeleteCatDialog = false })
     }
     if (showEditCatDialog) {
     EditCatDialog(onDismiss = { showEditCatDialog = false })

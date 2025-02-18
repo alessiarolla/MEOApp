@@ -242,7 +242,7 @@ class MainActivity : ComponentActivity() {
                                         "ora" to currentTime,
                                         "quantita" to quantitaRoutine,
                                         "giorno" to SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                                        "mangiato" to "waiting"
+                                        "mangiato" to "0"
                                     )
                                     database.child("Utenti").child(userId).child("gatti").child(gatto.key!!).child("ultimoPasto").setValue(ultimoPasto)
 

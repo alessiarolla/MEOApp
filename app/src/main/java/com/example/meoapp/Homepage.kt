@@ -1318,7 +1318,7 @@ fun Notification(navController: NavController) {
                 }
             })
         }
-        
+
         if (showDialog) {
         AlertDialog(
             onDismissRequest = {},

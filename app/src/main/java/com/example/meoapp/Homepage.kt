@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -757,6 +758,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             var dispenserName by remember { mutableStateOf("") }
             var selectedDispenserId by remember { mutableStateOf(dispenserId) }
             var livelloCiboDispenser by remember { mutableStateOf("") }
+            var showDialog by remember { mutableStateOf(false) }
 
             val capacitàDispenser = 1000
 
@@ -798,12 +800,91 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 }
             }
 
-            fun updateLivelloCiboDispenser(newValue: String) {
-                val dispenserKey = dispensers.entries.firstOrNull { it.value["dispenserId"] == dispenserId }?.key
-                if (dispenserKey != null) {
-                    database.child(user).child("dispensers").child(dispenserKey).child("livelloCiboDispenser").setValue(newValue.toLong())
-                }
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Ricarica Dispenser", style = MaterialTheme.typography.titleMedium,
+                        fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))) },
+                    text = {
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            )
+
+                            {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.quantita), // Replace with your drawable resource
+                                    contentDescription = "food Icon",
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .size(20.dp),
+
+                                    )
+
+
+                                OutlinedTextField(
+                                    value = livelloCiboDispenser,
+                                    onValueChange = { livelloCiboDispenser = it },
+                                    modifier = Modifier
+                                        .padding(bottom = 2.dp)
+                                        .width(100.dp)
+                                        .height(50.dp)
+                                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
+                                    shape = RoundedCornerShape(20.dp),
+                                    textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    trailingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(end = 8.dp),
+                                            contentAlignment = Alignment.BottomEnd
+                                        ) {
+
+                                            Text("gr", style = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))))
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val dispenserKey = dispensers.entries.firstOrNull { it.value["dispenserId"] == dispenserId }?.key
+                                if (dispenserKey != null) {
+                                    database.child(user).child("dispensers").child(dispenserKey).child("livelloCiboDispenser").setValue(livelloCiboDispenser.toLong())
+                                    showDialog = false
+                                }
+                            },
+                            modifier = Modifier
+                                //.border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp))
+                                .padding(8.dp)
+                                .background(Color(0xFF7F5855), RoundedCornerShape(25.dp))
+                        ) {
+                            Text("Salva", style = (MaterialTheme.typography.titleSmall),
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                fontSize = 12.sp,
+                                modifier = Modifier
+                                    .padding(4.dp),
+                                color = Color(0xFFFFF5E3))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {showDialog = false}) {
+                            Text("Annulla", style = (MaterialTheme.typography.titleSmall),
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                fontSize = 12.sp, color = Color(0xFF7F5855), modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(top = 15.dp))
+                        }
+                    },
+                    containerColor = Color(0XFFFFF5E3),
+                    modifier = Modifier.width(300.dp)
+                )
+
             }
+
+
 
 
             if (gatti.isEmpty()) {
@@ -857,33 +938,42 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                     modifier = Modifier.fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
                 ) {
 
+
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Nome dispenser:",
+                            text = "Ricarica Dispenser:",
                             modifier = Modifier.weight(1f),
                             textAlign = TextAlign.Start,
                             fontFamily = customFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
-                        OutlinedTextField(
-                            value = livelloCiboDispenser,
-                            onValueChange = { newValue ->
-                                livelloCiboDispenser = if (newValue.isEmpty()) "1" else newValue
-                                updateLivelloCiboDispenser(livelloCiboDispenser)
-                            },
+
+                        Card(
+                            onClick = {showDialog = true },
                             modifier = Modifier
-                                .padding(bottom = 10.dp)
-                                .width(60.dp)
-                                .height(50.dp)
-                                .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp)),
-                            shape = RoundedCornerShape(20.dp),
-                            textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                        )
+                                .width(170.dp) // Set the desired width
+                                //.border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
+                                .background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
+                            shape = RoundedCornerShape(40.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
+                        ) {
+                            Text(
+                                text = "Ricarica",
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .fillMaxWidth(),
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 18.sp,
+                                color = Color(0xFFFFFFFF),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
 
                     }
 
@@ -1132,6 +1222,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
         }
     }
 }
+
 
 fun aggiornaDispenserIdNelDatabase(user: String, gattoNome: String, nuovoDispenserId: Long) {
     val database = FirebaseDatabase.getInstance().reference.child("Utenti").child(user).child("gatti")

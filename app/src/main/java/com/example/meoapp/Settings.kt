@@ -206,7 +206,10 @@ fun Settings(navController: NavController) {
                                 fontSize = 14.sp,
                                 fontFamily = FontFamily(Font(R.font.autouroneregular))
                             ),
-                            modifier = Modifier.align(Alignment.CenterVertically).width(200.dp)
+                            singleLine = true,
+                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+                            ,
+                                    modifier = Modifier.align(Alignment.CenterVertically).width(200.dp)
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
@@ -225,7 +228,7 @@ fun Settings(navController: NavController) {
 
             },
             confirmButton = {
-                Button(
+                TextButton(
                     onClick = {
                         if (passwordInput.isNotEmpty()) {
                             password = passwordInput
@@ -233,17 +236,29 @@ fun Settings(navController: NavController) {
                             showDialogPass = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
+                    modifier = Modifier
+                        //.border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp))
+                        .padding(8.dp)
+                        .background(Color(0xFF7F5855), RoundedCornerShape(25.dp))
                 ) {
-                    Text("Conferma")
+                    Text("Salva", style = (MaterialTheme.typography.titleSmall),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            //.border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                            .padding(4.dp),
+                        color = Color(0xFFFFF5E3))
                 }
             },
             dismissButton = {
-                Button(
+                TextButton(
                     onClick = { showDialogPass = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF7F5855))
                 ) {
-                    Text("Annulla")
+                    Text("Annulla", style = (MaterialTheme.typography.titleSmall),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        fontSize = 14.sp, color = Color(0xFF7F5855), modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(top = 15.dp))
                 }
             },
         )

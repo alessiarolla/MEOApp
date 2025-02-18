@@ -759,6 +759,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             var selectedDispenserId by remember { mutableStateOf(dispenserId) }
             var livelloCiboDispenser by remember { mutableStateOf("") }
             var showDialog by remember { mutableStateOf(false) }
+            var CiboAggiuntoDispenser by remember { mutableStateOf("") }
 
             val capacitàDispenser = 1000
 
@@ -823,8 +824,8 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
 
 
                                 OutlinedTextField(
-                                    value = livelloCiboDispenser,
-                                    onValueChange = { livelloCiboDispenser = it },
+                                    value = "0",
+                                    onValueChange = { CiboAggiuntoDispenser = it },
                                     modifier = Modifier
                                         .padding(bottom = 2.dp)
                                         .width(100.dp)
@@ -852,7 +853,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             onClick = {
                                 val dispenserKey = dispensers.entries.firstOrNull { it.value["dispenserId"] == dispenserId }?.key
                                 if (dispenserKey != null) {
-                                    database.child(user).child("dispensers").child(dispenserKey).child("livelloCiboDispenser").setValue(livelloCiboDispenser.toLong())
+                                    database.child(user).child("dispensers").child(dispenserKey).child("livelloCiboDispenser").setValue(CiboAggiuntoDispenser.toLong())
                                 }
                                 showDialog = false
 

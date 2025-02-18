@@ -1291,6 +1291,7 @@ fun Notification(navController: NavController) {
         var user = GlobalState.username
         var notifications by remember { mutableStateOf<List<Map<String, String>>>(emptyList()) }
         val database = FirebaseDatabase.getInstance().reference.child("Utenti")
+        var showDialog by remember { mutableStateOf(false) }
 
         var nomeUtente by remember { mutableStateOf("") }
 
@@ -1317,6 +1318,50 @@ fun Notification(navController: NavController) {
                 }
             })
         }
+        
+        if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {},
+            containerColor = Color(0xFFFFF5E3),
+            title = {
+                Text(text = "Cancella notifiche", style = MaterialTheme.typography.titleMedium,
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF000000), fontSize = 20.sp)
+            },
+            text = {
+                Text("Sei sicuro di voler eliminare le notifiche?", style = MaterialTheme.typography.titleSmall,
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    color = Color(0xFF000000), fontSize = 14.sp)
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    database.child(nomeUtente).child("notifiche").removeValue()
+                    showDialog = false
+                    },
+                    modifier = Modifier
+                        //.border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp))
+                        .padding(8.dp)
+                        .background(Color.Red, RoundedCornerShape(25.dp)))
+                {
+                    Text("Elimina", style = (MaterialTheme.typography.titleSmall),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            //.border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                            .padding(4.dp),
+                        color = Color(0xFFFFF5E3))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {showDialog = false}) {
+                    Text("Annulla", style = (MaterialTheme.typography.titleSmall),
+                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                        fontSize = 12.sp, color = Color(0xFF7F5855), modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(top = 15.dp))
+                }
+            }
+        )}
 
         Column(
             modifier = Modifier
@@ -1366,7 +1411,8 @@ fun Notification(navController: NavController) {
                 }
             } else {
                 Box(
-                    modifier = Modifier.height(580.dp)
+                    modifier = Modifier.height(500.dp)
+                    //modifier = Modifier.height(580.dp)
                 ) {
                     Card(
                         modifier = Modifier
@@ -1457,7 +1503,9 @@ fun Notification(navController: NavController) {
                 }
                 Button(
                     onClick = {
-                        database.removeValue()
+                        showDialog = true
+
+                        //database.removeValue()
                     },
                     modifier = Modifier
                         .width(180.dp)

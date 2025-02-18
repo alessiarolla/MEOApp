@@ -728,7 +728,7 @@ fun AddCats (navController: NavController){
                     modifier = Modifier
                         .padding(top = 25.dp)
                         .height(50.dp)
-                        .width(200.dp)
+                        .width(210.dp)
                         .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(30.dp))
                         .align(Alignment.CenterHorizontally)
                     //enabled = isFormValid
@@ -1879,7 +1879,7 @@ fun EditCatDialog(onDismiss: () -> Unit) {
                 Row{
                     Text("Peso: ", style = MaterialTheme.typography.titleSmall,
                         fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                        color = Color(0xFF7F5855), fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterVertically).padding(top = 10.dp))
+                        color = Color(0xFF7F5855), fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 10.dp))
                     GlobalState.gatto?.peso?.let {
                         OutlinedTextField(
                             value = it,
@@ -1896,18 +1896,19 @@ fun EditCatDialog(onDismiss: () -> Unit) {
             TextButton(
                 onClick = {
                 val database = FirebaseDatabase.getInstance()
-                val gattoRef = database.getReference("Utenti").child(GlobalState.username).child("gatti").child(GlobalState.gatto?.nome ?: "")
-                val updatedValues = mapOf(
-                    "nome" to catName,
-                    "peso" to GlobalState.gatto?.peso
-                )
-                gattoRef.updateChildren(updatedValues).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Log.d("Firebase", "Gatto aggiornato con successo")
-                    } else {
-                        Log.e("Firebase", "Errore durante l'aggiornamento del gatto: ${task.exception?.message}")
-                    }
-                }
+                val gattoRef = database.getReference("Utenti").child(GlobalState.username).child("gatti")
+                    gattoRef.orderByChild("nome").equalTo(GlobalState.gatto?.nome).addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            for (child in snapshot.children) {
+                                child.ref.child("nome").setValue(catName)
+                                child.ref.child("peso").setValue(GlobalState.gatto?.peso)
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.e("Firebase", "Errore durante l'aggiornamento del gatto: ${error.message}")
+                        }
+                    })
                 onDismiss()
                 },
                 modifier = Modifier
@@ -1944,12 +1945,12 @@ fun DeleteCatDialog(onDismiss: () -> Unit) {
         title = {
             Text(text = "Elimina Gatto", style = MaterialTheme.typography.titleMedium,
                 fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                color = Color(0xFF7F5855), fontSize = 20.sp)
+                color = Color(0xFF000000), fontSize = 20.sp)
         },
         text = {
             Text("Sei sicuro di voler eliminare questo gatto?", style = MaterialTheme.typography.titleSmall,
                 fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                color = Color(0xFF7F5855), fontSize = 14.sp)
+                color = Color(0xFF000000), fontSize = 14.sp)
         },
         confirmButton = {
             TextButton(onClick = {
@@ -2056,7 +2057,7 @@ fun CatDetail(navController: NavController, gatto: gatto) {
                         .padding(bottom = 16.dp, start = 16.dp, end = 12.dp, top = 23.dp)
                         .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(23.dp)),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0XFFFFD89D))
+                    colors = CardDefaults.cardColors(containerColor = Color(0XFFF7E2C3))
                 ) {
                     Row(
                         modifier = Modifier

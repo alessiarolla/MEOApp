@@ -86,7 +86,7 @@ fun Homepage(navController: NavController) {
     var timeSinceLastMeal by remember { mutableStateOf("") }
     var timeBetweenMeals by remember { mutableStateOf("") }
 
-    val capacitàDispenser = 100
+    val capacitàDispenser = 1500
 
     val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
@@ -759,9 +759,9 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             var selectedDispenserId by remember { mutableStateOf(dispenserId) }
             var livelloCiboDispenser by remember { mutableStateOf("") }
             var showDialog by remember { mutableStateOf(false) }
-            var CiboAggiuntoDispenser by remember { mutableStateOf("") }
+            var CiboAggiuntoDispenser by remember { mutableStateOf("0") }
 
-            val capacitàDispenser = 1000
+            val capacitàDispenser = 1500
 
             val database = FirebaseDatabase.getInstance().reference.child("Utenti")
 
@@ -802,6 +802,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
             }
 
             if (showDialog) {
+                CiboAggiuntoDispenser = ""
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
                     title = { Text("Ricarica Dispenser", style = MaterialTheme.typography.titleMedium,
@@ -824,8 +825,12 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
 
 
                                 OutlinedTextField(
-                                    value = "0",
-                                    onValueChange = { CiboAggiuntoDispenser = it },
+                                    value = CiboAggiuntoDispenser,
+                                    onValueChange = { newValue ->
+                                        if (newValue.all { it.isDigit() }) {
+                                            CiboAggiuntoDispenser = newValue
+                                        }
+                                    },
                                     modifier = Modifier
                                         .padding(bottom = 2.dp)
                                         .width(100.dp)
@@ -853,8 +858,17 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             onClick = {
                                 val dispenserKey = dispensers.entries.firstOrNull { it.value["dispenserId"] == dispenserId }?.key
                                 if (dispenserKey != null) {
-                                    database.child(user).child("dispensers").child(dispenserKey).child("livelloCiboDispenser").setValue(CiboAggiuntoDispenser.toLong())
-                                }
+                                    val dispenserRef = database.child(user).child("dispensers").child(dispenserKey).child("livelloCiboDispenser")
+                                    dispenserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onDataChange(snapshot: DataSnapshot) {
+                                            val currentValue = snapshot.getValue(Long::class.java) ?: 0L
+                                            val newValue = currentValue + CiboAggiuntoDispenser.toLong()
+                                            dispenserRef.setValue(newValue)
+                                        }
+
+                                        override fun onCancelled(error: DatabaseError) {
+                                        }
+                                    })                                }
                                 showDialog = false
 
                             },
@@ -872,7 +886,11 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = {showDialog = false}) {
+                        TextButton(onClick = {
+                            showDialog = false
+
+                        }
+                        ) {
                             Text("Annulla", style = (MaterialTheme.typography.titleSmall),
                                 fontFamily = FontFamily(Font(R.font.autouroneregular)),
                                 fontSize = 12.sp, color = Color(0xFF7F5855), modifier = Modifier

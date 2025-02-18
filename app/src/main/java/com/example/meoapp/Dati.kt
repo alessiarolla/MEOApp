@@ -18,6 +18,7 @@ object GlobalState {
     var username: String = ""
     var routine: orario = orario()
     var prossimopasto: String = ""
+    var statoDisp: Boolean = true
 }
 
 
@@ -64,8 +65,9 @@ data class dispenser(
     val nome: String = "",
     //val livelloBatteria: Int,
     val livelloCiboCiotola: Int = 0,
-    val livelloCiboDispenser: Int = 0
+    val livelloCiboDispenser: Int = 0,
     //val gatti: List<gatto>
+    var stato: Boolean = true
 )
 
 
@@ -143,3 +145,5 @@ fun fetchGattiFromFirebase() {
 //        })
     }
 }
+
+

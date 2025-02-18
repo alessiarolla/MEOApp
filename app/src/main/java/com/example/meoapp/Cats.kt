@@ -1851,6 +1851,7 @@ fun Carousel() {
 @Composable
 fun EditCatDialog(onDismiss: () -> Unit) {
     var catName by remember { mutableStateOf(GlobalState.gatto?.nome ?: "") }
+    var peso by remember { mutableStateOf(GlobalState.gatto?.peso ?: "") }
     AlertDialog(
         onDismissRequest = {},
         containerColor = Color(0xFFFFF5E3),
@@ -1882,8 +1883,8 @@ fun EditCatDialog(onDismiss: () -> Unit) {
                         color = Color(0xFF7F5855), fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 10.dp))
                     GlobalState.gatto?.peso?.let {
                         OutlinedTextField(
-                            value = it,
-                            onValueChange = {GlobalState.gatto?.peso = it},
+                            value = peso,
+                            onValueChange = {peso = it},
                             shape = RoundedCornerShape(20.dp),
                             textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular))),
                             modifier = Modifier.align(Alignment.CenterVertically).width(200.dp)
@@ -1895,21 +1896,22 @@ fun EditCatDialog(onDismiss: () -> Unit) {
         confirmButton = {
             TextButton(
                 onClick = {
-                val database = FirebaseDatabase.getInstance()
-                val gattoRef = database.getReference("Utenti").child(GlobalState.username).child("gatti")
+                    GlobalState.gatto?.nome = catName
+                    GlobalState.gatto?.peso = peso
+                    val database = FirebaseDatabase.getInstance()
+                    val gattoRef = database.getReference("Utenti").child(GlobalState.username).child("gatti")
                     gattoRef.orderByChild("nome").equalTo(GlobalState.gatto?.nome).addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            for (child in snapshot.children) {
-                                child.ref.child("nome").setValue(catName)
-                                child.ref.child("peso").setValue(GlobalState.gatto?.peso)
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                for (child in snapshot.children) {
+                                    child.ref.child("nome").setValue(catName)
+                                    child.ref.child("peso").setValue(peso)
+                                }
                             }
-                        }
-
-                        override fun onCancelled(error: DatabaseError) {
-                            Log.e("Firebase", "Errore durante l'aggiornamento del gatto: ${error.message}")
-                        }
-                    })
-                onDismiss()
+                            override fun onCancelled(error: DatabaseError) {
+                                Log.e("Firebase", "Errore durante l'aggiornamento del gatto: ${error.message}")
+                            }
+                        })
+                    onDismiss()
                 },
                 modifier = Modifier
                     //.border(1.dp, Color(0xFF000000), RoundedCornerShape(20.dp))

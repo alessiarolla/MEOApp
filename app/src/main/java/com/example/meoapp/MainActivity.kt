@@ -226,6 +226,9 @@ class MainActivity : ComponentActivity() {
                         for (orario in routine) {
                             val oraRoutine = orario.child("ora").getValue(String::class.java)
                             val quantitaRoutine = orario.child("quantita").getValue(String::class.java)
+                            // Ottieni il dispenserId del gatto
+                            val dispenserId = gatto.child("dispenserId").getValue(Int::class.java) ?: 0
+
 
                             if (oraRoutine != null && oraRoutine == currentTime) {
                                 if (!sentNotifications.containsKey("routine_$nomeGatto")) {
@@ -256,8 +259,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                     })
 
-                                    // Ottieni il dispenserId del gatto
-                                    val dispenserId = gatto.child("dispenserId").getValue(Int::class.java) ?: 0
+
 
                                     // Recupera il livelloCiboDispenser del dispenser corrispondente
                                     database.child("Utenti").child(userId).child("dispensers").orderByChild("dispenserId").equalTo(dispenserId.toDouble())
@@ -270,6 +272,10 @@ class MainActivity : ComponentActivity() {
 
                                                     // Aggiorna il livelloCiboDispenser nel database
                                                     dispenserSnapshot.ref.child("livelloCiboDispenser").setValue(nuovoLivelloCiboDispenser)
+
+                                                    if (nuovoLivelloCiboDispenser < 45) {
+                                                        dispenserSnapshot.ref.child("stato").setValue(false)
+                                                    }
                                                 }
                                             }
 
@@ -277,7 +283,9 @@ class MainActivity : ComponentActivity() {
                                                 Log.e("MainActivity", "Database error: ${error.message}")
                                             }
                                         })
-                                
+
+
+
 
 
 

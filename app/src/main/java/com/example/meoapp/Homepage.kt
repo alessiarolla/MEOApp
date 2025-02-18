@@ -613,7 +613,8 @@ fun calcolaProssimoPasto(routine: Map<String, Map<String, Any>>, currentTime: St
 }
 
 fun calcolaUltimoPasto(gatto: Map<String, Any>): String {
-    return (gatto["ultimoPasto"] as? Map<String, Any>)?.get("ora") as? String ?: "00:00"
+    val lastMealTime = (gatto["ultimoPasto"] as? Map<String, Any>)?.get("ora") as? String ?: "00:00"
+    return if (lastMealTime.length == 5) "$lastMealTime:00" else lastMealTime
 }
 
 fun calcolaUltimoPastoQuantità(gatto: Map<String, Any>): String {
@@ -623,8 +624,9 @@ fun calcolaUltimoPastoQuantità(gatto: Map<String, Any>): String {
 
 
 fun calcolaTempoTrascorsoUltimoPasto(lastMealTime: String, currentTime: String): String {
-    val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+    val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
     return try {
+        Log.d("Debug", "lastMealTime: $lastMealTime, currentTime: $currentTime")
         val lastMealDate = format.parse(lastMealTime)
         val currentDate = format.parse(currentTime)
 
@@ -646,6 +648,7 @@ fun calcolaTempoTrascorsoUltimoPasto(lastMealTime: String, currentTime: String):
             "00:00:00"
         }
     } catch (e: Exception) {
+        Log.e("Error", "Exception: ${e.message}")
         "00:00:00"
     }
 }

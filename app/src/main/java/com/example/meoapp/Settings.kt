@@ -303,7 +303,7 @@ fun Settings(navController: NavController) {
                 fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
                 ){
 
-                    Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
 
                     //nome utente

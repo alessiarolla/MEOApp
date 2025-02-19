@@ -268,8 +268,10 @@ class MainActivity : ComponentActivity() {
                                                 for (dispenserSnapshot in snapshot.children) {
                                                     val livelloCiboDispenser = dispenserSnapshot.child("livelloCiboDispenser").getValue(Int::class.java) ?: 0
                                                     val quantita = quantitaRoutine?.toIntOrNull() ?: 0
-                                                    val nuovoLivelloCiboDispenser = livelloCiboDispenser - quantita
-
+                                                    var nuovoLivelloCiboDispenser = livelloCiboDispenser - quantita
+                                                    if(nuovoLivelloCiboDispenser < 0) {
+                                                        nuovoLivelloCiboDispenser = 0
+                                                    }
                                                     // Aggiorna il livelloCiboDispenser nel database
                                                     dispenserSnapshot.ref.child("livelloCiboDispenser").setValue(nuovoLivelloCiboDispenser)
 

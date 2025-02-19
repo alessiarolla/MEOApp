@@ -49,6 +49,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
@@ -447,7 +448,7 @@ fun AddCats (navController: NavController){
                     Image(
                         painter = painterResource(id = imageResource),
                         contentDescription = "Cat Image",
-                        modifier = Modifier.size(120.dp)
+                        modifier = Modifier.size(150.dp)
                     )
                     IconButton(
                         onClick = { showDialog = true },
@@ -631,22 +632,34 @@ fun AddCats (navController: NavController){
                         onExpandedChange = { expanded1 = !expanded1 }
                     ) {
                         OutlinedTextField(
-                            value = selectedDispenser,
+                            value = if (selectedDispenser != "")"Dispenser${selectedDispenser}" else selectedDispenser,
                             onValueChange = { selectedDispenser = it },
                             readOnly = true,
                             modifier = Modifier
                                 .alignByBaseline()
                                 .weight(1f)
                                 .menuAnchor()
-                                .padding(start = 75.dp)
+                                .padding(start = 28.dp)
                                 .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
                                 .height(50.dp),
                             shape = RoundedCornerShape(20.dp),
                             textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
                         )
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp, end = 10.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.arrow_down),
+                                colorFilter = ColorFilter.tint(Color(0xFF7F5855)),
+                                contentDescription = "Arrow Down",
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
                         ExposedDropdownMenu(
                             expanded = expanded1,
-                            onDismissRequest = { expanded1 = false }
+                            onDismissRequest = { expanded1 = false },
+                            modifier = Modifier.background(Color(0xFFFFF5E3)), // Modifica le dimensioni della finestra
                         ) {
                             if (availableDispensers.isEmpty()) {
                                 Text(
@@ -660,8 +673,7 @@ fun AddCats (navController: NavController){
                                 availableDispensers.forEach { dispenser ->
                                     DropdownMenuItem(
                                         text = {
-                                            Text(
-                                                dispenser,
+                                            Text("Dispenser${dispenser}",
                                                 style = (MaterialTheme.typography.bodySmall),
                                                 fontFamily = FontFamily(Font(R.font.autouroneregular)),
                                                 fontSize = 14.sp
@@ -680,30 +692,6 @@ fun AddCats (navController: NavController){
                         }
                     }
                 }
-
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
-//                    horizontalArrangement = Arrangement.SpaceBetween
-//                ) {
-//                    Text("Dispenser", modifier = Modifier.alignByBaseline(),
-//                        style = (MaterialTheme.typography.bodyMedium),
-//                        fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 16.sp)
-//                    OutlinedTextField(
-//                        value = dispenser,
-//                        singleLine = true,
-//                        onValueChange = { dispenser = it },
-//                        modifier = Modifier
-//                            .alignByBaseline()
-//                            .weight(1f)
-//                            .padding(start = 30.dp)
-//                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
-//                            .height(50.dp),
-//                        shape = RoundedCornerShape(20.dp),
-//                        textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
-//                    )
-//                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -734,12 +722,23 @@ fun AddCats (navController: NavController){
                             shape = RoundedCornerShape(20.dp),
                             textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
                         )
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp, end = 10.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.arrow_down),
+                                colorFilter = ColorFilter.tint(Color(0xFF7F5855)),
+                                contentDescription = "Arrow Down",
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
                         ExposedDropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
                             modifier = Modifier
-                                .background(Color(0xFFA37F6F))
-                                .padding(start = 75.dp)
+                                .background(Color(0xFFFFF5E3))
+                                //.padding(start = 75.dp)
                         ) {
                             sessoOptions.forEach { option ->
                                 DropdownMenuItem(
@@ -794,8 +793,8 @@ fun AddCats (navController: NavController){
                         val user = Utente(GlobalState.username)
                         if (user != null) {
                             val database = FirebaseDatabase.getInstance().reference
-                            database.child("Utenti").child(user.nome).child("gatti").push()
-                                .setValue(gatto)
+                            val key = "gatto" + (gattiList.size + 1)
+                            database.child("Utenti").child(user.nome).child("gatti").child(key).setValue(gatto)
                         }
                         navController.navigate("cats")}
 
@@ -1343,97 +1342,114 @@ fun FirstPage() {
                         fontSize = 12.sp)
                 }
             }
-            LazyColumn {
-                itemsIndexed(sortedRoutine) { index, routine ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
-                        shape = RoundedCornerShape(8.dp),
-                        elevation = CardDefaults.cardElevation(4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0XFFFFF5E3))
-                    ) {
-                        Column(
+            if (sortedRoutine.isEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Nessuna routine aggiunta",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    fontSize = 16.sp,
+                    color = Color.Gray,
+                    //modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                LazyColumn {
+                    itemsIndexed(sortedRoutine) { index, routine ->
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 2.dp, end = 10.dp, start = 10.dp, bottom = 12.dp)
+                                .padding(vertical = 4.dp)
+                                .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
+                            shape = RoundedCornerShape(8.dp),
+                            elevation = CardDefaults.cardElevation(4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0XFFFFF5E3))
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 2.dp, end = 10.dp, start = 10.dp, bottom = 12.dp)
                             ) {
-                                Text(
-                                    text = "Pasto ${index + 1}",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                    fontWeight = FontWeight.Bold,
-                                )
-                                Row {
-                                    IconButton(onClick = { showEditRoutineDialog = true
-                                        GlobalState.routine = routine }) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.modifica),
-                                            contentDescription = "Edit Routine",
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                    IconButton(onClick = {
-                                        showDeleteRoutineDialog = true
-                                        orariodelete = routine
-                                    }) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.elimina),
-                                            contentDescription = "Delete Routine",
-                                            modifier = Modifier.size(18.dp)
-                                        )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Pasto ${index + 1}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                    Row {
+                                        IconButton(onClick = {
+                                            showEditRoutineDialog = true
+                                            GlobalState.routine = routine
+                                        }) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.modifica),
+                                                contentDescription = "Edit Routine",
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        IconButton(onClick = {
+                                            showDeleteRoutineDialog = true
+                                            orariodelete = routine
+                                        }) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.elimina),
+                                                contentDescription = "Delete Routine",
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
                                     }
                                 }
-                            }
-                            Divider(
-                                modifier = Modifier.padding(bottom = 10.dp),
-                                color = Color(0xFF7F5855),
-                                thickness = 1.dp
-                            )
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 20.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.orario), // Replace with your drawable resource
-                                    contentDescription = "Icona",
-                                    modifier = Modifier.size(20.dp)
+                                Divider(
+                                    modifier = Modifier.padding(bottom = 10.dp),
+                                    color = Color(0xFF7F5855),
+                                    thickness = 1.dp
                                 )
-                                Text(
-                                    text = if (routine.ora.length >= 5) routine.ora.substring(0, 5) else routine.ora,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 20.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.quantita), // Replace with your drawable resource
-                                    contentDescription = "Icona",
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    text = "${routine.quantita} gr",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 20.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.orario), // Replace with your drawable resource
+                                        contentDescription = "Icona",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = if (routine.ora.length >= 5) routine.ora.substring(
+                                            0,
+                                            5
+                                        ) else routine.ora,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 20.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.quantita), // Replace with your drawable resource
+                                        contentDescription = "Icona",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = "${routine.quantita} gr",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -1472,56 +1488,66 @@ fun SecondPage() {
                 Text(text = "Cronologia pasti", style = MaterialTheme.typography.titleMedium,
                     fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
             }
-            LazyColumn {
-                itemsIndexed (sortedRoutine) { index, routine ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
-                        shape = RoundedCornerShape(8.dp),
-                        elevation = CardDefaults.cardElevation(4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0XFFFFF5E3))
-                    ) {
-                        Column(
+            if (sortedRoutine.isEmpty()) {
+                Text(
+                    text = "Nessun pasto precedente",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+            } else {
+                LazyColumn {
+                    itemsIndexed(sortedRoutine) { index, routine ->
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 2.dp, end = 10.dp, start = 10.dp, bottom = 12.dp)
+                                .padding(vertical = 8.dp)
+                                .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(8.dp)),
+                            shape = RoundedCornerShape(8.dp),
+                            elevation = CardDefaults.cardElevation(4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0XFFFFF5E3))
                         ) {
-                            Row(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(top = 2.dp, end = 10.dp, start = 10.dp, bottom = 12.dp)
                             ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "${routine.giorno ?: "N/A"}, h ${routine.ora.take(5)}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                }
+                                Divider(
+                                    modifier = Modifier.padding(bottom = 10.dp),
+                                    color = Color(0xFF7F5855),
+                                    thickness = 1.dp
+                                )
                                 Text(
-                                    text = "${routine.giorno ?: "N/A"}, h ${routine.ora.take(5)}",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    text = "Quantità totale: ${routine.quantita} gr",
+                                    style = MaterialTheme.typography.bodySmall,
                                     fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = "Quantità mangiata: ${routine.mangiato ?: "N/A"} gr",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
-                            Divider(
-                                modifier = Modifier.padding(bottom = 10.dp),
-                                color = Color(0xFF7F5855),
-                                thickness = 1.dp
-                            )
-                            Text(
-                                text = "Quantità totale: ${routine.quantita} gr",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                fontSize = 14.sp,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = "Quantità mangiata: ${routine.mangiato ?: "N/A"} gr",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                fontSize = 14.sp,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
                         }
                     }
                 }
@@ -1582,7 +1608,7 @@ fun ThirdPage() {
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded },
                 modifier = Modifier
-                    .width(150.dp)
+                    .width(180.dp)
             ) {
                 OutlinedTextField(
                     value = selectedPeriod,
@@ -1595,13 +1621,25 @@ fun ThirdPage() {
                     shape = RoundedCornerShape(20.dp),
                     textStyle = TextStyle(fontSize = 14.sp, fontFamily = FontFamily(Font(R.font.autouroneregular)))
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp, end = 10.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.arrow_down),
+                        colorFilter = ColorFilter.tint(Color(0xFF7F5855)),
+                        contentDescription = "Arrow Down",
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
                 ExposedDropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(Color(0xFFFFF5E3))
                 ) {
                     periodOptions.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option) },
+                            text = { Text(option, style = MaterialTheme.typography.bodyLarge, fontFamily = FontFamily(Font(R.font.autouroneregular)), fontSize = 14.sp) },
                             onClick = {
                                 selectedPeriod = option
                                 expanded = false
@@ -1960,6 +1998,25 @@ fun Carousel() {
 fun EditCatDialog(onDismiss: () -> Unit) {
     var catName by remember { mutableStateOf(GlobalState.gatto?.nome ?: "") }
     var peso by remember { mutableStateOf(GlobalState.gatto?.peso ?: "") }
+    var newDispenser by remember { mutableStateOf(GlobalState.gatto?.dispenserId ?: "") }
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedImage by remember { mutableStateOf(GlobalState.gatto?.icona ?: "") }
+    var tempSelectedImage by remember { mutableStateOf(selectedImage) }
+
+    var listaicone = listOf(
+        Pair(R.drawable.icone_gatti_1, "foto-profilo1"),
+        Pair(R.drawable.icone_gatti_2, "foto-profilo2"),
+        Pair(R.drawable.icone_gatti_3, "foto-profilo3"),
+        Pair(R.drawable.icone_gatti_4, "foto-profilo4")
+    )
+    val imageResource = when (selectedImage) {
+        "foto-profilo1" -> R.drawable.icone_gatti_1
+        "foto-profilo2" -> R.drawable.icone_gatti_2
+        "foto-profilo3" -> R.drawable.icone_gatti_3
+        "foto-profilo4" -> R.drawable.icone_gatti_4
+        else -> R.drawable.icone_gatti_1 // Default image
+    }
+
     AlertDialog(
         onDismissRequest = {},
         containerColor = Color(0xFFFFF5E3),
@@ -1970,6 +2027,93 @@ fun EditCatDialog(onDismiss: () -> Unit) {
         },
         text = {
             Column {
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .background(Color.Transparent, shape = CircleShape)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = imageResource),
+                        contentDescription = "Cat Image",
+                        modifier = Modifier.size(120.dp)
+                    )
+                    IconButton(
+                        onClick = { showDialog = true },
+                        modifier = Modifier.align(Alignment.BottomEnd)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.modifica),
+                            contentDescription = "Edit Routine",
+                            modifier = Modifier.size(20.dp),
+                            tint = Color(0xFF7F5855)
+                        )
+                    }
+                }
+
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { },
+                        containerColor = Color(0xFFFFF5E3),
+                        title = { Text("Seleziona un'icona", style = MaterialTheme.typography.titleMedium,
+                            fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                            fontSize = 20.sp) },
+                        text = {
+                            LazyColumn {
+                                items(listaicone.chunked(2)) { imagePair ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        imagePair.forEach { image ->
+                                            Image(
+                                                painter = painterResource(id = image.first),
+                                                contentDescription = "Selectable Image",
+                                                modifier = Modifier
+                                                    .size(100.dp)
+                                                    .border(
+                                                        width = if (tempSelectedImage == image.second) 2.dp else 0.dp,
+                                                        color = if (tempSelectedImage == image.second) Color(
+                                                            0xFF7F5855
+                                                        ) else Color.Transparent,
+                                                        shape = CircleShape
+                                                    )
+                                                    .clickable {
+                                                        tempSelectedImage = image.second
+                                                    }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                selectedImage = tempSelectedImage
+                                showDialog = false },
+                                modifier = Modifier
+                                    .background(Color(0xFF7F5855), RoundedCornerShape(25.dp)))
+                            {
+                                Text("Conferma", style = (MaterialTheme.typography.titleSmall),
+                                    fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    fontSize = 14.sp,
+                                    modifier = Modifier
+                                        .border(1.dp, Color(0xFF7F5855), RoundedCornerShape(20.dp))
+                                        .padding(4.dp),
+                                    color = Color(0xFFFFF5E3))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Annulla", fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                    color = Color(0xFF7F5855), modifier = Modifier.padding(8.dp))
+                            }
+                        }
+                    )
+                }
+
                 Row {
                     Text("Nome: ", style = MaterialTheme.typography.titleSmall,
                         fontFamily = FontFamily(Font(R.font.autouroneregular)),
@@ -2013,6 +2157,7 @@ fun EditCatDialog(onDismiss: () -> Unit) {
                                 for (child in snapshot.children) {
                                     child.ref.child("nome").setValue(catName)
                                     child.ref.child("peso").setValue(peso)
+                                    child.ref.child("icona").setValue(selectedImage)
                                 }
                             }
                             override fun onCancelled(error: DatabaseError) {
@@ -2296,26 +2441,3 @@ fun calculateAge(birthDate: String): Int {
 }
 
 
-fun pushRoutineCronologia(routine: orario) {
-    val database = FirebaseDatabase.getInstance()
-    val gattoRef = database.getReference("Utenti").child(GlobalState.username).child("gatti").child(GlobalState.gatto?.nome ?: "")
-    val cronologiaRef = gattoRef.child("cronologia")
-    val key = cronologiaRef.push().key
-    val orario = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-    val giorno = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-    val routineMap = mapOf(
-        "giorno" to giorno,
-        "ora" to orario,
-        "quantita" to routine.quantita,
-        "mangiato" to routine.mangiato
-    )
-    key?.let {
-        cronologiaRef.child(it).setValue(routineMap).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("Firebase", "Routine aggiunta con successo")
-            } else {
-                Log.e("Firebase", "Errore durante l'aggiunta della routine: ${task.exception?.message}")
-            }
-        }
-    }
-}

@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -186,11 +187,12 @@ fun Homepage(navController: NavController) {
                 val dispenserId = currentGatto?.get("dispenserId") as? Long ?: 0
 
                 Image(
-                painter = painterResource(id = R.drawable.dispenser_icon), // Replace with your image resource
+                painter = painterResource(id = R.drawable.dispenser), // Replace with your image resource
+                    colorFilter = ColorFilter.tint(Color(0XFF7F5855)),
                 contentDescription = "Pagina Dispenser",
                 modifier = Modifier
                     .padding(end = 40.dp, bottom = 14.dp)
-                    .size(36.dp)
+                    .size(40.dp)
                     .clickable {
                         navController.navigate("home/dispenserDetail/$dispenserId") },
 
@@ -508,7 +510,8 @@ fun Clock(currentTime: String) {
 fun CircularProgressIndicator(percentage: Float, label: String) {
     Card(
         modifier = Modifier
-            .padding(10.dp),
+            .padding(5.dp)
+            .size(180.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF1CC93))
     ) {
         Column(
@@ -522,9 +525,7 @@ fun CircularProgressIndicator(percentage: Float, label: String) {
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
             )
-
             Spacer(modifier = Modifier.height(12.dp))
-
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(90.dp)
@@ -535,7 +536,6 @@ fun CircularProgressIndicator(percentage: Float, label: String) {
                         color = Color(0xFFF9E3C3),
                         radius = size.minDimension * 0.55f // Regola la dimensione del cerchio esterno
                     )
-
                     // Cerchio di sfondo
                     drawArc(
                         color = Color(0xFFF9E3C3),
@@ -748,7 +748,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 .fillMaxSize()
                 .background(Color(0xFFF3D6A9))
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(5.dp)
         ) {
 
             Divider(
@@ -961,49 +961,6 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                 Column(
                     modifier = Modifier.fillMaxSize().background(Color(0xFFF3D6A9)).padding(16.dp)
                 ) {
-
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Ricarica Dispenser:",
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Start,
-                            fontFamily = customFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-
-                        Card(
-                            onClick = {showDialog = true },
-                            modifier = Modifier
-                                .width(170.dp) // Set the desired width
-                                //.border(2.dp, Color(0xFF000000), RoundedCornerShape(40.dp))
-                                .background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
-                            shape = RoundedCornerShape(40.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0XFF7F5855))
-                        ) {
-                            Text(
-                                text = "Ricarica",
-                                modifier = Modifier
-                                    .padding(12.dp)
-                                    .fillMaxWidth(),
-                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontSize = 18.sp,
-                                color = Color(0xFFFFFFFF),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-
-
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(6.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -1023,10 +980,10 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
 
                         Card(
                             modifier = Modifier
-                                .width(130.dp) // Set the desired width
-                                .height(50.dp) // Set the desired height
-                                .padding(8.dp)
-                                .border(1.dp, Color.Black, shape = RoundedCornerShape(14.dp)),
+                                .width(170.dp) // Set the desired width
+                                .height(55.dp) // Set the desired height
+                                .padding(6.dp)
+                                .border(2.dp, Color(0XFF7F5855), shape = RoundedCornerShape(14.dp)),
                             shape = RoundedCornerShape(14.dp),
                             colors = CardDefaults.cardColors(containerColor = Color(0xFFF3D6A9)) // Set the background color to match the background
                         ) {
@@ -1036,9 +993,8 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             ) {
                                 Text(
                                     fontFamily = customFontFamily,
-                                    color = Color.Black,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF7F5855),
+                                    fontSize = 13.sp,
                                     text = dispenserName.ifEmpty { "Dispenser" })
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -1046,8 +1002,9 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                 ) {
                                     Image(
                                         painter = painterResource(id = R.drawable.arrow_down),
+                                        colorFilter = ColorFilter.tint(Color(0xFF7F5855)),
                                         contentDescription = "Arrow Down",
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(30.dp)
                                     )
                                 }
                             }
@@ -1055,11 +1012,13 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             DropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
-                                modifier = Modifier.background(Color(0xFFF3D6A9))
+                                modifier = Modifier
+                                    .background(Color(0xFFFFF3F0))
+                                    //.border(1.dp, Color(0XFF7F5855), shape = RoundedCornerShape(14.dp))
                             ) {
                                 availableDispensers.forEach { (key, dispenser) ->
                                     DropdownMenuItem(
-                                        modifier = Modifier.height(30.dp),
+                                        modifier = Modifier.height(35.dp),
                                         onClick = {
                                             selectedDispenserId = dispenser["dispenserId"] as Long
                                             dispenserName = dispenser["nome"] as String
@@ -1080,19 +1039,16 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                                 text = dispenser["nome"] as String,
                                                 fontFamily = customFontFamily,
                                                 color = Color.Black,
-                                                fontSize = 10.sp
+                                                fontSize = 14.sp
                                             )
-                                        })
+                                        }
+                                    )
                                 }
                             }
                         }
 
                     }
-
-
                     Spacer(modifier = Modifier.height(40.dp))
-
-
                     currentGatto?.let { gatto ->
                         currentGatto?.let { gatto ->
                             Row(
@@ -1107,9 +1063,9 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
                                 )
-
                                 Column(
-                                    modifier = Modifier.height(120.dp), // Imposta un'altezza specifica
+                                    modifier = Modifier.height(120.dp)
+                                        .padding(end = 30.dp), // Imposta un'altezza specifica
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 )
@@ -1125,7 +1081,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                     Image(
                                         painter = painterResource(id = iconResource), // Replace with your drawable resource
                                         contentDescription = "Cat Image",
-                                        modifier = Modifier.size(80.dp).padding(end = 8.dp)
+                                        modifier = Modifier.size(100.dp)
                                     )
                                     Text(
                                         text = "${gatto["nome"]}",
@@ -1141,9 +1097,42 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             }
                         }
                     }
-
                     Spacer(modifier = Modifier.height(40.dp))
-
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Ricarica Dispenser:",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            fontFamily = customFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Card(
+                            onClick = {showDialog = true },
+                            modifier = Modifier
+                                .width(170.dp) // Set the desired width
+                                .border(2.dp, Color(0xFF7F5855), RoundedCornerShape(40.dp)),
+                                //.background(Color(0XFF7F5855), RoundedCornerShape(40.dp)),
+                            shape = RoundedCornerShape(40.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                        ) {
+                            Text(
+                                text = "Ricarica",
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .fillMaxWidth(),
+                                fontFamily = FontFamily(Font(R.font.autouroneregular)),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 16.sp,
+                                color = Color(0xFF7F5855),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -1211,8 +1200,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
 
 
                     Card(
@@ -1232,7 +1220,7 @@ fun DispenserDetail(navController: NavController, dispenserId: Long) {
                                 .fillMaxWidth(),
                             fontFamily = FontFamily(Font(R.font.autouroneregular)),
                             style = MaterialTheme.typography.bodySmall,
-                            fontSize = 18.sp,
+                            fontSize = 16.sp,
                             color = Color(0xFFFFFFFF),
                             textAlign = TextAlign.Center
                         )
